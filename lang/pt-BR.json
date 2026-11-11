@@ -1,0 +1,639 @@
+{
+  "CNH": {
+    "Compatibility": {
+      "WrongSystem": "O Cyberpunk Netrunner HUD exige o sistema Cyberpunk RED – CORE (encontrado: {found}). O módulo ficará inativo.",
+      "UntestedVersion": "O Cyberpunk Netrunner HUD foi testado com o Cyberpunk RED – CORE {tested}; este mundo usa {found}. Alguns recursos podem não funcionar."
+    },
+    "Hud": {
+      "Target": "Alvo",
+      "Link": "Conexão",
+      "Online": "Conectada",
+      "Offline": "Desconectada",
+      "Depth": "Andar",
+      "Netrunner": "Netrunner",
+      "Interface": "Interface",
+      "NetActions": "Ações NET",
+      "NetActionsLabel": "{left} de {max} ações NET restantes",
+      "Programs": "Programas",
+      "Rezzed": "Ativo",
+      "Derezzed": "Inativo",
+      "Architecture": "Arquitetura NET",
+      "Log": "Registro",
+      "LogEmpty": "aguardando conexão",
+      "GmOnly": "Oculto aos jogadores",
+      "Spectating": "Modo espectador: acompanhando a invasão"
+    },
+    "Role": {
+      "gm": "Mestre",
+      "netrunner": "Netrunner",
+      "spectator": "Espectador"
+    },
+    "Content": {
+      "password": "Senha",
+      "file": "Arquivo",
+      "controlnode": "Nó de controle",
+      "blackice": "Black ICE",
+      "unknown": "Desconhecido"
+    },
+    "ProgramKind": {
+      "attacker": "Ataque",
+      "defender": "Defesa",
+      "booster": "Reforço"
+    },
+    "Action": {
+      "jackIn": "Conectar",
+      "pathfinder": "Pathfinder",
+      "advance": "Descer",
+      "backdoor": "Backdoor",
+      "zap": "Zap",
+      "control": "Control",
+      "newTurn": "Novo turno",
+      "jackOut": "Desconectar",
+      "slide": "Slide",
+      "eyedee": "Eye-Dee",
+      "cloak": "Cloak",
+      "virus": "Virus"
+    },
+    "Prototype": {
+      "WindowTitle": "Netrunner HUD — protótipo visual",
+      "ControlTitle": "Netrunner HUD (protótipo visual)",
+      "Preview": "Visualizar como",
+      "ReducedMotion": "Movimento reduzido",
+      "Banner": {
+        "jack-in": "Conexão estabelecida",
+        "jack-out": "Conexão encerrada",
+        "ice-alert": "Black ICE detectado",
+        "breach": "Acesso concedido",
+        "fail": "Acesso negado",
+        "denied": "Passagem bloqueada",
+        "derez": "ICE derrubado",
+        "control": "Controle assumido"
+      },
+      "Log": {
+        "JackIn": "conectada ao andar {floor}: {label}",
+        "JackOut": "conexão encerrada com segurança",
+        "Scan": "pathfinder mapeou o andar {floor}: {label}",
+        "ScanNothing": "pathfinder não encontrou novos andares",
+        "Move": "desceu ao andar {floor}: {label}",
+        "IceAlert": "alerta: {label} ativo no andar {floor}",
+        "Blocked": "andar {floor} bloqueia a passagem",
+        "BackdoorFail": "backdoor falhou contra {label}",
+        "Breach": "senha de {label} quebrada",
+        "Hit": "zap atingiu {label} (-{damage} REZ)",
+        "Derez": "{label} derrubado",
+        "Control": "controle assumido: {label}",
+        "NewTurn": "novo turno: ações NET restauradas",
+        "NoActions": "sem ações NET neste turno",
+        "AlreadyIn": "já conectada",
+        "NotJackedIn": "nenhuma conexão ativa",
+        "Bottom": "último andar alcançado",
+        "NoPassword": "não há senha para quebrar aqui",
+        "NoTarget": "nenhum alvo ativo neste andar",
+        "NoControlNode": "não há nó de controle aqui"
+      }
+    },
+    "Session": {
+      "WindowTitle": "Netrunner HUD",
+      "ControlTitle": "Netrunner HUD",
+      "Eyebrow": "Sessão de Netrunning",
+      "StartTitle": "Iniciar sessão de Netrunning",
+      "Start": "Iniciar",
+      "Actor": "Personagem",
+      "Controller": "Controlador",
+      "NoController": "Ninguém (só o mestre)",
+      "NoActors": "Nenhum personagem disponível para Netrunning.",
+      "NoActiveSession": "Nenhuma sessão de Netrunning ativa.",
+      "YourRole": "Seu papel",
+      "ActorMissing": "Personagem indisponível",
+      "ActorMissingHint": "O personagem desta sessão não foi encontrado.",
+      "NoDeck": "Nenhum cyberdeck equipado",
+      "NoPrograms": "Nenhum programa instalado",
+      "Depleted": "Sem REZ",
+      "Diagnostics": "Diagnóstico da ficha",
+      "End": "Encerrar sessão",
+      "EndTitle": "Encerrar sessão",
+      "EndConfirm": "Encerrar a sessão de Netrunning para todos os participantes?",
+      "YouControl": "Você controla esta sessão",
+      "NetArch": "Arquitetura NET",
+      "NoNetArch": "Nenhuma",
+      "NoNetArchInSession": "Nenhuma arquitetura NET nesta sessão.",
+      "NetArchMissing": "Item da arquitetura não encontrado; exibindo só o que foi revelado.",
+      "RevealHint": "Clique em um nó para revelar ou ocultar",
+      "Revealed": "Revelado aos jogadores",
+      "Unexplored": "Sinal não mapeado",
+      "Branch": "Ramo",
+      "StoredDiscarded": "Uma sessão salva incompatível com esta versão do módulo foi descartada.",
+      "GmNote": "Nota do mestre",
+      "RevealedNote": "Revelado",
+      "UnexploredHint": "O que existe além do que foi revelado é desconhecido.",
+      "Tabs": {
+        "Label": "Invasões em andamento",
+        "Add": "Iniciar outra invasão",
+        "Mine": "Sua Netrunner",
+        "Unseen": "Novidade nesta invasão"
+      },
+      "StartBlocked": {
+        "full": "Limite de invasões simultâneas atingido.",
+        "actor-busy": "Esta Netrunner já está numa invasão."
+      },
+      "MapOnly": "Revelar só no mapa (sem mostrar o conteúdo até a Netrunner entrar)",
+      "Unmask": "Mostrar o conteúdo do nó"
+    },
+    "ProgramClass": {
+      "antipersonnelattacker": "Ataque antipessoal",
+      "antiprogramattacker": "Ataque antiprograma",
+      "booster": "Reforço",
+      "defender": "Defesa",
+      "blackice": "Black ICE",
+      "unknown": "Programa"
+    },
+    "Issue": {
+      "no-net-role": "Nenhuma role de Netrunning ativa na ficha.",
+      "no-equipped-cyberdeck": "Nenhum cyberdeck equipado.",
+      "multiple-equipped-cyberdecks": "{count} cyberdecks equipados; usando o primeiro, como a ficha.",
+      "missing-installed-item": "Item instalado não encontrado na ficha ({id}).",
+      "invalid-item-data": "Dado inválido no item {id} ({field})."
+    },
+    "Request": {
+      "Pending": "Aguardando o mestre…",
+      "Move": "Mover para",
+      "Error": {
+        "invalid-request": "Requisição inválida.",
+        "no-session": "Nenhuma sessão ativa.",
+        "wrong-session": "A sessão mudou; tente de novo.",
+        "not-authorized": "Você não controla esta sessão.",
+        "stale-revision": "O estado mudou antes da sua ação; tente de novo.",
+        "no-architecture": "Esta sessão não tem arquitetura NET.",
+        "already-jacked-in": "Já conectada.",
+        "not-jacked-in": "Nenhuma conexão ativa.",
+        "invalid-target": "Alvo inválido.",
+        "no-authority": "Nenhum mestre conectado para validar a ação.",
+        "timeout": "O mestre não respondeu a tempo; confira o estado atual antes de tentar de novo.",
+        "no-net-role": "A ficha não tem função NET (Interface) ativa.",
+        "no-cyberdeck": "Nenhum cyberdeck equipado.",
+        "no-entry": "A arquitetura não tem andar 1 na branch A.",
+        "no-actions-left": "Sem ações NET neste turno.",
+        "wrong-node": "Esta ação não vale para o nó atual.",
+        "already-cleared": "Este nó já foi resolvido.",
+        "not-engaged": "Nenhum Black ICE engajando a Netrunner.",
+        "engaged": "Engajada por Black ICE: não é possível se mover.",
+        "password-locked": "A Password precisa ser vencida antes de descer.",
+        "not-adjacent": "Escolha um nó a um andar de distância.",
+        "not-revealed": "Esse nó ainda não foi revelado.",
+        "invalid-roll": "Rolagem não reconhecida: use o card criado agora pela própria ficha.",
+        "check-pending": "Há uma checagem aguardando o mestre.",
+        "no-pending-check": "Nenhuma checagem pendente.",
+        "awaiting-opposed": "Falta a rolagem do outro lado.",
+        "nothing-to-oppose": "Nada aguardando rolagem oposta.",
+        "no-ice-link": "Vincule um ator Black ICE a este nó.",
+        "no-damage-pending": "Nenhum dano de Zap a rolar.",
+        "effect-failed": "Não foi possível alterar a ficha; nada foi gravado. Tente de novo.",
+        "write-failed": "A ficha foi alterada, mas a sessão não foi gravada. Tente de novo: o valor não é aplicado duas vezes.",
+        "invalid-program": "Programa indisponível para esta ação.",
+        "program-state": "O programa já está nesse estado.",
+        "program-destroyed": "Programa destruído (REZ 0): não pode ser rezzado.",
+        "nothing-to-undo": "Nada para desfazer.",
+        "ice-turn": "Vez do inimigo: aguarde a sua vez.",
+        "initiative": "Aguardando as iniciativas do combate com a Netrunner inimiga.",
+        "ambush": "Resolva primeiro o encontro com o Black ICE à espreita.",
+        "program-used": "Esta cópia já foi ativada nesta rodada (cada cópia ativa uma vez por rodada).",
+        "not-lowest": "Virus só pode ser usado no andar mais fundo da arquitetura.",
+        "once-per-run": "Esta cópia já foi usada nesta Netrun (Armor, Flak, Shield e Superglue: uma vez por Netrun).",
+        "one-copy": "Já há uma cópia deste programa ligada (Armor, Flak e Shield: uma por vez).",
+        "program-neutralized": "Programa neutralizado: derrezze primeiro (1 ação) e rezze de novo depois."
+      },
+      "Rolling": "Rolando na ficha…",
+      "NoAuthorityPaused": "Nenhum mestre conectado: ações pausadas até um mestre entrar."
+    },
+    "Run": {
+      "Turn": "Turno",
+      "Actions": "Ações NET",
+      "Clear": "Liberar nó",
+      "Restore": "Restaurar nó",
+      "Evaded": "Driblado",
+      "Cleared": {
+        "password": "Vencida",
+        "controlnode": "Controlado",
+        "blackice": "Derrotado",
+        "file": "Identificado"
+      },
+      "Engaged": "Engajada por Black ICE: derrote-o ou use Slide para se mover (o mestre pode liberar).",
+      "PasswordLocked": "A Password bloqueia a descida até ser vencida.",
+      "NoActions": "Sem ações NET neste turno; aguarde o mestre iniciar o próximo.",
+      "AtBottom": "Andar mais fundo da arquitetura: o Virus pode ser usado aqui."
+    },
+    "Check": {
+      "Pending": "Checagem pendente",
+      "Waiting": "Aguardando a confirmação do mestre.",
+      "Cancelled": "Rolagem cancelada; nenhuma ação NET gasta.",
+      "Kind": {
+        "backdoor": "Backdoor",
+        "control": "Control",
+        "zap": "Zap",
+        "slide": "Slide",
+        "damage": "Dano do Zap",
+        "iceAttack": "Ataque do Black ICE",
+        "eyedee": "Eye-Dee",
+        "programAttack": "Ataque com programa",
+        "programDamage": "Dano do programa",
+        "npcAttack": "Zap da Netrunner inimiga",
+        "npcProgram": "Programa da Netrunner inimiga",
+        "pathfinder": "Pathfinder",
+        "cloak": "Cloak",
+        "virus": "Virus",
+        "ambush": "Encontro com Black ICE"
+      },
+      "Suggest": {
+        "backdoor": {
+          "success": "Sugestão: sucesso (supera o DV).",
+          "failure": "Sugestão: falha (não supera o DV)."
+        },
+        "control": {
+          "success": "Sugestão: sucesso (supera o DV).",
+          "failure": "Sugestão: falha (não supera o DV)."
+        },
+        "zap": {
+          "success": "Sugestão: Zap acerta (supera a DEF).",
+          "failure": "Sugestão: Zap erra (não supera a DEF)."
+        },
+        "slide": {
+          "success": "Sugestão: Slide funciona (supera a PER).",
+          "failure": "Sugestão: Slide falha (não supera a PER)."
+        },
+        "damage": {
+          "success": "Aplicar o dano no REZ do Black ICE.",
+          "failure": ""
+        },
+        "iceAttack": {
+          "success": "Sugestão: Black ICE acerta (supera a Defense).",
+          "failure": "Sugestão: Black ICE erra (não supera a Defense)."
+        },
+        "eyedee": {
+          "success": "Sugestão: sucesso (supera o DV).",
+          "failure": "Sugestão: falha (não supera o DV)."
+        },
+        "programAttack": {
+          "success": "Sugestão: programa acerta (supera a DEF).",
+          "failure": "Sugestão: programa erra (não supera a DEF)."
+        },
+        "npcAttack": {
+          "success": "Sugestão: a Netrunner inimiga acerta (supera a Defense).",
+          "failure": "Sugestão: a Netrunner inimiga erra (não supera a Defense)."
+        },
+        "pathfinder": {
+          "success": "Revela os andares abaixo até o total, parando numa Password de DV maior.",
+          "failure": ""
+        },
+        "cloak": {
+          "success": "Rastros escondidos: quem procurar precisa superar este total.",
+          "failure": ""
+        },
+        "virus": {
+          "success": "",
+          "failure": ""
+        },
+        "ambush": {
+          "success": "Sugestão: o Black ICE vence (supera a velocidade) e o efeito vale na hora.",
+          "failure": "Sugestão: a Netrunner reage a tempo (o ICE não supera a velocidade)."
+        }
+      },
+      "Confirm": {
+        "backdoor": {
+          "success": "Sucesso",
+          "failure": "Falha"
+        },
+        "control": {
+          "success": "Sucesso",
+          "failure": "Falha"
+        },
+        "zap": {
+          "success": "Acertou",
+          "failure": "Errou"
+        },
+        "slide": {
+          "success": "Driblou",
+          "failure": "Falhou"
+        },
+        "damage": {
+          "success": "Aplicar dano",
+          "failure": "Descartar"
+        },
+        "iceAttack": {
+          "success": "Acertou",
+          "failure": "Errou"
+        },
+        "eyedee": {
+          "success": "Sucesso",
+          "failure": "Falha"
+        },
+        "programAttack": {
+          "success": "Acertou",
+          "failure": "Errou"
+        },
+        "npcAttack": {
+          "success": "Acertou",
+          "failure": "Errou"
+        },
+        "pathfinder": {
+          "success": "Revelar andares",
+          "failure": "Nada revelado"
+        },
+        "cloak": {
+          "success": "Rastros escondidos",
+          "failure": "Falhou"
+        },
+        "virus": {
+          "success": "Vírus instalado",
+          "failure": "Falhou"
+        },
+        "ambush": {
+          "success": "ICE pegou",
+          "failure": "Ela reagiu"
+        }
+      },
+      "WaitingRoll": {
+        "def": "Aguardando o mestre rolar a DEF do Black ICE.",
+        "per": "Aguardando o mestre rolar a PER do Black ICE.",
+        "defense": "Aguardando a Netrunner rolar Defense.",
+        "npcDefense": "Aguardando o mestre rolar a Defense da Netrunner inimiga.",
+        "speed": "Aguardando a Netrunner rolar a velocidade (Speed)."
+      },
+      "Roll": {
+        "def": "Rolar DEF do Black ICE",
+        "per": "Rolar PER do Black ICE",
+        "defense": "Rolar Defense",
+        "npcDefense": "Rolar Defense da NPC",
+        "speed": "Rolar velocidade (Speed)"
+      },
+      "RezChange": "REZ {before} → {after}",
+      "AwaitingDamage": "Zap acertou: role o dano (1d6).",
+      "RollDamage": "Rolar dano",
+      "SkipDamage": "Dispensar dano",
+      "DamageFlavor": "Zap — dano no REZ do Black ICE",
+      "YourMove": "Sua vez de agir",
+      "AwaitingProgramDamage": "Programa acertou: role o dano do programa."
+    },
+    "Ice": {
+      "Encounter": "Black ICE no nó",
+      "NotLinked": "Sem ator vinculado: o mestre escolhe a ficha do Black ICE.",
+      "Actor": "Ator Black ICE",
+      "Link": "Vincular",
+      "NoActors": "Nenhum ator Black ICE no mundo.",
+      "Attack": "Black ICE ataca",
+      "BuiltinTag": "(básico, cria a ficha)",
+      "Seeded": "{count} Black ICE básico(s) criado(s) na pasta \"Black ICE (CNH)\"."
+    },
+    "Fx": {
+      "jack-in": "Conectada",
+      "jack-out": "Desconectada",
+      "ice-alert": "Black ICE detectado",
+      "breach": "Password vencida",
+      "control": "Nó controlado",
+      "derez": "Black ICE derrubado",
+      "fail": "Falhou",
+      "evade": "Driblado",
+      "ice-hit": "Black ICE acertou",
+      "ice-miss": "Black ICE errou",
+      "new-turn": "Novo turno",
+      "zap-hit": "Zap acertou",
+      "damage": "Dano aplicado",
+      "ice-attack": "Black ICE ataca",
+      "identify": "Arquivo identificado",
+      "program-hit": "Programa acertou",
+      "brain-damage": "Dano no cérebro",
+      "program-crash": "Programa atingido",
+      "undo": "Ação desfeita",
+      "ice-turn": "Vez do Black ICE",
+      "runner-turn": "Vez da Netrunner",
+      "npc-alert": "Netrunner inimiga",
+      "npc-attack": "Netrunner inimiga ataca",
+      "npc-down": "Netrunner inimiga derrubada",
+      "npc-turn": "Vez da Netrunner inimiga",
+      "npc-hit": "Netrunner inimiga acertou",
+      "npc-miss": "Netrunner inimiga errou"
+    },
+    "Settings": {
+      "Motion": {
+        "Name": "Movimento das animações",
+        "Hint": "Reduzido troca deslocamentos, tremores e piscadas por um esmaecimento curto. A preferência do sistema operacional também é respeitada.",
+        "full": "Completo",
+        "reduced": "Reduzido"
+      },
+      "Sound": {
+        "Name": "Sons do HUD",
+        "Hint": "Toca sons curtos sintetizados nos eventos da invasão, no volume de interface do Foundry."
+      },
+      "Log": {
+        "Name": "Mostrar registro de eventos",
+        "Hint": "Mostra no seu HUD o registro da invasão, se o mestre liberou na mesa. Também pela caixa \"Registro\" no cabeçalho do HUD."
+      },
+      "LogWorld": {
+        "Name": "Registro de eventos na mesa",
+        "Hint": "Libera o painel de registro no HUD para todos. Cada usuário escolhe se mostra (começa escondido)."
+      },
+      "Auto": {
+        "Name": "Modo sem confirmação do mestre",
+        "Hint": "Aplica sozinho o resultado quando a regra sugere (DV, disputa, dano) e rola sem diálogo a DEF/PER do Black ICE e o dano do acerto. Sem sugestão, o mestre confirma. O ataque do Black ICE continua com o mestre. Precisa de um mestre conectado."
+      },
+      "SeedIce": {
+        "Name": "Criar os Black ICE básicos no mundo",
+        "Hint": "O mestre cria sozinho, na pasta \"Black ICE (CNH)\", as fichas dos 12 Black ICE básicos (ator e programa) que ainda não existem. Fichas com o mesmo nome são reaproveitadas."
+      }
+    },
+    "Start": {
+      "ShowAll": "Mostrar todos os personagens (inclui NPCs)",
+      "IceLegend": "Black ICE da arquitetura",
+      "IceNode": "Andar {where}: {name}",
+      "IceChoose": "— escolha o ator —",
+      "NoIceActors": "Não há atores do tipo Black ICE no mundo: crie um para cada Black ICE (PER, SPD, ATK, DEF e REZ).",
+      "IceMissing": "Escolha um ator para cada Black ICE para iniciar.",
+      "IceRepeated": "O mesmo ator está em mais de um nó: o REZ será compartilhado."
+    },
+    "Program": {
+      "Rez": "Rezzar",
+      "Derez": "Derrezzar",
+      "Attack": "Atacar",
+      "Attacker": "Atacante",
+      "AttackHint": "Atacante antipessoal: mira Netrunners, não Black ICE.",
+      "Neutralized": "REZ 0 (sem efeito)",
+      "Destroyed": "Destruído",
+      "Recover": "Derrezzar"
+    },
+    "IceHit": {
+      "Awaiting": "Black ICE acertou: dano a rolar",
+      "TargetBrain": "Alvo: cérebro (HP {hp}, redução {reduction})",
+      "TargetProgram": "Alvo: {name} (REZ {rez})",
+      "Formula": "Dano: {formula}",
+      "NoFormula": "Sem dano: crie um item de programa da classe Black ICE chamado \"{name}\" com o dano preenchido, ou dispense.",
+      "SpecialHint": "Efeitos especiais da descrição do Black ICE (fogo, Jack Out forçado…) ficam com o mestre.",
+      "Roll": "Rolar dano do Black ICE",
+      "WaitingGm": "Aguardando o mestre rolar o dano.",
+      "Flavor": "Dano do Black ICE",
+      "LastBrain": "Último acerto: −{taken} HP no cérebro (HP {after})",
+      "LastProgram": "Último acerto: {name} −{taken} REZ (REZ {after})",
+      "LastDestroyed": "Último acerto: {name} destruído (REZ 0)",
+      "None": {
+        "no-program": "Acerto sem efeito: nenhum programa rezzado.",
+        "manual": "Acerto com efeito especial: o mestre aplica à mão.",
+        "shield": "Shield absorveu o acerto e se neutralizou."
+      },
+      "Pick": "Atingir este programa",
+      "PickLabel": "Programa atingido",
+      "LastNeutralized": "Último acerto: {name} −{taken} REZ, neutralizado (REZ 0)"
+    },
+    "Undo": {
+      "Button": "Desfazer",
+      "Tooltip": "Desfazer: {what}. Volta a sessão e a ficha; rolagens ficam no chat.",
+      "Empty": "Nada para desfazer.",
+      "GiveAction": "Devolver uma ação NET",
+      "TakeAction": "Tirar uma ação NET",
+      "What": {
+        "jackIn": "Jack In",
+        "jackOut": "Jack Out",
+        "moveTo": "movimento",
+        "newTurn": "novo turno",
+        "clearNode": "liberar nó",
+        "restoreNode": "restaurar nó",
+        "check": "rolagem enviada",
+        "oppose": "rolagem oposta",
+        "rezProgram": "rez de programa",
+        "iceAttack": "ataque do Black ICE",
+        "linkIce": "vínculo do Black ICE",
+        "resolveCheck": "confirmação do mestre",
+        "iceDamage": "dano do Black ICE",
+        "adjustActions": "ajuste de ações",
+        "endTurn": "fim de vez",
+        "npcAttack": "ataque da Netrunner inimiga",
+        "initiative": "iniciativa",
+        "npcSync": "vínculo de NPC",
+        "moveNpc": "movimento da NPC",
+        "ambush": "encontro com Black ICE",
+        "iceTarget": "escolha do programa atingido"
+      }
+    },
+    "Turn": {
+      "Label": "Vez",
+      "Ice": "Black ICE",
+      "Runner": "Netrunner",
+      "End": "Encerrar vez",
+      "PassIce": "Passar a vez",
+      "IceHint": "Vez do Black ICE: a Netrunner aguarda o ataque (o mestre pode passar a vez).",
+      "Npc": "Netrunner inimiga",
+      "NpcHint": "Vez da Netrunner inimiga: aguarde o ataque (o mestre pode passar a vez)."
+    },
+    "Log": {
+      "HiddenNode": "nó oculto",
+      "Program": "programa",
+      "JackIn": "Jack In em {node}",
+      "JackOut": "Jack Out",
+      "Move": "Moveu para {node}",
+      "Reveal": "Revelado: {node}",
+      "Cleared": "Mestre liberou {node}",
+      "Restored": "Mestre restaurou {node}",
+      "Outcome": "{ability} ({rolls}): {result}",
+      "Success": "sucesso",
+      "Failure": "falha",
+      "Damage": "Dano {total} no Black ICE: REZ {before} → {after}",
+      "DamageDiscarded": "Dano descartado",
+      "DamageSkipped": "Dano dispensado pelo mestre",
+      "IceBrain": "Black ICE causou {taken} de dano no cérebro (HP {after})",
+      "IceProgram": "Black ICE tirou {taken} de REZ de {program} (REZ {after})",
+      "IceDestroyed": "Black ICE destruiu {program}",
+      "RezOn": "Rezzou {program}",
+      "RezOff": "Derrezzou {program}",
+      "NewTurn": "Novo turno {turn}",
+      "ActionGiven": "Mestre devolveu uma ação NET",
+      "ActionTaken": "Mestre tirou uma ação NET",
+      "Undo": "Mestre desfez: {what}",
+      "Empty": "cyberdeck online. Nenhum evento ainda.",
+      "Show": "Mostrar o registro de eventos (só para você)",
+      "Hide": "Esconder o registro de eventos (só para você)",
+      "Npc": "Netrunner inimiga detectada em {node}",
+      "NpcDefeated": "Netrunner inimiga derrubada",
+      "InitRunner": "Iniciativa da Netrunner: {total}",
+      "InitNpc": "Iniciativa da Netrunner inimiga: {total}",
+      "NpcBrain": "Netrunner inimiga causou {taken} de dano no cérebro (HP {after})",
+      "NpcDamage": "Dano {total} na Netrunner inimiga: HP {before} → {after}",
+      "NpcLeft": "Netrunner inimiga saiu do nó",
+      "Mapped": "Nó mostrado só no mapa",
+      "Ambush": "Black ICE à espreita em {node}!",
+      "IceTarget": "Mestre escolheu o programa atingido: {program}",
+      "PathfinderFound": "({count} nó(s) revelado(s))",
+      "IceNeutralized": "Black ICE tirou {taken} de REZ de {program}: neutralizado (REZ 0)"
+    },
+    "Auto": {
+      "Hint": "Modo automático: o que a regra decide sai sozinho; o mestre pode desfazer."
+    },
+    "Npc": {
+      "Encounter": "Netrunner inimiga no nó",
+      "Unknown": "Netrunner desconhecida",
+      "Link": "Vincular Netrunner NPC a este nó",
+      "Linked": "Netrunner NPC: {name}. Clique para trocar; arraste para outro nó (menos Black ICE).",
+      "LinkTitle": "Netrunner NPC no nó",
+      "Actor": "Netrunner NPC",
+      "None": "— nenhuma —",
+      "Save": "Salvar",
+      "LinkHint": "Fica oculta até a Netrunner chegar a este nó. Só personagens ou mooks com cyberdeck equipado.",
+      "NoActors": "Nenhum personagem ou mook com cyberdeck equipado no mundo.",
+      "InitiativeTitle": "Iniciativa",
+      "Initiative": "Iniciativa: Netrunner {runner} × NPC {npc}",
+      "RollRunner": "Rolar iniciativa",
+      "RollNpc": "Iniciativa da NPC",
+      "WaitingInit": "Aguardando as iniciativas.",
+      "InitiativeFlavor": "Iniciativa da Netrunner inimiga (1d10 + REF)",
+      "RunnerInitiativeFlavor": "Iniciativa na NET (1d10 + REF)",
+      "DamageFlavor": "Dano da Netrunner inimiga no cérebro",
+      "HitAwaiting": "Acerto da Netrunner inimiga: aguardando o dano",
+      "ProgramDamage": "dano do programa {name}",
+      "Actions": "Ações NET da NPC",
+      "Zap": "Zap da NPC",
+      "HpChange": "HP {before} → {after}"
+    },
+    "Enemy": {
+      "Show": "Mostrar o inimigo do nó",
+      "Hide": "Esconder o inimigo do nó",
+      "Pending": "O inimigo tem uma ação em andamento",
+      "PendingGm": "Ação do inimigo esperando o mestre",
+      "Label": "Inimigo"
+    },
+    "Sound": {
+      "Label": "Som",
+      "Mute": "Desligar o som do HUD",
+      "Unmute": "Ligar o som do HUD"
+    },
+    "Ambush": {
+      "Title": "Black ICE à espreita",
+      "Roll": "Rolar SPD do Black ICE",
+      "Skip": "Dispensar o encontro",
+      "GmHint": "O SPD + 1d10 do Black ICE disputa com a velocidade da Netrunner. Se o ICE vencer, o efeito vale na hora.",
+      "Waiting": "Aguardando o mestre rolar o SPD do Black ICE.",
+      "NeedsLink": "Vincule o ator do Black ICE para rolar o encontro."
+    },
+    "ResolveNow": {
+      "Button": "Resolver",
+      "Hint": "Faz agora, sem diálogo, o que a regra decide sozinha: rolagens do inimigo, resultado sugerido e dano."
+    },
+    "Help": {
+      "backdoor": "Backdoor: quebra a Password deste nó (Interface + 1d10 contra o DV). Vencida, dá para descer. 1 ação NET.",
+      "control": "Control: assume o Control Node (Interface + 1d10 contra o DV). O mestre narra o que ele comanda: câmeras, portas, torretas… 1 ação NET.",
+      "eyedee": "Eye-Dee: identifica o arquivo deste nó (Interface + 1d10 contra o DV). A descrição aparece para a Netrunner. 1 ação NET.",
+      "zap": "Zap: ataque básico (Interface + 1d10 contra a DEF do Black ICE ou a Defense da Netrunner inimiga). Acerto: 1d6 de dano. 1 ação NET.",
+      "slide": "Slide: escapa do Black ICE (Interface + 1d10 contra a PER dele). Funcionou: deixa de estar presa e pode se mover. 1 ação NET.",
+      "pathfinder": "Pathfinder: mapeia a arquitetura (Interface + 1d10). Revela os andares abaixo até o total, parando numa Password de DV maior. 1 ação NET.",
+      "cloak": "Cloak: esconde os rastros (e o vírus) da Netrunner. O total vira o DV de quem procurar depois. 1 ação NET.",
+      "virus": "Virus: só no andar mais fundo. Deixa um vírus que muda a arquitetura mesmo depois do Jack Out; o mestre define o DV e o efeito. 1 ação NET.",
+      "jackIn": "Jack In: conecta na arquitetura pelo primeiro nó. 1 ação NET.",
+      "jackOut": "Jack Out: desconecta com segurança. 1 ação NET.",
+      "endTurn": "Encerra a sua vez agora; começa a vez do inimigo.",
+      "passIce": "Termina a vez do inimigo; a Netrunner recupera as ações NET.",
+      "newTurn": "Novo turno: as ações NET da Netrunner recarregam.",
+      "rez": "Rezzar liga o programa (Booster/Defender) e o efeito vale enquanto estiver ligado; derrezzar desliga. 1 ação NET cada. Cada cópia ativa uma vez por rodada; Armor, Flak e Shield: uma cópia ligada por vez e uma vez por Netrun.",
+      "programAttack": "Ataca o alvo do nó com este programa (Interface + ATK + 1d10 contra a DEF + 1d10). Atacante desliga sozinho depois do uso: cada cópia ataca uma vez por rodada (Superglue, uma vez por Netrun). 1 ação NET.",
+      "iceAttack": "O Black ICE ataca: ATK + 1d10 contra a Defense da Netrunner.",
+      "npcZap": "Zap da Netrunner inimiga: Interface + 1d10 contra a Defense da jogadora; acerto causa 1d6 no cérebro.",
+      "npcProgram": "A Netrunner inimiga ataca com este programa: ATK + 1d10 contra a Defense da jogadora.",
+      "initiative": "Iniciativa: 1d10 + REF. Quem tirar mais age primeiro; empate a favor da jogadora.",
+      "recover": "Neutralizado (REZ 0): continua instalado, sem efeito. Derrezzar (1 ação NET) e rezzar de novo (1 ação NET, em outra rodada se já foi ativado nesta) volta com o REZ cheio."
+    }
+  }
+}

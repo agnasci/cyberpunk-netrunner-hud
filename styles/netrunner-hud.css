@@ -1,0 +1,2186 @@
+/* Cyberpunk Netrunner HUD — protótipo visual (E1-00). Escopo: .cnh-app / .cnh-hud. */
+
+.cnh-app {
+  --cnh-bg: #05080c;
+  --cnh-bg-2: #0a1219;
+  --cnh-panel: rgba(9, 18, 25, 0.82);
+  --cnh-line: rgba(62, 240, 230, 0.22);
+  --cnh-text: #d3f4f2;
+  --cnh-muted: #6d8a8f;
+  --cnh-cyan: #3ef0e6;
+  --cnh-magenta: #ff2e88;
+  --cnh-amber: #ffc23d;
+  --cnh-green: #6dffa0;
+  --cnh-red: #ff3b4e;
+  --cnh-font-display: "Bruno Ace", "Modesto Condensed", sans-serif;
+  --cnh-font-mono: ui-monospace, "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+}
+
+/* Moldura da janela (ApplicationV2 V12) */
+.application.cnh-app {
+  background: var(--cnh-bg);
+  border: 1px solid var(--cnh-line);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.8),
+    0 0 32px rgba(62, 240, 230, 0.12);
+  color: var(--cnh-text);
+}
+.application.cnh-app .window-header {
+  background: linear-gradient(
+    90deg,
+    rgba(62, 240, 230, 0.16),
+    rgba(255, 46, 136, 0.1) 70%,
+    transparent
+  );
+  border-bottom: 1px solid var(--cnh-line);
+  color: var(--cnh-cyan);
+  font-family: var(--cnh-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.application.cnh-app .window-content {
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+/* Raiz */
+.cnh-hud {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  gap: 10px;
+  height: 100%;
+  padding: 12px;
+  overflow: hidden;
+  font-family: var(--cnh-font-mono);
+  font-size: 13px;
+  color: var(--cnh-text);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(62, 240, 230, 0.1), transparent 60%),
+    radial-gradient(ellipse at 100% 100%, rgba(255, 46, 136, 0.08), transparent 55%),
+    linear-gradient(rgba(62, 240, 230, 0.04) 1px, transparent 1px) 0 0 / 100% 24px,
+    linear-gradient(90deg, rgba(62, 240, 230, 0.04) 1px, transparent 1px) 0 0 / 24px 100%,
+    var(--cnh-bg);
+}
+.cnh-hud *,
+.cnh-hud *::before,
+.cnh-hud *::after {
+  box-sizing: border-box;
+}
+.cnh-hud .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.cnh-app .cnh-hud button {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.cnh-app .cnh-hud button:focus-visible {
+  outline: 2px solid var(--cnh-cyan);
+  outline-offset: 2px;
+}
+
+.cnh-scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
+  mix-blend-mode: multiply;
+}
+.cnh-scanlines::after {
+  content: "";
+  position: absolute;
+  inset: -20% 0 auto;
+  height: 18%;
+  background: linear-gradient(transparent, rgba(62, 240, 230, 0.05), transparent);
+  animation: cnh-sweep 7s linear infinite;
+}
+
+/* Alerta global: vinheta vermelha ao detectar ICE ou sofrer bloqueio */
+.cnh-hud::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: inset 0 0 120px rgba(255, 59, 78, 0.55);
+}
+.cnh-hud[data-event="ice-alert"]::after {
+  animation: cnh-vignette 0.6s ease-in-out 3;
+}
+.cnh-hud[data-event="fail"]::after,
+.cnh-hud[data-event="denied"]::after {
+  animation: cnh-vignette 0.5s ease-in-out 1;
+}
+
+/* Cabeçalho */
+.cnh-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--cnh-line);
+}
+.cnh-eyebrow {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--cnh-muted);
+}
+.cnh-app .cnh-title {
+  position: relative;
+  margin: 2px 0 0;
+  border: 0;
+  font-family: var(--cnh-font-display);
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--cnh-cyan);
+  text-shadow: 0 0 12px rgba(62, 240, 230, 0.45);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cnh-title::before,
+.cnh-title::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+.cnh-title::before {
+  color: var(--cnh-magenta);
+  animation: cnh-glitch-a 6s steps(1) infinite;
+}
+.cnh-title::after {
+  color: var(--cnh-amber);
+  animation: cnh-glitch-b 6s steps(1) infinite;
+}
+
+.cnh-readouts {
+  display: flex;
+  gap: 18px;
+  margin: 0;
+}
+.cnh-readout dt {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cnh-muted);
+}
+.cnh-readout dd {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 0;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+.cnh-led {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cnh-red);
+  box-shadow: 0 0 8px var(--cnh-red);
+}
+.cnh-readout.is-live .cnh-led {
+  background: var(--cnh-green);
+  box-shadow: 0 0 8px var(--cnh-green);
+  animation: cnh-blink 1.6s ease-in-out infinite;
+}
+.cnh-depth {
+  font-family: var(--cnh-font-display);
+  font-size: 20px !important;
+  color: var(--cnh-amber);
+}
+.cnh-depth small {
+  font-size: 12px;
+  color: var(--cnh-muted);
+}
+
+.cnh-preview {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+}
+.cnh-segmented {
+  display: flex;
+  border: 1px solid var(--cnh-line);
+}
+.cnh-app .cnh-segmented button,
+.cnh-app .cnh-hud .cnh-motion {
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--cnh-muted);
+}
+.cnh-app .cnh-segmented button.is-active {
+  background: rgba(62, 240, 230, 0.16);
+  color: var(--cnh-cyan);
+}
+.cnh-app .cnh-hud .cnh-motion[aria-pressed="true"] {
+  color: var(--cnh-amber);
+}
+
+/* Corpo */
+.cnh-body {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 250px;
+  gap: 10px;
+  min-height: 0;
+}
+.cnh-panel {
+  position: relative;
+  min-height: 0;
+  padding: 10px 12px;
+  overflow: auto;
+  background: var(--cnh-panel);
+  border: 1px solid var(--cnh-line);
+  clip-path: polygon(
+    0 0,
+    calc(100% - 14px) 0,
+    100% 14px,
+    100% 100%,
+    14px 100%,
+    0 calc(100% - 14px)
+  );
+}
+.cnh-app .cnh-panel-title,
+.cnh-app .cnh-subtitle {
+  margin: 0 0 8px;
+  border: 0;
+  font-family: var(--cnh-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cnh-magenta);
+}
+.cnh-app .cnh-subtitle {
+  margin-top: 14px;
+}
+
+.cnh-handle {
+  font-family: var(--cnh-font-display);
+  font-size: 18px;
+  color: var(--cnh-text);
+  text-shadow: 0 0 8px rgba(255, 46, 136, 0.5);
+}
+.cnh-deck {
+  margin: 4px 0 10px;
+  font-size: 11px;
+  color: var(--cnh-muted);
+}
+.cnh-stat,
+.cnh-netactions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-top: 1px dashed var(--cnh-line);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.cnh-stat strong {
+  font-family: var(--cnh-font-display);
+  font-size: 16px;
+  color: var(--cnh-cyan);
+}
+.cnh-pips {
+  display: flex;
+  gap: 4px;
+}
+.cnh-pip {
+  width: 14px;
+  height: 10px;
+  border: 1px solid var(--cnh-line);
+  transform: skewX(-20deg);
+}
+.cnh-pip.is-on {
+  background: var(--cnh-cyan);
+  box-shadow: 0 0 8px rgba(62, 240, 230, 0.7);
+}
+
+.cnh-programs {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cnh-program {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 6px;
+  padding: 6px 8px;
+  border-left: 2px solid var(--cnh-muted);
+  background: rgba(255, 255, 255, 0.02);
+  opacity: 0.65;
+}
+.cnh-program.is-rezzed {
+  border-left-color: var(--cnh-cyan);
+  opacity: 1;
+}
+.cnh-program-name {
+  font-weight: 600;
+}
+.cnh-program-state,
+.cnh-program-kind {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cnh-muted);
+}
+.cnh-program.is-rezzed .cnh-program-state {
+  color: var(--cnh-green);
+}
+.cnh-program .cnh-bar {
+  grid-column: 1 / -1;
+}
+
+.cnh-bar {
+  display: block;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.cnh-bar > span {
+  display: block;
+  width: var(--fill);
+  height: 100%;
+  background: var(--cnh-cyan);
+  box-shadow: 0 0 6px currentColor;
+  transition: width 0.5s ease;
+}
+.cnh-bar--ice > span {
+  background: var(--cnh-red);
+  color: var(--cnh-red);
+}
+
+/* Arquitetura */
+.cnh-arch {
+  position: relative;
+  min-height: 0;
+  padding: 6px 10px;
+  overflow: auto;
+}
+.cnh-floors {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cnh-floor {
+  --node: var(--cnh-muted);
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px 46px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 4px 12px 4px 6px;
+  border: 1px solid transparent;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.025), transparent);
+  overflow: hidden;
+}
+.cnh-floor--password {
+  --node: var(--cnh-amber);
+}
+.cnh-floor--file {
+  --node: var(--cnh-cyan);
+}
+.cnh-floor--controlnode {
+  --node: var(--cnh-green);
+}
+.cnh-floor--blackice {
+  --node: var(--cnh-red);
+}
+.cnh-floor-num {
+  font-family: var(--cnh-font-display);
+  font-size: 13px;
+  color: var(--cnh-muted);
+  text-align: right;
+}
+.cnh-node {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 46px;
+  color: var(--node);
+}
+.cnh-node svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.cnh-node polygon {
+  fill: color-mix(in srgb, var(--node) 12%, transparent);
+  stroke: var(--node);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 4px var(--node));
+}
+.cnh-node i {
+  position: relative;
+  font-size: 15px;
+}
+/* Conexão de dados entre andares */
+.cnh-floor:not(:last-child) .cnh-node::after {
+  content: "";
+  position: absolute;
+  top: 46px;
+  left: 50%;
+  width: 2px;
+  height: 22px;
+  transform: translateX(-50%);
+  background: repeating-linear-gradient(180deg, var(--cnh-cyan) 0 4px, transparent 4px 8px);
+  opacity: 0.45;
+  animation: cnh-flow 0.8s linear infinite;
+}
+.cnh-floor--unknown .cnh-node::after {
+  animation: none;
+  opacity: 0.15;
+}
+.cnh-floor-info {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.cnh-floor-type {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--node);
+}
+.cnh-floor-label {
+  overflow: hidden;
+  font-size: 14px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cnh-floor-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cnh-dv {
+  padding: 2px 6px;
+  border: 1px solid var(--node);
+  font-size: 11px;
+  color: var(--node);
+}
+.cnh-gm-badge {
+  color: var(--cnh-magenta);
+}
+
+.cnh-floor--unknown .cnh-floor-type {
+  letter-spacing: 0.4em;
+}
+.cnh-floor--unknown .cnh-node polygon {
+  fill: transparent;
+  stroke-dasharray: 4 3;
+  filter: none;
+}
+.cnh-floor.is-gm-only {
+  border-style: dashed;
+  border-color: rgba(255, 46, 136, 0.35);
+  opacity: 0.6;
+}
+.cnh-floor.is-blocking.is-current {
+  box-shadow: inset 3px 0 0 var(--cnh-red);
+}
+.cnh-floor.is-current {
+  border-color: var(--node);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--node) 18%, transparent),
+    transparent 80%
+  );
+}
+.cnh-floor.is-current .cnh-node polygon {
+  animation: cnh-pulse 1.8s ease-in-out infinite;
+}
+.cnh-runner-marker {
+  position: absolute;
+  right: 8px;
+  top: 4px;
+  font-size: 12px;
+  color: var(--cnh-magenta);
+  text-shadow: 0 0 8px var(--cnh-magenta);
+}
+
+/* Registro */
+.cnh-log-list {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cnh-log-entry {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--cnh-muted);
+}
+.cnh-log-entry.is-new {
+  color: var(--cnh-text);
+  animation: cnh-type 0.5s steps(24) both;
+}
+.cnh-log-prompt {
+  color: var(--cnh-cyan);
+}
+.cnh-log--ice-alert,
+.cnh-log--fail,
+.cnh-log--denied,
+.cnh-log--hit {
+  color: var(--cnh-red) !important;
+}
+.cnh-log--breach,
+.cnh-log--control,
+.cnh-log--derez {
+  color: var(--cnh-green) !important;
+}
+.cnh-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 12px;
+  margin-left: 4px;
+  vertical-align: -1px;
+  background: var(--cnh-cyan);
+  animation: cnh-blink 1s steps(1) infinite;
+}
+
+/* Ações */
+.cnh-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--cnh-line);
+}
+.cnh-app .cnh-hud .cnh-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border: 1px solid var(--cnh-line);
+  background: rgba(62, 240, 230, 0.06);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cnh-cyan);
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.cnh-app .cnh-hud .cnh-action:hover:not(:disabled) {
+  background: rgba(62, 240, 230, 0.22);
+  color: #fff;
+}
+.cnh-app .cnh-hud .cnh-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
+}
+.cnh-app .cnh-hud .cnh-action--zap,
+.cnh-app .cnh-hud .cnh-action--jackOut {
+  color: var(--cnh-magenta);
+  border-color: rgba(255, 46, 136, 0.35);
+  background: rgba(255, 46, 136, 0.06);
+}
+.cnh-app .cnh-hud .cnh-action--newTurn {
+  margin-left: auto;
+  color: var(--cnh-amber);
+}
+.cnh-spectating {
+  margin: 0;
+  padding: 8px 0;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cnh-muted);
+}
+
+/* Faixa de evento */
+.cnh-banner {
+  --tone: var(--cnh-cyan);
+  position: absolute;
+  top: 46%;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  padding: 10px 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--tone) 22%, #000) 20%,
+    color-mix(in srgb, var(--tone) 22%, #000) 80%,
+    transparent
+  );
+  border-block: 1px solid var(--tone);
+  font-family: var(--cnh-font-display);
+  font-size: 24px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--tone);
+  text-shadow: 0 0 14px var(--tone);
+  animation: cnh-banner 1.9s ease-out forwards;
+}
+.cnh-banner--ice-alert,
+.cnh-banner--fail,
+.cnh-banner--denied {
+  --tone: var(--cnh-red);
+}
+.cnh-banner--breach,
+.cnh-banner--control,
+.cnh-banner--derez {
+  --tone: var(--cnh-green);
+}
+.cnh-banner--jack-out {
+  --tone: var(--cnh-magenta);
+}
+
+/* Efeitos por andar (aplicados só ao evento novo) */
+.cnh-fx--scan::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(62, 240, 230, 0.35), transparent);
+  animation: cnh-scan 0.9s ease-out both;
+}
+.cnh-fx--jack-in .cnh-node,
+.cnh-fx--move .cnh-node {
+  animation: cnh-pop 0.45s ease-out both;
+}
+.cnh-fx--ice-alert,
+.cnh-fx--fail,
+.cnh-fx--denied {
+  animation: cnh-shake 0.4s ease-in-out 2;
+}
+.cnh-fx--ice-alert .cnh-node {
+  animation: cnh-pop 0.45s ease-out 3;
+}
+.cnh-fx--breach .cnh-node,
+.cnh-fx--control .cnh-node {
+  animation: cnh-glitch-node 0.6s steps(2) both;
+}
+.cnh-fx--breach,
+.cnh-fx--control {
+  animation: cnh-success 1s ease-out both;
+}
+.cnh-fx--hit .cnh-node {
+  animation: cnh-shake 0.25s ease-in-out 3;
+}
+.cnh-fx--hit .cnh-node polygon {
+  fill: rgba(255, 59, 78, 0.6);
+}
+.cnh-fx--derez .cnh-node {
+  animation: cnh-derez 1s steps(6) both;
+}
+.cnh-floor--blackice:not(.is-blocking) .cnh-node {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+
+/* Entrada inicial dos andares */
+.cnh-hud.is-booting .cnh-floor {
+  animation: cnh-floor-in 0.4s ease-out both;
+  animation-delay: calc(var(--i) * 60ms);
+}
+
+/* Movimento reduzido: sistema operacional ou alternância do protótipo */
+.cnh-hud--reduced *,
+.cnh-hud--reduced *::before,
+.cnh-hud--reduced *::after,
+.cnh-hud--reduced::after {
+  animation: none !important;
+  transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cnh-hud *,
+  .cnh-hud *::before,
+  .cnh-hud *::after,
+  .cnh-hud::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@keyframes cnh-sweep {
+  to {
+    transform: translateY(700%);
+  }
+}
+@keyframes cnh-vignette {
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes cnh-blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+@keyframes cnh-flow {
+  to {
+    background-position: 0 8px;
+  }
+}
+@keyframes cnh-pulse {
+  50% {
+    stroke-width: 3;
+    fill: color-mix(in srgb, var(--node) 30%, transparent);
+  }
+}
+@keyframes cnh-glitch-a {
+  0%,
+  92%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+  93% {
+    opacity: 0.8;
+    transform: translate(-2px, 1px);
+    clip-path: inset(10% 0 55% 0);
+  }
+  95% {
+    opacity: 0.8;
+    transform: translate(2px, -1px);
+    clip-path: inset(60% 0 8% 0);
+  }
+}
+@keyframes cnh-glitch-b {
+  0%,
+  93%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+  94% {
+    opacity: 0.7;
+    transform: translate(2px, 0);
+    clip-path: inset(40% 0 30% 0);
+  }
+  96% {
+    opacity: 0.7;
+    transform: translate(-1px, 1px);
+    clip-path: inset(5% 0 75% 0);
+  }
+}
+@keyframes cnh-type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes cnh-banner {
+  0% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  10% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@keyframes cnh-scan {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes cnh-pop {
+  40% {
+    transform: scale(1.25);
+  }
+}
+@keyframes cnh-shake {
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+@keyframes cnh-glitch-node {
+  0% {
+    transform: translate(2px, -1px);
+    filter: hue-rotate(90deg);
+  }
+  50% {
+    transform: translate(-2px, 1px);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes cnh-success {
+  from {
+    box-shadow: inset 0 0 0 100px rgba(109, 255, 160, 0.25);
+  }
+}
+@keyframes cnh-derez {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  50% {
+    opacity: 0.3;
+    transform: translateX(3px) skewX(10deg);
+  }
+  100% {
+    opacity: 0.5;
+    transform: none;
+  }
+}
+@keyframes cnh-floor-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+}
+
+/* HUD da sessão (E1-02) */
+.cnh-body--session {
+  grid-template-columns: 240px minmax(0, 1fr) auto;
+}
+.cnh-body--session .cnh-log {
+  width: 220px;
+}
+.cnh-arch--empty {
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--cnh-line);
+}
+.cnh-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  max-width: 320px;
+  text-align: center;
+  color: var(--cnh-muted);
+}
+.cnh-empty-state i {
+  font-size: 32px;
+  color: var(--cnh-line);
+}
+.cnh-empty-state p,
+.cnh-empty {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--cnh-muted);
+}
+.cnh-program.is-depleted {
+  border-left-color: var(--cnh-red);
+}
+.cnh-program.is-depleted .cnh-program-state {
+  color: var(--cnh-red);
+}
+.cnh-role-badge {
+  color: var(--cnh-muted);
+}
+.cnh-role-badge--gm {
+  color: var(--cnh-amber);
+}
+.cnh-role-badge--netrunner {
+  color: var(--cnh-magenta);
+}
+
+/* Arquitetura NET da sessão (E2-01) */
+.cnh-netarch {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+.cnh-netarch-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+.cnh-netarch-name {
+  font-family: var(--cnh-font-display);
+  font-size: 14px;
+  color: var(--cnh-cyan);
+}
+.cnh-netarch-hint {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--cnh-muted);
+}
+.cnh-netarch-hint--warn {
+  color: var(--cnh-amber);
+}
+.cnh-grid {
+  display: grid;
+  grid-template-columns: 30px repeat(var(--cols), minmax(150px, 1fr));
+  align-items: center;
+  gap: 10px;
+}
+.cnh-grid-branch {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cnh-muted);
+}
+.cnh-grid-empty {
+  min-height: 56px;
+}
+:where(.cnh-node-card) {
+  --node: var(--cnh-muted);
+}
+/* Escopo alto: o reset de botões (.cnh-app .cnh-hud button) não pode apagar o cartão. */
+.cnh-app .cnh-hud .cnh-node-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 4px 10px 4px 6px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--node) 45%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--node) 12%, transparent), transparent);
+  color: var(--cnh-text);
+}
+.cnh-app .cnh-hud button.cnh-node-card {
+  cursor: pointer;
+}
+.cnh-app .cnh-hud button.cnh-node-card:hover {
+  border-color: var(--node);
+}
+.cnh-app .cnh-hud .cnh-node-card.is-gm-only {
+  border-style: dashed;
+  border-color: rgba(255, 46, 136, 0.4);
+  opacity: 0.6;
+}
+.cnh-reveal-state {
+  color: var(--cnh-green);
+}
+.cnh-node-card.is-gm-only .cnh-reveal-state {
+  color: var(--cnh-magenta);
+}
+.cnh-note {
+  color: var(--cnh-amber);
+}
+/* Não explorado: névoa abaixo do mapa, sem dizer se há algo adiante. */
+.cnh-unexplored {
+  display: grid;
+  justify-items: start;
+  padding-left: 40px;
+}
+.cnh-unexplored-link {
+  width: 2px;
+  height: 14px;
+  margin-left: 25px;
+  background: repeating-linear-gradient(180deg, var(--cnh-muted) 0 3px, transparent 3px 7px);
+  opacity: 0.5;
+}
+.cnh-unexplored-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  width: min(100%, 420px);
+  min-height: 56px;
+  padding: 4px 12px 4px 6px;
+  overflow: hidden;
+  border: 1px dashed rgba(138, 160, 168, 0.4);
+  background: rgba(8, 14, 18, 0.6);
+}
+.cnh-unexplored-card::before {
+  content: "";
+  position: absolute;
+  inset: -50% 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(138, 160, 168, 0.07) 0 1px, transparent 1px 3px);
+  animation: cnh-static 6s linear infinite;
+}
+.cnh-unexplored .cnh-node {
+  color: var(--cnh-muted);
+  animation: cnh-blink 2.4s steps(1) infinite;
+}
+.cnh-unexplored .cnh-node polygon {
+  fill: transparent;
+  stroke-dasharray: 4 3;
+  filter: none;
+}
+.cnh-unexplored-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.cnh-unexplored-title {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--cnh-muted);
+}
+.cnh-unexplored-hint {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--cnh-text) 60%, transparent);
+}
+@keyframes cnh-static {
+  to {
+    transform: translateY(33%);
+  }
+}
+.cnh-hud--reduced .cnh-unexplored-card::before,
+.cnh-hud--reduced .cnh-unexplored .cnh-node {
+  animation: none;
+}
+
+/* Posição e movimento (E2-02) */
+.cnh-app .cnh-hud .cnh-node-card.is-current {
+  border-color: var(--node);
+  box-shadow:
+    inset 0 0 0 1px var(--node),
+    0 0 12px color-mix(in srgb, var(--node) 40%, transparent);
+}
+.cnh-node-card.is-current .cnh-node polygon {
+  animation: cnh-pulse 1.8s ease-in-out infinite;
+}
+.cnh-app .cnh-hud .cnh-node-card.is-movable {
+  cursor: pointer;
+  border-style: solid;
+}
+.cnh-app .cnh-hud .cnh-node-card.is-movable:hover:not(:disabled) {
+  border-color: var(--cnh-magenta);
+}
+.cnh-app .cnh-hud .cnh-node-card:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+.cnh-move-hint {
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  font-size: 10px;
+  color: var(--cnh-magenta);
+}
+.cnh-pending {
+  align-self: center;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--cnh-amber);
+}
+.cnh-app .cnh-hud .cnh-action--end {
+  margin-left: auto;
+  color: var(--cnh-red);
+  border-color: rgba(255, 59, 78, 0.4);
+  background: rgba(255, 59, 78, 0.06);
+}
+
+/* Turno e bloqueios (E3-02a) */
+.cnh-readout--actions dd {
+  color: var(--cnh-green);
+}
+.cnh-readout--actions.is-empty dd {
+  color: var(--cnh-red);
+}
+.cnh-node-slot {
+  position: relative;
+}
+.cnh-app .cnh-hud .cnh-node-tool {
+  position: absolute;
+  top: -7px;
+  left: -7px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--cnh-line);
+  border-radius: 50%;
+  background: var(--cnh-bg);
+  font-size: 9px;
+  color: var(--cnh-amber);
+  cursor: pointer;
+}
+.cnh-app .cnh-hud .cnh-node-tool:hover:not(:disabled) {
+  border-color: var(--cnh-amber);
+  color: #fff;
+}
+.cnh-app .cnh-hud .cnh-node-tool.is-active {
+  color: var(--cnh-green);
+}
+.cnh-app .cnh-hud .cnh-node-tool:disabled {
+  cursor: progress;
+  opacity: 0.5;
+}
+.cnh-app .cnh-hud .cnh-node-card.is-cleared {
+  border-color: color-mix(in srgb, var(--cnh-green) 60%, transparent);
+}
+.cnh-app .cnh-hud .cnh-node-card.is-evaded {
+  border-style: dotted;
+}
+.cnh-node-state {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cnh-green);
+}
+.cnh-node-card.is-evaded .cnh-node-state {
+  color: var(--cnh-amber);
+}
+.cnh-run-hints {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--cnh-amber);
+}
+.cnh-app .cnh-hud .cnh-action--newTurn + .cnh-action--end,
+.cnh-app .cnh-hud .cnh-action--endTurn + .cnh-action--end {
+  margin-left: 0;
+}
+
+/* Checagem pendente (E3-02b) */
+.cnh-check {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--cnh-amber) 45%, transparent);
+  background: rgba(255, 194, 61, 0.06);
+}
+.cnh-check-line {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+.cnh-check-total {
+  font-family: var(--cnh-font-display);
+  font-size: 16px;
+  color: var(--cnh-amber);
+}
+.cnh-check-suggestion {
+  font-size: 11px;
+  color: var(--cnh-muted);
+}
+.cnh-check-buttons {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.cnh-app .cnh-hud .cnh-action--success {
+  color: var(--cnh-green);
+  border-color: rgba(109, 255, 160, 0.4);
+}
+.cnh-app .cnh-hud .cnh-action--failure {
+  color: var(--cnh-red);
+  border-color: rgba(255, 59, 78, 0.4);
+}
+
+/* Encontro com Black ICE (E3-02c) */
+.cnh-ice-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--cnh-red) 45%, transparent);
+  background: rgba(255, 59, 78, 0.06);
+  --node: var(--cnh-red);
+}
+.cnh-ice-panel.is-defeated {
+  --node: var(--cnh-green);
+  border-color: color-mix(in srgb, var(--cnh-green) 45%, transparent);
+  background: rgba(109, 255, 160, 0.05);
+}
+.cnh-ice-info {
+  display: grid;
+  gap: 3px;
+  min-width: 160px;
+}
+.cnh-ice-rez {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--cnh-muted);
+}
+.cnh-bar--ice span {
+  background: var(--node);
+}
+.cnh-ice-gm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.cnh-app .cnh-hud .cnh-ice-gm select {
+  max-width: 180px;
+  background: var(--cnh-bg);
+  color: var(--cnh-text);
+  border: 1px solid var(--cnh-line);
+}
+
+/* Movimento reduzido na sessão (E4-01): sem deslocamento, tremor ou piscar; só esmaecer.
+   Mais específico que a regra geral `animation: none` acima. */
+.cnh-hud--reduced .cnh-banner {
+  animation: cnh-fade-out 2.4s ease-out forwards !important;
+}
+.cnh-hud--reduced[data-event]::after {
+  animation: cnh-fade-out 1.2s ease-out forwards !important;
+}
+.cnh-hud--reduced .cnh-node-card[class*="cnh-fx--"] {
+  animation: cnh-fade-mark 1.4s ease-out both !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cnh-hud .cnh-banner {
+    animation: cnh-fade-out 2.4s ease-out forwards !important;
+  }
+  .cnh-hud[data-event]::after {
+    animation: cnh-fade-out 1.2s ease-out forwards !important;
+  }
+  .cnh-hud .cnh-node-card[class*="cnh-fx--"] {
+    animation: cnh-fade-mark 1.4s ease-out both !important;
+  }
+}
+.cnh-banner--evade,
+.cnh-banner--ice-miss {
+  --tone: var(--cnh-amber);
+}
+.cnh-banner--brain-damage,
+.cnh-banner--program-crash,
+.cnh-banner--ice-hit,
+.cnh-banner--ice-attack,
+.cnh-banner--damage {
+  --tone: var(--cnh-red);
+}
+.cnh-banner--program-hit,
+.cnh-banner--zap-hit {
+  --tone: var(--cnh-magenta);
+}
+.cnh-banner--new-turn {
+  --tone: var(--cnh-cyan);
+}
+@keyframes cnh-fade-out {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@keyframes cnh-fade-mark {
+  from {
+    box-shadow: inset 0 0 0 2px var(--node);
+  }
+  to {
+    box-shadow: inset 0 0 0 0 transparent;
+  }
+}
+
+/* Renderizações durante um efeito retomam a animação do ponto atual (E4-01). */
+.cnh-hud .cnh-banner,
+.cnh-hud[data-event]::after,
+.cnh-hud [class*="cnh-fx--"],
+.cnh-hud [class*="cnh-fx--"] .cnh-node,
+.cnh-hud [class*="cnh-fx--"]::before {
+  animation-delay: calc(-1 * var(--fx-elapsed, 0ms)) !important;
+}
+
+/* Espera, erro e pausa sem mestre (E4-02a) */
+.cnh-notice,
+.cnh-error {
+  flex: 1 0 100%;
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+.cnh-notice {
+  color: var(--cnh-amber);
+}
+.cnh-error {
+  color: var(--cnh-red);
+}
+
+/* Layout responsivo pela largura da janela (E4-02a) */
+.application.cnh-app .window-content {
+  container-type: inline-size;
+}
+@container (max-width: 760px) {
+  .cnh-app .cnh-hud .cnh-header {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .cnh-app .cnh-hud .cnh-readouts {
+    flex-wrap: wrap;
+  }
+  .cnh-app .cnh-hud .cnh-body--session {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: auto;
+    overflow: auto;
+  }
+  .cnh-app .cnh-hud .cnh-body--session .cnh-log {
+    width: auto;
+  }
+  .cnh-app .cnh-hud .cnh-ice-gm {
+    margin-left: 0;
+  }
+}
+@container (max-width: 480px) {
+  .cnh-app .cnh-hud .cnh-grid {
+    grid-template-columns: 22px repeat(var(--cols), minmax(118px, 1fr));
+    gap: 8px;
+  }
+  .cnh-app .cnh-hud .cnh-actions .cnh-action {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  .cnh-app .cnh-hud .cnh-action--newTurn,
+  .cnh-app .cnh-hud .cnh-action--endTurn,
+  .cnh-app .cnh-hud .cnh-action--end {
+    margin-left: 0;
+  }
+}
+
+/* Caminhos entre andares (E6-01, D28): conectores no vão entre as linhas da grade. */
+.cnh-app .cnh-hud .cnh-grid .cnh-node-card {
+  width: 100%;
+}
+.cnh-link-gutter {
+  height: 6px;
+}
+.cnh-link {
+  position: relative;
+  height: 6px;
+  --link: rgba(62, 240, 230, 0.45);
+}
+.cnh-link::before,
+.cnh-link::after {
+  position: absolute;
+  background: var(--link);
+}
+.cnh-link.is-down::before,
+.cnh-link.is-fork-out::before,
+.cnh-link.is-fork-in::before {
+  content: "";
+  left: calc(50% - 1px);
+  width: 2px;
+}
+.cnh-link.is-down::before {
+  top: -10px;
+  bottom: -10px;
+}
+.cnh-link.is-fork-out:not(.is-down)::before {
+  top: -10px;
+  bottom: calc(50% - 1px);
+}
+.cnh-link.is-fork-in::before {
+  top: calc(50% - 1px);
+  bottom: -10px;
+}
+.cnh-link.is-fork-out::after,
+.cnh-link.is-fork-pass::after,
+.cnh-link.is-fork-in::after {
+  content: "";
+  top: calc(50% - 1px);
+  height: 2px;
+}
+.cnh-link.is-fork-out::after {
+  left: 50%;
+  right: -10px;
+}
+.cnh-link.is-fork-pass::after {
+  left: 0;
+  right: -10px;
+}
+.cnh-link.is-fork-in::after {
+  left: 0;
+  right: calc(50% - 1px);
+}
+
+/* E6-02: nota do mestre visível, decisão em faixa própria e ícones centralizados. */
+.cnh-node-note {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 10px;
+  font-style: italic;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--cnh-amber);
+}
+.cnh-decision {
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--cnh-amber) 40%, transparent);
+  background: rgba(255, 194, 61, 0.05);
+}
+.cnh-decision.is-mine {
+  border: 2px solid var(--cnh-amber);
+  background: rgba(255, 194, 61, 0.1);
+  box-shadow: 0 0 14px rgba(255, 194, 61, 0.25);
+}
+.cnh-decision-title {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cnh-amber);
+}
+.cnh-decision .cnh-check {
+  margin-top: 0;
+  border: 0;
+  padding: 0;
+  background: none;
+}
+.cnh-app .cnh-hud .cnh-node-tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+.cnh-app .cnh-hud .cnh-node-tool i {
+  display: block;
+  margin: 0;
+  line-height: 1;
+}
+
+/* Nota revelada à Netrunner (E6-04, D29) */
+.cnh-node-note.is-revealed {
+  color: var(--cnh-green);
+  font-style: normal;
+}
+
+/* Ações de programa no painel da Netrunner (E6-05) */
+.cnh-app .cnh-hud .cnh-program-action {
+  justify-self: start;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--cnh-line);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cnh-cyan);
+  cursor: pointer;
+}
+.cnh-app .cnh-hud .cnh-program-action.is-attack {
+  color: var(--cnh-magenta);
+  border-color: rgba(255, 46, 136, 0.4);
+}
+.cnh-app .cnh-hud .cnh-program-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+.cnh-program-hint {
+  font-size: 9px;
+  color: var(--cnh-muted);
+}
+
+/* Último dano do Black ICE na Netrunner (E6-06). */
+.cnh-ice-last {
+  display: block;
+  margin-top: 4px;
+  color: var(--cnh-red);
+  font-size: 0.85em;
+}
+
+/* Desfazer e ajuste de ações do GM (E6-07). */
+.cnh-adjust {
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  margin: 0 4px;
+  padding: 0;
+  line-height: 1;
+  font-size: 0.9em;
+  vertical-align: middle;
+  color: var(--cnh-cyan);
+  background: transparent;
+  border: 1px solid currentColor;
+}
+.cnh-adjust:disabled {
+  opacity: 0.35;
+}
+.cnh-banner--undo {
+  --tone: var(--cnh-cyan);
+}
+
+/* Vez no combate (E6-08, D33). */
+.cnh-app .cnh-hud .cnh-action--endTurn {
+  margin-left: auto;
+  color: var(--cnh-amber);
+}
+.cnh-readout--holder dd {
+  color: var(--cnh-cyan);
+}
+.cnh-readout--holder.is-ice dd {
+  color: var(--cnh-red);
+  text-shadow: 0 0 6px rgba(255, 59, 78, 0.6);
+}
+.cnh-banner--ice-turn {
+  --tone: var(--cnh-red);
+}
+.cnh-banner--runner-turn {
+  --tone: var(--cnh-cyan);
+}
+
+/* Registro de eventos como terminal (E6-09, D34). */
+.cnh-log--terminal {
+  background:
+    repeating-linear-gradient(0deg, rgba(62, 240, 230, 0.03) 0 1px, transparent 1px 3px),
+    rgba(2, 8, 10, 0.85);
+}
+.cnh-log-list--issues {
+  margin-bottom: 12px;
+}
+.cnh-term {
+  gap: 7px;
+  font-family: var(--cnh-font-mono);
+}
+.cnh-term-entry {
+  display: grid;
+  gap: 1px;
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.cnh-term-cmd {
+  font-size: 11px;
+  color: var(--cnh-muted);
+}
+.cnh-term-turn {
+  color: var(--cnh-cyan);
+  opacity: 0.7;
+}
+.cnh-term-msg {
+  color: var(--cnh-text);
+}
+.cnh-term-status {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.cnh-term--ok .cnh-term-status {
+  color: var(--cnh-green);
+}
+.cnh-term--fail .cnh-term-status,
+.cnh-term--dmg .cnh-term-status,
+.cnh-term--dmg .cnh-term-msg {
+  color: var(--cnh-red);
+}
+.cnh-term--warn .cnh-term-status,
+.cnh-term--warn .cnh-term-msg {
+  color: var(--cnh-amber);
+}
+.cnh-term-entry.is-new .cnh-term-msg {
+  animation: cnh-type 0.6s steps(28) both;
+}
+.cnh-term-prompt {
+  font-size: 12px;
+  color: var(--cnh-green);
+}
+.cnh-readout--log {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.cnh-readout--log label {
+  cursor: pointer;
+}
+.cnh-readout--log dd {
+  display: flex;
+  justify-content: center;
+}
+.cnh-app .cnh-hud .cnh-log-check {
+  appearance: none;
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  cursor: pointer;
+  border: 1px solid rgba(138, 160, 168, 0.5);
+  border-radius: 0;
+  background: rgba(8, 14, 18, 0.7);
+  color: var(--cnh-muted);
+  font: 700 11px/1 var(--cnh-font-mono);
+}
+/* O Foundry V12 desenha a caixa com ::before; aqui o símbolo é só o ::after. */
+.cnh-app .cnh-hud .cnh-log-check::before {
+  display: none;
+  content: none;
+}
+.cnh-app .cnh-hud .cnh-log-check::after {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  border: 0;
+  background: none;
+  font: 700 11px/1 var(--cnh-font-mono);
+  content: "\2715";
+}
+.cnh-app .cnh-hud .cnh-log-check:checked {
+  border-color: var(--cnh-cyan);
+  color: var(--cnh-cyan);
+  box-shadow: 0 0 6px rgba(62, 240, 230, 0.35);
+}
+.cnh-app .cnh-hud .cnh-log-check:checked::after {
+  content: "\2713";
+}
+.cnh-app .cnh-hud .cnh-log-check:hover,
+.cnh-app .cnh-hud .cnh-log-check:focus-visible {
+  border-color: var(--cnh-cyan);
+  outline: none;
+}
+.cnh-hud--reduced .cnh-term-entry.is-new .cnh-term-msg,
+.cnh-hud--reduced .cnh-term-prompt .cnh-cursor {
+  animation: none;
+}
+
+/* Responsivo (E6-09): com o registro, ele desce para baixo da arquitetura antes de apertar
+   os nós; os cartões empilham DV e olho quando ficam estreitos. */
+@container (min-width: 761px) and (max-width: 1100px) {
+  .cnh-app .cnh-hud .cnh-body--session:has(> .cnh-log) {
+    grid-template-columns: 240px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 34%);
+  }
+  .cnh-app .cnh-hud .cnh-body--session:has(> .cnh-log) > .cnh-runner {
+    grid-row: 1 / span 2;
+  }
+  .cnh-app .cnh-hud .cnh-body--session:has(> .cnh-log) > .cnh-log {
+    grid-column: 2;
+    width: auto;
+  }
+}
+.cnh-app .cnh-hud .cnh-netarch {
+  container: cnh-arch / inline-size;
+}
+.cnh-floor-info > * {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+@container (min-width: 761px) {
+  .cnh-app .cnh-hud .cnh-body--session:not(:has(> .cnh-log)) {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+}
+@container cnh-arch (max-width: 520px) {
+  .cnh-app .cnh-hud .cnh-grid .cnh-node-card {
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 4px 10px;
+    padding-right: 6px;
+  }
+  .cnh-app .cnh-hud .cnh-grid .cnh-node-card .cnh-node {
+    grid-row: 1 / span 2;
+  }
+  .cnh-app .cnh-hud .cnh-grid .cnh-node-card .cnh-floor-meta {
+    grid-column: 2;
+    gap: 6px;
+  }
+}
+
+/* Modo sem confirmação do mestre (E6-10, D35). */
+.cnh-decision-auto {
+  font-size: 11px;
+  color: var(--cnh-cyan);
+  opacity: 0.85;
+}
+
+/* Abas das invasões em andamento (E6-11a, D36). */
+.cnh-hud--tabs {
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+}
+.cnh-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: -4px 0 -4px;
+  border-bottom: 1px solid var(--cnh-line);
+}
+.cnh-app .cnh-hud .cnh-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  min-height: 0;
+  padding: 4px 12px;
+  font: 11px/1.4 var(--cnh-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cnh-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: 0;
+}
+.cnh-app .cnh-hud .cnh-tab:hover:not(:disabled) {
+  color: var(--cnh-text);
+}
+.cnh-app .cnh-hud .cnh-tab.is-active {
+  color: var(--cnh-cyan);
+  border-color: var(--cnh-line);
+  background: rgba(62, 240, 230, 0.06);
+  box-shadow: inset 0 2px 0 var(--cnh-cyan);
+}
+.cnh-app .cnh-hud .cnh-tab.is-unseen {
+  color: var(--cnh-amber);
+}
+.cnh-tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cnh-amber);
+  box-shadow: 0 0 6px var(--cnh-amber);
+  animation: cnh-blink 1.2s steps(1) infinite;
+}
+.cnh-app .cnh-hud .cnh-tab--add {
+  padding: 4px 8px;
+}
+.cnh-hud--reduced .cnh-tab-dot {
+  animation: none;
+}
+
+/* Netrunner NPC inimiga (E6-11b, D37). */
+.cnh-app .cnh-hud .cnh-node-tool--npc {
+  top: auto;
+  bottom: -7px;
+  color: var(--cnh-muted);
+}
+.cnh-app .cnh-hud .cnh-node-tool--npc.is-active {
+  color: var(--cnh-magenta);
+  border-color: var(--cnh-magenta);
+}
+.cnh-npc-panel {
+  --node: var(--cnh-magenta);
+}
+.cnh-banner--npc-alert,
+.cnh-banner--npc-attack,
+.cnh-banner--npc-turn,
+.cnh-banner--npc-hit {
+  --tone: var(--cnh-magenta);
+}
+.cnh-banner--npc-down {
+  --tone: var(--cnh-green);
+}
+.cnh-banner--npc-miss {
+  --tone: var(--cnh-cyan);
+}
+
+/* NPC no mapa: chip arrastável (GM) e marcador no nó da Netrunner (E6-11b). */
+.cnh-app .cnh-hud .cnh-node-tool--npc.is-active {
+  cursor: grab;
+  box-shadow: 0 0 6px rgba(255, 46, 136, 0.45);
+}
+.cnh-app .cnh-hud .cnh-node-tool--npc.is-active:active {
+  cursor: grabbing;
+}
+.cnh-node-slot.is-drop-ok .cnh-node-card {
+  outline: 1px dashed var(--cnh-magenta);
+  outline-offset: 2px;
+}
+.cnh-node-slot.is-drop-over .cnh-node-card {
+  outline-style: solid;
+  box-shadow: 0 0 12px rgba(255, 46, 136, 0.45);
+}
+.cnh-npc-marker {
+  position: absolute;
+  right: 26px;
+  top: 4px;
+  font-size: 12px;
+  color: var(--cnh-magenta);
+  text-shadow: 0 0 8px var(--cnh-magenta);
+}
+
+/* Card de inimigo recolhível (E6-11b). */
+.cnh-enemy {
+  display: grid;
+  gap: 6px;
+}
+.cnh-app .cnh-hud .cnh-enemy-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 0;
+  padding: 4px 10px;
+  font: 11px/1.4 var(--cnh-font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--cnh-red);
+  background: rgba(255, 59, 78, 0.06);
+  border: 1px solid rgba(255, 59, 78, 0.35);
+}
+.cnh-enemy-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cnh-enemy-summary {
+  color: var(--cnh-muted);
+}
+.cnh-enemy-chevron {
+  transition: transform 0.2s;
+}
+.cnh-enemy.is-collapsed .cnh-enemy-chevron {
+  transform: rotate(-90deg);
+}
+.cnh-enemy .cnh-ice-panel {
+  margin-top: 0;
+}
+
+/* Resumo do efeito do Black ICE para o GM (E6-12). */
+.cnh-ice-effect {
+  flex-basis: 100%;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--cnh-muted);
+}
+
+/* Revelar só no mapa (GM) e nó sem conteúdo para os jogadores. */
+.cnh-app .cnh-hud .cnh-node-tool--map {
+  left: auto;
+  right: -7px;
+  color: var(--cnh-muted);
+}
+.cnh-app .cnh-hud .cnh-node-tool--map.is-active {
+  color: var(--cnh-cyan);
+  border-color: var(--cnh-cyan);
+}
+.cnh-floor--unknown {
+  --node: var(--cnh-muted);
+}
+.cnh-app .cnh-hud .cnh-node-card.cnh-floor--unknown {
+  border-style: dashed;
+}
+.cnh-app .cnh-hud .cnh-node-card.is-masked {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--cnh-cyan) 55%, transparent);
+  opacity: 0.85;
+}
+
+/* Arrasto da NPC por ponteiro (funciona também onde botões não arrastam). */
+.cnh-app .cnh-hud .cnh-node-tool--npc.is-active {
+  touch-action: none;
+  user-select: none;
+}
+.cnh-app .cnh-hud .cnh-node-tool--npc.is-dragging {
+  cursor: grabbing;
+  transform: scale(1.25);
+}
+
+/* Som do HUD: liga/desliga no cabeçalho. */
+.cnh-app .cnh-hud .cnh-sound-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  color: var(--cnh-muted);
+  border: 1px solid var(--cnh-line);
+}
+.cnh-app .cnh-hud .cnh-sound-toggle.is-on {
+  color: var(--cnh-cyan);
+  border-color: var(--cnh-cyan);
+}
+.cnh-app .cnh-hud .cnh-sound-toggle:hover {
+  color: #fff;
+}
+
+/* Card de inimigo como janela flutuante sobre o HUD, minimizável. */
+.cnh-app .cnh-hud .cnh-enemy-float {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 30;
+  width: min(420px, calc(100% - 28px));
+  max-height: calc(100% - 12px);
+  overflow: auto;
+  padding: 6px;
+  background: rgba(5, 8, 12, 0.96);
+  border: 1px solid rgba(255, 59, 78, 0.45);
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.6),
+    0 0 14px rgba(255, 59, 78, 0.18);
+}
+.cnh-app .cnh-hud .cnh-enemy-float.is-collapsed {
+  width: auto;
+  max-width: min(320px, calc(100% - 28px));
+  padding: 0;
+}
+.cnh-app .cnh-hud .cnh-enemy-float .cnh-decision {
+  margin: 0;
+}
+.cnh-enemy-alert {
+  color: var(--cnh-amber);
+  animation: cnh-pulse 1s ease-in-out infinite;
+}
+.cnh-app .cnh-hud .cnh-enemy-float.is-alert {
+  border-color: var(--cnh-amber);
+  animation: cnh-enemy-alert 1.2s ease-in-out infinite;
+}
+.cnh-enemy-quiet {
+  color: var(--cnh-muted);
+  font-size: 10px;
+}
+@keyframes cnh-enemy-alert {
+  0%,
+  100% {
+    box-shadow:
+      0 6px 24px rgba(0, 0, 0, 0.6),
+      0 0 6px rgba(255, 194, 61, 0.25);
+  }
+  50% {
+    box-shadow:
+      0 6px 24px rgba(0, 0, 0, 0.6),
+      0 0 18px rgba(255, 194, 61, 0.7);
+  }
+}
+.cnh-hud--reduced .cnh-enemy-float.is-alert,
+.cnh-hud--reduced .cnh-enemy-alert {
+  animation: none;
+}
+.cnh-resolve-now {
+  justify-self: start;
+}
+.cnh-ice-pick select {
+  min-width: 160px;
+}
+.cnh-enemy.is-collapsed .cnh-enemy-chevron {
+  transform: none;
+}
+
+.cnh-app .cnh-hud .cnh-body--session {
+  position: relative;
+}
+
+.cnh-app .cnh-hud .cnh-enemy-float .cnh-check-buttons {
+  flex-wrap: wrap;
+}
+.cnh-app .cnh-hud .cnh-enemy-float {
+  overflow-x: hidden;
+}
+
+/* Ferramenta "só no mapa" dentro da borda do nó: não encosta no cadeado do nó vizinho. */
+.cnh-app .cnh-hud .cnh-node-tool--map {
+  right: 18px;
+}
+
+/* Inimigo: ícone discreto no cabeçalho; a visão completa abre ao clicar. */
+.cnh-app .cnh-hud .cnh-enemy-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  color: var(--cnh-red);
+  border: 1px solid rgba(255, 59, 78, 0.45);
+}
+.cnh-app .cnh-hud .cnh-enemy-btn:hover,
+.cnh-app .cnh-hud .cnh-enemy-btn.is-open {
+  color: #fff;
+  border-color: var(--cnh-red);
+  background: rgba(255, 59, 78, 0.15);
+}
+.cnh-app .cnh-hud .cnh-enemy-btn.is-alert {
+  border-color: var(--cnh-amber);
+  animation: cnh-enemy-alert 1.2s ease-in-out infinite;
+}
+.cnh-enemy-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cnh-amber);
+  box-shadow: 0 0 6px var(--cnh-amber);
+}
+.cnh-enemy-dot.is-quiet {
+  width: 6px;
+  height: 6px;
+  background: var(--cnh-muted);
+  box-shadow: none;
+}
+.cnh-hud--reduced .cnh-enemy-btn.is-alert {
+  animation: none;
+}
+
+/* Cabeçalho: leituras com ícone centralizadas, mesma altura e quadrados do mesmo tamanho. */
+.cnh-readout dt {
+  white-space: nowrap;
+}
+.cnh-readout dd {
+  min-height: 24px;
+}
+.cnh-readout--enemy,
+.cnh-readout--sound,
+.cnh-readout--log {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.cnh-readout--enemy dd,
+.cnh-readout--sound dd,
+.cnh-readout--log dd {
+  justify-content: center;
+  height: 24px;
+}
+.cnh-app .cnh-hud .cnh-enemy-btn,
+.cnh-app .cnh-hud .cnh-sound-toggle,
+.cnh-app .cnh-hud .cnh-log-check {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+}
+.cnh-app .cnh-hud .cnh-enemy-btn i,
+.cnh-app .cnh-hud .cnh-sound-toggle i {
+  display: block;
+  width: auto;
+  font-size: 12px;
+  line-height: 1;
+  text-align: center;
+}
+.cnh-app .cnh-hud .cnh-enemy-btn i,
+.cnh-app .cnh-hud .cnh-sound-toggle i {
+  margin: 0;
+}
+.cnh-app .cnh-hud .cnh-log-check {
+  flex: 0 0 22px;
+}
+
+/* Cabeçalho: os três quadrados com a mesma borda, o mesmo fundo e o mesmo tamanho de ícone;
+   o estado aparece pela cor (ligado = ciano; inimigo = vermelho; pendência = âmbar). */
+.cnh-app .cnh-hud .cnh-enemy-btn,
+.cnh-app .cnh-hud .cnh-sound-toggle,
+.cnh-app .cnh-hud .cnh-log-check {
+  border: 1px solid rgba(138, 160, 168, 0.5);
+  border-radius: 0;
+  background: rgba(8, 14, 18, 0.7);
+  box-shadow: none;
+  font-size: 11px;
+}
+.cnh-app .cnh-hud .cnh-enemy-btn i,
+.cnh-app .cnh-hud .cnh-sound-toggle i {
+  font-size: 11px;
+}
+.cnh-app .cnh-hud .cnh-sound-toggle {
+  color: var(--cnh-muted);
+}
+.cnh-app .cnh-hud .cnh-enemy-btn {
+  color: var(--cnh-red);
+}
+.cnh-app .cnh-hud .cnh-sound-toggle.is-on,
+.cnh-app .cnh-hud .cnh-log-check:checked {
+  border-color: var(--cnh-cyan);
+  color: var(--cnh-cyan);
+  box-shadow: 0 0 6px rgba(62, 240, 230, 0.35);
+}
+.cnh-app .cnh-hud .cnh-enemy-btn.is-open {
+  border-color: var(--cnh-red);
+  background: rgba(255, 59, 78, 0.15);
+  color: #fff;
+}
+.cnh-app .cnh-hud .cnh-enemy-btn.is-alert {
+  border-color: var(--cnh-amber);
+}
+.cnh-app .cnh-hud .cnh-enemy-btn:hover,
+.cnh-app .cnh-hud .cnh-sound-toggle:hover {
+  border-color: var(--cnh-cyan);
+}
+
+/* O Foundry dá margem de 16 px aos <dd> de janelas; aqui ela deslocava os quadrados. */
+.cnh-app .cnh-hud .cnh-readout dd {
+  margin: 2px 0 0;
+  padding: 0;
+}
+/* Títulos espaçados: o espaço extra depois da última letra é compensado para centralizar. */
+.cnh-readout--enemy dt,
+.cnh-readout--sound dt,
+.cnh-readout--log dt {
+  padding-left: 0.2em;
+}
+
+/* Programa neutralizado (REZ 0 em execução, D40): sem efeito até derrezzar e rezzar de novo. */
+.cnh-program.is-neutralized .cnh-program-state {
+  color: var(--cnh-amber);
+}
+
+/* Cabeçalho: todas as leituras centralizadas, menos o Controller (D40 visual). */
+.cnh-readouts .cnh-readout:not(.is-live) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.cnh-readouts .cnh-readout:not(.is-live) dt {
+  padding-left: 0.2em;
+}
+.cnh-readouts .cnh-readout:not(.is-live) dd {
+  justify-content: center;
+}
+
+/* Rodapé: controles de vez à direita, com "Encerrar sessão" logo abaixo; as habilidades ficam
+   com o resto da largura. */
+.cnh-actions {
+  align-items: flex-start;
+}
+.cnh-actions-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+.cnh-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.cnh-actions-row:empty {
+  display: none;
+}

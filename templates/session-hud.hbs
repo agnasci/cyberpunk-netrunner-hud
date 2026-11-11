@@ -1,0 +1,409 @@
+{{#*inline "cnhDecision"}}
+  <section class="cnh-decision {{#if decision.mine}}is-mine{{/if}}" aria-label="{{decision.title}}">
+    <span class="cnh-decision-title"><i class="fa-solid {{#if decision.mine}}fa-hand-point-right{{else}}fa-hourglass-half{{/if}}" aria-hidden="true"></i> {{decision.title}}</span>
+    {{#if decision.auto}}<span class="cnh-decision-auto"><i class="fa-solid fa-robot" aria-hidden="true"></i> {{decision.auto}}</span>{{/if}}
+    {{#if canResolveNow}}<button type="button" class="cnh-action cnh-action--success cnh-resolve-now" data-action="resolveNow" {{#if pending}}disabled{{/if}} data-tooltip="{{localize "CNH.ResolveNow.Hint"}}"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>{{localize "CNH.ResolveNow.Button"}}</span></button>{{/if}}
+    {{#if ambush}}
+    <div class="cnh-check" role="status">
+      <span class="cnh-check-line"><strong>{{localize "CNH.Ambush.Title"}}</strong></span>
+      <span class="cnh-check-suggestion">{{ambush.hint}}</span>
+      <span class="cnh-check-buttons">
+        {{#if ambush.canRoll}}<button type="button" class="cnh-action cnh-action--failure" data-action="rollAmbush" data-tooltip="{{localize "CNH.Ambush.GmHint"}}" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-dice-d20" aria-hidden="true"></i><span>{{localize "CNH.Ambush.Roll"}}</span></button>{{/if}}
+        {{#if ambush.canSkip}}<button type="button" class="cnh-action" data-action="skipDamage" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-forward" aria-hidden="true"></i><span>{{localize "CNH.Ambush.Skip"}}</span></button>{{/if}}
+      </span>
+    </div>
+    {{/if}}
+    {{#if npc.initiativePending}}
+    <div class="cnh-check" role="status">
+      <span class="cnh-check-line"><strong>{{localize "CNH.Npc.InitiativeTitle"}}</strong> · {{npc.initLabel}}</span>
+      <span class="cnh-check-buttons">
+        {{#if npc.canRollRunner}}<button type="button" class="cnh-action cnh-action--zap" data-action="rollInitiative" data-side="runner" data-tooltip="{{localize "CNH.Help.initiative"}}" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-dice-d20" aria-hidden="true"></i><span>{{localize "CNH.Npc.RollRunner"}}</span></button>{{/if}}
+        {{#if npc.canRollNpc}}<button type="button" class="cnh-action cnh-action--failure" data-action="rollInitiative" data-side="npc" data-tooltip="{{localize "CNH.Help.initiative"}}" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-dice-d20" aria-hidden="true"></i><span>{{localize "CNH.Npc.RollNpc"}}</span></button>{{/if}}
+        {{#if npc.waitingInit}}<span class="cnh-check-suggestion">{{localize "CNH.Npc.WaitingInit"}}</span>{{/if}}
+      </span>
+    </div>
+    {{/if}}
+    {{#if iceHit}}
+    <div class="cnh-check" role="status">
+      <span class="cnh-check-line"><strong>{{iceHit.title}}</strong> · {{iceHit.targetLabel}}{{#if iceHit.formulaLabel}} · {{iceHit.formulaLabel}}{{/if}}</span>
+      {{#if iceHit.isGm}}<span class="cnh-check-suggestion">{{localize "CNH.IceHit.SpecialHint"}}</span>{{/if}}
+      {{#if iceHit.pick}}
+      <span class="cnh-check-buttons cnh-ice-pick">
+        <select name="iceTarget" aria-label="{{localize "CNH.IceHit.PickLabel"}}">
+          {{#each iceHit.pick.options}}<option value="{{itemId}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}
+        </select>
+        <button type="button" class="cnh-action cnh-action--failure" data-action="iceTarget" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-crosshairs" aria-hidden="true"></i><span>{{localize "CNH.IceHit.Pick"}}</span></button>
+      </span>
+      {{/if}}
+      <span class="cnh-check-buttons">
+        {{#if iceHit.canRoll}}<button type="button" class="cnh-action cnh-action--failure" data-action="rollIceDamage" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-dice-six" aria-hidden="true"></i><span>{{localize "CNH.IceHit.Roll"}}</span></button>{{/if}}
+        {{#if iceHit.canSkip}}<button type="button" class="cnh-action" data-action="skipDamage" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-forward" aria-hidden="true"></i><span>{{localize "CNH.Check.SkipDamage"}}</span></button>{{/if}}
+        {{#unless iceHit.isGm}}<span class="cnh-check-suggestion">{{localize "CNH.IceHit.WaitingGm"}}</span>{{/unless}}
+      </span>
+    </div>
+    {{/if}}
+    {{#if awaitingDamage}}
+    <div class="cnh-check" role="status">
+      <span class="cnh-check-line"><strong>{{#if awaitingDamage.program}}{{localize "CNH.Check.AwaitingProgramDamage"}}{{else}}{{localize "CNH.Check.AwaitingDamage"}}{{/if}}</strong></span>
+      <span class="cnh-check-buttons">
+        {{#if awaitingDamage.canRoll}}<button type="button" class="cnh-action cnh-action--zap" data-action="rollDamage" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-dice-six" aria-hidden="true"></i><span>{{localize "CNH.Check.RollDamage"}}</span></button>{{/if}}
+        {{#if awaitingDamage.canSkip}}<button type="button" class="cnh-action" data-action="skipDamage" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-forward" aria-hidden="true"></i><span>{{localize "CNH.Check.SkipDamage"}}</span></button>{{/if}}
+      </span>
+    </div>
+    {{/if}}
+    {{#if pendingCheck}}
+    <div class="cnh-check" role="status">
+      <span class="cnh-check-line"><strong>{{pendingCheck.label}}</strong> · <span class="cnh-check-total">{{pendingCheck.total}}</span>{{#if pendingCheck.opposed}} × <span class="cnh-check-total">{{pendingCheck.opposed}}</span>{{/if}}{{#if pendingCheck.dvLabel}} · {{pendingCheck.dvLabel}}{{/if}}{{#if pendingCheck.rezLabel}} · {{pendingCheck.rezLabel}}{{/if}}</span>
+      {{#if pendingCheck.suggestion}}<span class="cnh-check-suggestion">{{pendingCheck.suggestion}}</span>{{/if}}
+      <span class="cnh-check-buttons">
+        {{#if pendingCheck.rollOpposed}}
+        <button type="button" class="cnh-action cnh-action--zap" data-action="rollOpposed" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-dice-d20" aria-hidden="true"></i><span>{{pendingCheck.rollOpposed}}</span></button>
+        {{else if pendingCheck.canConfirm}}
+        <button type="button" class="cnh-action cnh-action--success" data-action="resolveCheck" data-outcome="success" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-check" aria-hidden="true"></i><span>{{pendingCheck.successLabel}}</span></button>
+        <button type="button" class="cnh-action cnh-action--failure" data-action="resolveCheck" data-outcome="failure" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-xmark" aria-hidden="true"></i><span>{{pendingCheck.failureLabel}}</span></button>
+        {{else}}
+        <span class="cnh-check-suggestion">{{pendingCheck.waiting}}</span>
+        {{/if}}
+      </span>
+    </div>
+    {{/if}}
+  </section>
+{{/inline}}
+<div class="cnh-hud {{#if booting}}is-booting{{/if}} {{#if reduced}}cnh-hud--reduced{{/if}} {{#if tabs}}cnh-hud--tabs{{/if}}" data-role="{{view.role}}" {{#if fx}}style="--fx-elapsed: {{fx.elapsed}}ms"{{/if}} {{#if fx.alert}}data-event="{{fx.alert}}"{{/if}}>
+  <div class="cnh-scanlines" aria-hidden="true"></div>
+  {{#if fx.banner}}<div class="cnh-banner cnh-banner--{{fx.banner}}" role="status" aria-live="polite"><span>{{fx.bannerText}}</span></div>{{/if}}
+
+  {{#if tabs}}
+  <nav class="cnh-tabs" aria-label="{{localize "CNH.Session.Tabs.Label"}}">
+    {{#each tabs.list}}
+    <button type="button" class="cnh-tab {{#if active}}is-active{{/if}} {{#if unseen}}is-unseen{{/if}}" data-action="selectSession" data-session-id="{{id}}" aria-pressed="{{active}}" {{#if @root.pending}}disabled{{/if}}>
+      {{#if mine}}<i class="fa-solid fa-user-secret" aria-hidden="true" data-tooltip="{{@root.tabs.mineLabel}}"></i>{{/if}}<span>{{name}}</span>{{#if unseen}}<span class="cnh-tab-dot" aria-label="{{@root.tabs.unseenLabel}}"></span>{{/if}}
+    </button>
+    {{/each}}
+    {{#if tabs.canAdd}}<button type="button" class="cnh-tab cnh-tab--add" data-action="newSession" data-tooltip="{{tabs.addLabel}}" aria-label="{{tabs.addLabel}}"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>{{/if}}
+  </nav>
+  {{/if}}
+  <header class="cnh-header">
+    <div class="cnh-target">
+      <span class="cnh-eyebrow">{{localize "CNH.Session.Eyebrow"}}</span>
+      <h2 class="cnh-title" data-text="{{view.actorName}}">{{#if view.actorMissing}}{{localize "CNH.Session.ActorMissing"}}{{else}}{{view.actorName}}{{/if}}</h2>
+    </div>
+    <dl class="cnh-readouts">
+      <div class="cnh-readout is-live">
+        <dt>{{localize "CNH.Session.Controller"}}</dt>
+        <dd><span class="cnh-led" aria-hidden="true"></span>{{controllerName}}</dd>
+      </div>
+      <div class="cnh-readout">
+        <dt>{{localize "CNH.Run.Turn"}}</dt>
+        <dd>{{run.turn}}</dd>
+      </div>
+      {{#if run.holder}}
+      <div class="cnh-readout cnh-readout--holder {{#if run.holder.isIce}}is-ice{{/if}}">
+        <dt>{{localize "CNH.Turn.Label"}}</dt>
+        <dd>{{run.holder.label}}</dd>
+      </div>
+      {{/if}}
+      {{#if run.showActions}}
+      <div class="cnh-readout cnh-readout--actions {{#unless run.actionsLeft}}is-empty{{/unless}}">
+        <dt>{{localize "CNH.Run.Actions"}}</dt>
+        <dd>{{#if run.canAdjust}}<button type="button" class="cnh-adjust" data-action="adjustActions" data-delta="1" aria-label="{{run.takeLabel}}" data-tooltip="{{run.takeLabel}}" {{#if pending}}disabled{{else unless run.actionsLeft}}disabled{{/if}}>−</button>{{/if}}{{run.actionsLeft}}/{{run.actionsMax}}{{#if run.canAdjust}}<button type="button" class="cnh-adjust" data-action="adjustActions" data-delta="-1" aria-label="{{run.giveLabel}}" data-tooltip="{{run.giveLabel}}" {{#if pending}}disabled{{else unless run.actionsUsed}}disabled{{/if}}>+</button>{{/if}}</dd>
+      </div>
+      {{/if}}
+      <div class="cnh-readout">
+        <dt>{{localize "CNH.Session.YourRole"}}</dt>
+        <dd class="cnh-role-badge cnh-role-badge--{{view.role}}">{{roleLabel}}</dd>
+      </div>
+      {{#if enemyCard}}
+      <div class="cnh-readout cnh-readout--enemy">
+        <dt>{{localize "CNH.Enemy.Label"}}</dt>
+        <dd><button type="button" class="cnh-enemy-btn {{#if enemyCard.alert}}is-alert{{else if enemyCard.quiet}}is-quiet{{/if}} {{#unless enemyCard.collapsed}}is-open{{/unless}}" data-action="toggleEnemy" aria-expanded="{{#if enemyCard.collapsed}}false{{else}}true{{/if}}" data-tooltip="{{enemyCard.headerTip}}" aria-label="{{enemyCard.headerTip}}"><i class="fa-solid {{enemyCard.icon}}" aria-hidden="true"></i>{{#if enemyCard.alert}}<span class="cnh-enemy-dot" aria-hidden="true"></span>{{else if enemyCard.quiet}}<span class="cnh-enemy-dot is-quiet" aria-hidden="true"></span>{{/if}}</button></dd>
+      </div>
+      {{/if}}
+      <div class="cnh-readout cnh-readout--sound">
+        <dt>{{localize "CNH.Sound.Label"}}</dt>
+        <dd><button type="button" class="cnh-sound-toggle {{#if soundToggle.on}}is-on{{/if}}" data-action="toggleSound" aria-pressed="{{soundToggle.on}}" data-tooltip="{{soundToggle.label}}" aria-label="{{soundToggle.label}}"><i class="fa-solid {{#if soundToggle.on}}fa-bell{{else}}fa-bell-slash{{/if}}" aria-hidden="true"></i></button></dd>
+      </div>
+      {{#if logToggle}}
+      <div class="cnh-readout cnh-readout--log">
+        <dt><label for="cnh-log-check-{{view.role}}">{{localize "CNH.Hud.Log"}}</label></dt>
+        <dd><input type="checkbox" id="cnh-log-check-{{view.role}}" class="cnh-log-check" data-action="toggleLog" {{#if logToggle.pressed}}checked{{/if}} data-tooltip="{{logToggle.label}}" aria-label="{{logToggle.label}}"></dd>
+      </div>
+      {{/if}}
+    </dl>
+  </header>
+
+  <div class="cnh-body cnh-body--session">
+    <aside class="cnh-panel cnh-runner">
+      <h3 class="cnh-panel-title">{{localize "CNH.Hud.Netrunner"}}</h3>
+      {{#if view.actorMissing}}
+      <p class="cnh-empty">{{localize "CNH.Session.ActorMissingHint"}}</p>
+      {{else}}
+      <div class="cnh-handle">{{view.actorName}}</div>
+      <div class="cnh-deck"><i class="fa-solid fa-microchip" aria-hidden="true"></i> {{#if view.cyberdeckName}}{{view.cyberdeckName}}{{else}}{{localize "CNH.Session.NoDeck"}}{{/if}}</div>
+      <div class="cnh-stat"><span>{{#if view.netRole}}{{view.netRole.abilityName}}{{else}}{{localize "CNH.Hud.Interface"}}{{/if}}</span><strong>{{#if view.netRole}}{{view.netRole.rank}}{{else}}—{{/if}}</strong></div>
+
+      <h4 class="cnh-subtitle">{{localize "CNH.Hud.Programs"}}</h4>
+      <ul class="cnh-programs">
+        {{#each programs}}
+        <li class="cnh-program {{#if isRezzed}}is-rezzed{{/if}} {{#if isDepleted}}is-depleted{{/if}} {{#if isNeutralized}}is-neutralized{{/if}}">
+          <span class="cnh-program-name">{{name}}</span>
+          <span class="cnh-program-state">{{stateLabel}}</span>
+          {{#if kindLabel}}<span class="cnh-program-kind">{{kindLabel}}</span>{{/if}}
+          {{#if atkLabel}}<span class="cnh-program-kind">{{atkLabel}}</span>{{/if}}
+          {{#if rezLabel}}<span class="cnh-program-kind">REZ {{rezLabel}}</span>
+          <span class="cnh-bar" role="img" aria-label="REZ {{rezLabel}}"><span style="--fill: {{percent}}%"></span></span>{{/if}}
+          {{#if attackHint}}<span class="cnh-program-hint">{{attackHint}}</span>{{/if}}
+          {{#if rezAction}}<button type="button" class="cnh-program-action" data-action="programRez" data-program-id="{{itemId}}" data-rez="{{rezAction.rez}}" data-tooltip="{{rezAction.tip}}" {{#if @root.pending}}disabled{{else if rezAction.disabled}}disabled{{/if}}><i class="fa-solid {{#if rezAction.rez}}fa-circle-up{{else}}fa-circle-down{{/if}}" aria-hidden="true"></i> {{rezAction.label}}</button>{{/if}}
+          {{#if attackAction}}<button type="button" class="cnh-program-action is-attack" data-action="programAttack" data-program-id="{{itemId}}" data-tooltip="{{attackAction.tip}}" {{#if @root.pending}}disabled{{else if attackAction.disabled}}disabled{{/if}}><i class="fa-solid fa-hand-fist" aria-hidden="true"></i> {{attackAction.label}}</button>{{/if}}
+        </li>
+        {{else}}
+        <li class="cnh-empty">{{localize "CNH.Session.NoPrograms"}}</li>
+        {{/each}}
+      </ul>
+      {{/if}}
+    </aside>
+
+    {{#if architecture}}
+    <section class="cnh-arch cnh-netarch" aria-label="{{localize "CNH.Hud.Architecture"}}">
+      <div class="cnh-netarch-head">
+        <span class="cnh-eyebrow">{{localize "CNH.Hud.Architecture"}}</span>
+        <span class="cnh-netarch-name">{{architecture.name}}</span>
+        {{#if architecture.canReveal}}<span class="cnh-netarch-hint"><i class="fa-solid fa-hand-pointer" aria-hidden="true"></i> {{localize "CNH.Session.RevealHint"}}</span>{{/if}}
+        {{#if architecture.itemMissing}}<span class="cnh-netarch-hint cnh-netarch-hint--warn">{{localize "CNH.Session.NetArchMissing"}}</span>{{/if}}
+      </div>
+      <div class="cnh-grid" style="--cols: {{architecture.columns.length}}">
+        {{#if architecture.showBranchHeader}}
+        <span class="cnh-grid-corner"></span>
+        {{#each architecture.columns}}<span class="cnh-grid-branch">{{localize "CNH.Session.Branch"}} {{this}}</span>{{/each}}
+        {{/if}}
+        {{#each architecture.rows}}
+        {{#if linksAbove.length}}
+        <span class="cnh-link-gutter" aria-hidden="true"></span>
+        {{#each linksAbove}}<span class="cnh-link {{#if down}}is-down{{/if}} {{#if forkIn}}is-fork-in{{/if}} {{#if forkOut}}is-fork-out{{/if}} {{#if forkPass}}is-fork-pass{{/if}}" aria-hidden="true"></span>{{/each}}
+        {{/if}}
+        <span class="cnh-floor-num">{{floorLabel}}</span>
+        {{#each cells}}
+        {{#if this}}
+        {{#if @root.architecture.canReveal}}
+        <div class="cnh-node-slot" data-key="{{key}}">
+        {{#if mappable}}<button type="button" class="cnh-node-tool cnh-node-tool--map {{#if masked}}is-active{{/if}}" data-action="mapFloor" data-key="{{key}}" data-tooltip="{{mapLabel}}" aria-label="{{mapLabel}}" {{#if @root.pending}}disabled{{/if}}><i class="fa-solid fa-map" aria-hidden="true"></i></button>{{/if}}
+        {{#if npcLinkable}}<button type="button" class="cnh-node-tool cnh-node-tool--npc {{#if npcName}}is-active{{/if}}" data-action="linkNpc" data-key="{{key}}" {{#if npcName}}data-npc-key="{{key}}"{{else if @root.pending}}disabled{{/if}} data-tooltip="{{npcLabel}}" aria-label="{{npcLabel}}"><i class="fa-solid {{#if npcName}}fa-user-ninja{{else}}fa-user-plus{{/if}}" aria-hidden="true"></i></button>{{/if}}
+        {{#if clearable}}<button type="button" class="cnh-node-tool {{#if state}}is-active{{/if}}" data-action="toggleClear" data-key="{{key}}" data-tooltip="{{#if state}}{{@root.restoreLabel}}{{else}}{{@root.clearLabel}}{{/if}}" aria-label="{{#if state}}{{@root.restoreLabel}}{{else}}{{@root.clearLabel}}{{/if}}: {{typeLabel}}" {{#if @root.pending}}disabled{{/if}}><i class="fa-solid {{#if state}}fa-rotate-left{{else}}fa-unlock{{/if}}" aria-hidden="true"></i></button>{{/if}}
+        <button type="button" class="cnh-node-card cnh-floor--{{content}} {{#unless revealed}}is-gm-only{{/unless}} {{#if masked}}is-masked{{/if}} {{#if isCurrent}}is-current{{/if}} {{#if state}}is-{{state}}{{/if}} {{#if fx}}cnh-fx--{{fx}}{{/if}}" data-action="toggleFloor" data-key="{{key}}" aria-pressed="{{revealed}}" {{#if description}}data-tooltip="{{@root.gmNoteLabel}}: {{description}}"{{/if}}>
+        {{else if movable}}
+        <button type="button" class="cnh-node-card cnh-floor--{{content}} is-movable {{#if state}}is-{{state}}{{/if}} {{#if fx}}cnh-fx--{{fx}}{{/if}}" data-action="netAction" data-net-action="moveTo" data-key="{{key}}" {{#if @root.pending}}disabled{{/if}} aria-label="{{@root.moveLabel}}: {{typeLabel}}">
+        {{else}}
+        <div class="cnh-node-card cnh-floor--{{content}} {{#if isCurrent}}is-current{{/if}} {{#if state}}is-{{state}}{{/if}} {{#if fx}}cnh-fx--{{fx}}{{/if}}">
+        {{/if}}
+          <span class="cnh-node" aria-hidden="true">
+            <svg viewBox="0 0 40 46" focusable="false"><polygon points="20,2 38,12.5 38,33.5 20,44 2,33.5 2,12.5" /></svg>
+            <i class="fa-solid {{icon}}"></i>
+          </span>
+          <span class="cnh-floor-info">
+            <span class="cnh-floor-type">{{typeLabel}}</span>
+            {{#if iceLabel}}<span class="cnh-floor-label">{{iceLabel}}</span>{{/if}}
+            {{#if stateLabel}}<span class="cnh-node-state">{{stateLabel}}</span>{{/if}}
+            {{#if description}}<span class="cnh-node-note"><i class="fa-solid fa-note-sticky" aria-hidden="true"></i> {{description}}</span>{{/if}}
+            {{#if runnerNote}}<span class="cnh-node-note is-revealed" data-tooltip="{{@root.revealedLabel}}: {{runnerNote}}"><i class="fa-solid fa-unlock-keyhole" aria-hidden="true"></i> {{runnerNote}}</span>{{/if}}
+          </span>
+          <span class="cnh-floor-meta">
+            {{#if dvLabel}}<span class="cnh-dv">{{dvLabel}}</span>{{/if}}
+            {{#if @root.architecture.canReveal}}<i class="fa-solid {{#if revealed}}fa-eye{{else}}fa-eye-slash{{/if}} cnh-reveal-state" aria-hidden="true"></i><span class="sr-only">{{#if revealed}}{{localize "CNH.Session.Revealed"}}{{else}}{{localize "CNH.Hud.GmOnly"}}{{/if}}</span>{{/if}}
+          </span>
+          {{#if isCurrent}}<span class="cnh-runner-marker" title="{{@root.view.actorName}}"><i class="fa-solid fa-user-secret" aria-hidden="true"></i></span>{{/if}}
+          {{#if npcHere}}<span class="cnh-npc-marker" data-tooltip="{{npcHere}}"><i class="fa-solid fa-user-ninja" aria-hidden="true"></i></span>{{/if}}
+          {{#if movable}}<span class="cnh-move-hint"><i class="fa-solid fa-angles-right" aria-hidden="true"></i></span>{{/if}}
+        {{#if @root.architecture.canReveal}}</button></div>{{else if movable}}</button>{{else}}</div>{{/if}}
+        {{else}}
+        <span class="cnh-grid-empty" aria-hidden="true"></span>
+        {{/if}}
+        {{/each}}
+        {{/each}}
+      </div>
+      {{#if architecture.showUnexplored}}
+      <div class="cnh-unexplored" role="note">
+        <span class="cnh-unexplored-link" aria-hidden="true"></span>
+        <div class="cnh-unexplored-card">
+          <span class="cnh-node" aria-hidden="true">
+            <svg viewBox="0 0 40 46" focusable="false"><polygon points="20,2 38,12.5 38,33.5 20,44 2,33.5 2,12.5" /></svg>
+            <i class="fa-solid fa-question"></i>
+          </span>
+          <span class="cnh-unexplored-text">
+            <span class="cnh-unexplored-title">{{localize "CNH.Session.Unexplored"}}</span>
+            <span class="cnh-unexplored-hint">{{localize "CNH.Session.UnexploredHint"}}</span>
+          </span>
+        </div>
+      </div>
+      {{/if}}
+      {{#if run.hints.length}}
+      <ul class="cnh-run-hints">
+        {{#each run.hints}}<li><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {{this}}</li>{{/each}}
+      </ul>
+      {{/if}}
+    </section>
+    {{else}}
+    <section class="cnh-arch cnh-arch--empty" aria-label="{{localize "CNH.Hud.Architecture"}}">
+      <div class="cnh-empty-state">
+        <i class="fa-solid fa-network-wired" aria-hidden="true"></i>
+        <p>{{localize "CNH.Session.NoNetArchInSession"}}</p>
+      </div>
+    </section>
+    {{/if}}
+
+    {{#if showLog}}
+    <aside class="cnh-panel cnh-log cnh-log--terminal">
+      {{#if issues.length}}
+      <h3 class="cnh-panel-title">{{localize "CNH.Session.Diagnostics"}}</h3>
+      <ol class="cnh-log-list cnh-log-list--issues">
+        {{#each issues}}
+        <li class="cnh-log-entry cnh-log--denied"><span class="cnh-log-prompt">!</span> {{text}}</li>
+        {{/each}}
+      </ol>
+      {{/if}}
+      <h3 class="cnh-panel-title">{{localize "CNH.Hud.Log"}}</h3>
+      <ol class="cnh-log-list cnh-term" aria-live="polite">
+        {{#each log}}
+        <li class="cnh-term-entry cnh-term--{{tone}} {{#if isNew}}is-new{{/if}}">
+          <span class="cnh-term-cmd"><span class="cnh-term-turn">[T{{turn}}]</span> $ {{cmd}}</span>
+          <span class="cnh-term-msg">&gt; {{msg}}{{#if status}} <span class="cnh-term-status">[{{status}}]</span>{{/if}}</span>
+        </li>
+        {{else}}
+        <li class="cnh-term-entry cnh-term--info"><span class="cnh-term-msg">&gt; {{localize "CNH.Log.Empty"}}</span></li>
+        {{/each}}
+        <li class="cnh-term-prompt" aria-hidden="true">{{logPrompt}} <span class="cnh-cursor"></span></li>
+      </ol>
+    </aside>
+    {{else if issues.length}}
+    <aside class="cnh-panel cnh-log">
+      <h3 class="cnh-panel-title">{{localize "CNH.Session.Diagnostics"}}</h3>
+      <ol class="cnh-log-list">
+        {{#each issues}}
+        <li class="cnh-log-entry cnh-log--denied"><span class="cnh-log-prompt">!</span> {{text}}</li>
+        {{/each}}
+      </ol>
+    </aside>
+    {{/if}}
+    {{#if enemyCard}}{{#unless enemyCard.collapsed}}
+    <section class="cnh-enemy cnh-enemy-float {{#if enemyCard.collapsed}}is-collapsed{{/if}} {{#if enemyCard.alert}}is-alert{{/if}} {{#if enemyCard.quiet}}is-quiet{{/if}}" aria-label="{{enemyCard.title}}">
+      <button type="button" class="cnh-enemy-toggle" data-action="toggleEnemy" aria-expanded="{{#if enemyCard.collapsed}}false{{else}}true{{/if}}" data-tooltip="{{enemyCard.toggleLabel}}">
+        <i class="fa-solid {{enemyCard.icon}}" aria-hidden="true"></i>
+        <span class="cnh-enemy-title">{{enemyCard.title}}</span>
+        {{#if enemyCard.summary}}<span class="cnh-enemy-summary">{{enemyCard.summary}}</span>{{/if}}
+        {{#if enemyCard.alert}}<span class="cnh-enemy-alert" data-tooltip="{{enemyCard.pendingLabel}}"><i class="fa-solid fa-bell" aria-hidden="true"></i><span class="sr-only">{{enemyCard.pendingLabel}}</span></span>{{else if enemyCard.quiet}}<span class="cnh-enemy-quiet" data-tooltip="{{enemyCard.pendingLabel}}"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i><span class="sr-only">{{enemyCard.pendingLabel}}</span></span>{{/if}}
+        <i class="fa-solid fa-xmark cnh-enemy-chevron" aria-hidden="true"></i>
+      </button>
+      {{#unless enemyCard.collapsed}}
+      {{#if enemyCard.ice}}
+      <div class="cnh-ice-panel {{#if encounter.defeated}}is-defeated{{/if}} {{#if @root.fx.iceAlert}}cnh-fx--ice-alert{{/if}}">
+        <span class="cnh-node cnh-ice-icon" aria-hidden="true"><svg viewBox="0 0 40 46" focusable="false"><polygon points="20,2 38,12.5 38,33.5 20,44 2,33.5 2,12.5" /></svg><i class="fa-solid fa-skull"></i></span>
+        <span class="cnh-ice-info">
+          <span class="cnh-eyebrow">{{localize "CNH.Ice.Encounter"}}</span>
+          <strong>{{encounter.name}}</strong>
+          {{#if encounter.rezLabel}}
+          <span class="cnh-ice-rez">REZ {{encounter.rezLabel}}</span>
+          <span class="cnh-bar cnh-bar--ice" role="img" aria-label="REZ {{encounter.rezLabel}}"><span style="--fill: {{encounter.rezPercent}}%"></span></span>
+          {{else}}
+          <span class="cnh-check-suggestion">{{localize "CNH.Ice.NotLinked"}}</span>
+          {{/if}}
+        </span>
+        {{#if encounter.canLink}}
+        <span class="cnh-ice-gm">
+          {{#if encounter.hasOptions}}
+          <select name="iceActor" aria-label="{{localize "CNH.Ice.Actor"}}">
+            {{#each encounter.options}}<option value="{{uuid}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}
+          </select>
+          <button type="button" class="cnh-action" data-action="linkIce" data-key="{{encounter.key}}" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-link" aria-hidden="true"></i><span>{{localize "CNH.Ice.Link"}}</span></button>
+          {{else}}
+          <span class="cnh-check-suggestion">{{localize "CNH.Ice.NoActors"}}</span>
+          {{/if}}
+          {{#if encounter.canAttack}}
+          <button type="button" class="cnh-action cnh-action--failure" data-action="iceAttack" data-tooltip="{{localize "CNH.Help.iceAttack"}}" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-bolt" aria-hidden="true"></i><span>{{localize "CNH.Ice.Attack"}}</span></button>
+          {{/if}}
+        </span>
+        {{/if}}
+        {{#if encounter.effect}}<span class="cnh-ice-effect"><i class="fa-solid fa-book-skull" aria-hidden="true"></i> {{encounter.effect}}</span>{{/if}}
+      {{#if encounter.lastDamage}}<span class="cnh-ice-last"><i class="fa-solid fa-skull" aria-hidden="true"></i> {{encounter.lastDamage}}</span>{{/if}}
+      </div>
+      {{/if}}
+      {{#if enemyCard.npc}}
+      <div class="cnh-ice-panel cnh-npc-panel {{#if @root.fx.iceAlert}}cnh-fx--ice-alert{{/if}}">
+        <span class="cnh-node cnh-ice-icon" aria-hidden="true"><svg viewBox="0 0 40 46" focusable="false"><polygon points="20,2 38,12.5 38,33.5 20,44 2,33.5 2,12.5" /></svg><i class="fa-solid fa-user-ninja"></i></span>
+        <span class="cnh-ice-info">
+          <span class="cnh-eyebrow">{{localize "CNH.Npc.Encounter"}}</span>
+          <strong>{{npc.name}}</strong>
+          {{#if npc.hpLabel}}
+          <span class="cnh-ice-rez">HP {{npc.hpLabel}}</span>
+          <span class="cnh-bar cnh-bar--ice" role="img" aria-label="HP {{npc.hpLabel}}"><span style="--fill: {{npc.hpPercent}}%"></span></span>
+          {{/if}}
+          <span class="cnh-check-suggestion">{{npc.initLabel}}{{#unless npc.initiativePending}} · {{localize "CNH.Npc.Actions"}} {{npc.actionsLabel}}{{/unless}}</span>
+        </span>
+        {{#if npc.canAttack}}
+        <span class="cnh-ice-gm">
+          <button type="button" class="cnh-action cnh-action--failure" data-action="npcAttack" data-tooltip="{{localize "CNH.Help.npcZap"}}" {{#if pending}}disabled{{/if}}><i class="fa-solid fa-bolt" aria-hidden="true"></i><span>{{localize "CNH.Npc.Zap"}}</span></button>
+          {{#each npc.programs}}
+          <button type="button" class="cnh-action cnh-action--failure" data-action="npcAttack" data-program-id="{{itemId}}" data-tooltip="{{localize "CNH.Help.npcProgram"}}" {{#if @root.pending}}disabled{{/if}}><i class="fa-solid fa-hand-fist" aria-hidden="true"></i><span>{{name}}</span></button>
+          {{/each}}
+        </span>
+        {{/if}}
+      </div>
+      {{/if}}
+      {{#if decision}}{{> cnhDecision}}{{/if}}
+      {{/unless}}
+    </section>
+    {{/unless}}{{/if}}
+    </div>
+
+
+  {{#if decision}}{{#unless enemyCard}}{{> cnhDecision}}{{else if enemyCard.collapsed}}{{> cnhDecision}}{{/unless}}{{/if}}
+
+  <footer class="cnh-actions">
+    {{#if noAuthority}}<p class="cnh-notice" role="status"><i class="fa-solid fa-pause" aria-hidden="true"></i> {{localize "CNH.Request.NoAuthorityPaused"}}</p>{{/if}}
+    {{#if lastError}}<p class="cnh-error" role="alert"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {{lastError}}</p>{{/if}}
+    {{#if controls}}
+    {{#if controls.jackedIn}}
+    <button type="button" class="cnh-action cnh-action--jackOut" data-action="netAction" data-net-action="jackOut" data-tooltip="{{controls.tip}}" {{#if controls.pending}}disabled{{else if controls.blocked}}disabled{{/if}}>
+      <i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i><span>{{localize "CNH.Action.jackOut"}}</span>
+    </button>
+    {{else}}
+    <button type="button" class="cnh-action cnh-action--jackIn" data-action="netAction" data-net-action="jackIn" data-tooltip="{{controls.tip}}" {{#if controls.pending}}disabled{{else if controls.blocked}}disabled{{/if}}>
+      <i class="fa-solid fa-plug" aria-hidden="true"></i><span>{{localize "CNH.Action.jackIn"}}</span>
+    </button>
+    {{/if}}
+    {{#each abilityChecks}}
+    <button type="button" class="cnh-action cnh-action--{{ability}}" data-action="abilityCheck" data-ability="{{ability}}" data-tooltip="{{tip}}" {{#if @root.pending}}disabled{{else if disabled}}disabled{{/if}}>
+      <i class="fa-solid fa-terminal" aria-hidden="true"></i><span>{{label}}</span>
+    </button>
+    {{/each}}
+    {{#if controls.busy}}<span class="cnh-pending" role="status"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> {{busyLabel}}</span>{{/if}}
+    {{/if}}
+    {{#unless view.canEndSession}}{{#if view.isController}}
+    <p class="cnh-spectating"><i class="fa-solid fa-user-secret" aria-hidden="true"></i> {{localize "CNH.Session.YouControl"}}</p>
+    {{else}}
+    <p class="cnh-spectating"><i class="fa-solid fa-eye" aria-hidden="true"></i> {{localize "CNH.Hud.Spectating"}}</p>
+    {{/if}}{{/unless}}
+    <div class="cnh-actions-side">
+      <div class="cnh-actions-row">
+        {{#if undo}}
+        <button type="button" class="cnh-action cnh-action--undo" data-action="undo" {{#if pending}}disabled{{else unless undo.count}}disabled{{/if}} data-tooltip="{{undo.tooltip}}">
+          <i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>{{localize "CNH.Undo.Button"}}{{#if undo.count}} ({{undo.count}}){{/if}}</span>
+        </button>
+        {{/if}}
+        {{#if endTurn}}
+        <button type="button" class="cnh-action cnh-action--endTurn" data-action="endTurn" data-tooltip="{{endTurn.tip}}" {{#if pending}}disabled{{else if endTurn.disabled}}disabled{{/if}}>
+          <i class="fa-solid fa-hourglass-end" aria-hidden="true"></i><span>{{endTurn.label}}</span>
+        </button>
+        {{/if}}
+        {{#if canNewTurn}}
+        <button type="button" class="cnh-action cnh-action--newTurn" data-action="newTurn" data-tooltip="{{localize "CNH.Help.newTurn"}}" {{#if pending}}disabled{{/if}}>
+          <i class="fa-solid fa-forward-step" aria-hidden="true"></i><span>{{localize "CNH.Action.newTurn"}}</span>
+        </button>
+        {{/if}}
+      </div>
+      {{#if view.canEndSession}}
+      <button type="button" class="cnh-action cnh-action--end" data-action="endSession">
+        <i class="fa-solid fa-power-off" aria-hidden="true"></i><span>{{localize "CNH.Session.End"}}</span>
+      </button>
+      {{/if}}
+    </div>
+  </footer>
+</div>

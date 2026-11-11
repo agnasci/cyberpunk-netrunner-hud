@@ -1,0 +1,21 @@
+node_modules/
+dist/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.idea/
+*.tsbuildinfo
+# Dados locais de testes; nunca versionar uma instalação/mundo real do Foundry.
+.local/
+foundry-data/
+
+# Pasta de teste para enviar a outra mesa (gerada a partir de dist/).
+pacote-teste/
+
+# Dados que não podem ir para a versão pública (D41).
+*.local.ts
+*.local.test.ts

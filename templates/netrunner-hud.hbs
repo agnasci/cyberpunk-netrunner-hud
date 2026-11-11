@@ -1,0 +1,112 @@
+<div class="cnh-hud {{#if reducedMotion}}cnh-hud--reduced{{/if}} {{#if booting}}is-booting{{/if}}" data-role="{{view.role}}" data-event="{{eventKind}}">
+  <div class="cnh-scanlines" aria-hidden="true"></div>
+
+  <header class="cnh-header">
+    <div class="cnh-target">
+      <span class="cnh-eyebrow">{{localize "CNH.Hud.Target"}}</span>
+      <h2 class="cnh-title" data-text="{{view.architectureName}}">{{view.architectureName}}</h2>
+    </div>
+    <dl class="cnh-readouts">
+      <div class="cnh-readout {{#if view.jackedIn}}is-live{{/if}}">
+        <dt>{{localize "CNH.Hud.Link"}}</dt>
+        <dd><span class="cnh-led" aria-hidden="true"></span>{{#if view.jackedIn}}{{localize "CNH.Hud.Online"}}{{else}}{{localize "CNH.Hud.Offline"}}{{/if}}</dd>
+      </div>
+      <div class="cnh-readout">
+        <dt>{{localize "CNH.Hud.Depth"}}</dt>
+        <dd class="cnh-depth">{{view.depth}}<small>/{{floorCount}}</small></dd>
+      </div>
+    </dl>
+    <div class="cnh-preview" role="group" aria-label="{{localize "CNH.Prototype.Preview"}}">
+      <span class="cnh-eyebrow">{{localize "CNH.Prototype.Preview"}}</span>
+      <div class="cnh-segmented">
+        {{#each roles}}
+        <button type="button" data-action="setRole" data-role="{{id}}" aria-pressed="{{active}}" class="{{#if active}}is-active{{/if}}">{{label}}</button>
+        {{/each}}
+      </div>
+      <button type="button" class="cnh-motion" data-action="toggleMotion" aria-pressed="{{reducedMotion}}">
+        <i class="fa-solid fa-person-walking" aria-hidden="true"></i> {{localize "CNH.Prototype.ReducedMotion"}}
+      </button>
+    </div>
+  </header>
+
+  <div class="cnh-body">
+    <aside class="cnh-panel cnh-runner">
+      <h3 class="cnh-panel-title">{{localize "CNH.Hud.Netrunner"}}</h3>
+      <div class="cnh-handle">{{view.runner.handle}}</div>
+      <div class="cnh-deck"><i class="fa-solid fa-microchip" aria-hidden="true"></i> {{view.runner.deck}}</div>
+      <div class="cnh-stat"><span>{{localize "CNH.Hud.Interface"}}</span><strong>{{view.runner.interface}}</strong></div>
+
+      <div class="cnh-netactions">
+        <span>{{localize "CNH.Hud.NetActions"}}</span>
+        <div class="cnh-pips" role="img" aria-label="{{netActionsLabel}}">
+          {{#each view.netActions.pips}}<span class="cnh-pip {{#if this}}is-on{{/if}}"></span>{{/each}}
+        </div>
+      </div>
+
+      <h4 class="cnh-subtitle">{{localize "CNH.Hud.Programs"}}</h4>
+      <ul class="cnh-programs">
+        {{#each programs}}
+        <li class="cnh-program {{#if rezzed}}is-rezzed{{/if}}">
+          <span class="cnh-program-name">{{name}}</span>
+          <span class="cnh-program-state">{{stateLabel}}</span>
+          {{#if stats}}
+          <span class="cnh-program-kind">{{kindLabel}}</span>
+          <span class="cnh-bar" role="img" aria-label="REZ {{stats.rez}}/{{stats.rezMax}}"><span style="--fill: {{percent}}%"></span></span>
+          {{/if}}
+        </li>
+        {{/each}}
+      </ul>
+    </aside>
+
+    <section class="cnh-arch" aria-label="{{localize "CNH.Hud.Architecture"}}">
+      <ol class="cnh-floors">
+        {{#each floors}}
+        <li class="cnh-floor cnh-floor--{{state}} {{#if content}}cnh-floor--{{content}}{{/if}} {{#if isCurrent}}is-current{{/if}} {{#if hiddenFromPlayers}}is-gm-only{{/if}} {{#if blocking}}is-blocking{{/if}} {{fxClass}}" style="--i: {{index}}">
+          <span class="cnh-floor-num">{{floorLabel}}</span>
+          <span class="cnh-node" aria-hidden="true">
+            <svg viewBox="0 0 40 46" focusable="false"><polygon points="20,2 38,12.5 38,33.5 20,44 2,33.5 2,12.5" /></svg>
+            <i class="fa-solid {{icon}}"></i>
+          </span>
+          <span class="cnh-floor-info">
+            <span class="cnh-floor-type">{{typeLabel}}</span>
+            {{#if label}}<span class="cnh-floor-label">{{label}}</span>{{/if}}
+            {{#if iceRez}}<span class="cnh-bar cnh-bar--ice" role="img" aria-label="REZ {{iceRez.value}}/{{iceRez.max}}"><span style="--fill: {{icePercent}}%"></span></span>{{/if}}
+          </span>
+          <span class="cnh-floor-meta">
+            {{#if dvLabel}}<span class="cnh-dv">{{dvLabel}}</span>{{/if}}
+            {{#if hiddenFromPlayers}}<span class="cnh-gm-badge" data-tooltip="{{@root.gmOnlyLabel}}"><i class="fa-solid fa-eye-slash" aria-hidden="true"></i><span class="sr-only">{{@root.gmOnlyLabel}}</span></span>{{/if}}
+          </span>
+          {{#if isCurrent}}<span class="cnh-runner-marker" aria-label="{{@root.view.runner.handle}}"><i class="fa-solid fa-user-secret" aria-hidden="true"></i></span>{{/if}}
+        </li>
+        {{/each}}
+      </ol>
+    </section>
+
+    <aside class="cnh-panel cnh-log">
+      <h3 class="cnh-panel-title">{{localize "CNH.Hud.Log"}}</h3>
+      <ol class="cnh-log-list" aria-live="polite">
+        {{#each log}}
+        <li class="cnh-log-entry cnh-log--{{kind}} {{#if @first}}is-new{{/if}}"><span class="cnh-log-prompt">&gt;</span> {{text}}</li>
+        {{else}}
+        <li class="cnh-log-entry cnh-log--idle"><span class="cnh-log-prompt">&gt;</span> {{localize "CNH.Hud.LogEmpty"}}<span class="cnh-cursor" aria-hidden="true"></span></li>
+        {{/each}}
+      </ol>
+    </aside>
+  </div>
+
+  <footer class="cnh-actions">
+    {{#if view.canAct}}
+    {{#each actions}}
+    <button type="button" class="cnh-action cnh-action--{{id}}" data-action="demo" data-demo-action="{{id}}" {{#unless enabled}}disabled{{/unless}}>
+      <i class="fa-solid {{icon}}" aria-hidden="true"></i><span>{{label}}</span>
+    </button>
+    {{/each}}
+    {{else}}
+    <p class="cnh-spectating"><i class="fa-solid fa-eye" aria-hidden="true"></i> {{localize "CNH.Hud.Spectating"}}</p>
+    {{/if}}
+  </footer>
+
+  {{#if banner}}
+  <div class="cnh-banner cnh-banner--{{eventKind}}" role="status"><span>{{banner}}</span></div>
+  {{/if}}
+</div>

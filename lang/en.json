@@ -1,0 +1,639 @@
+{
+  "CNH": {
+    "Compatibility": {
+      "WrongSystem": "Cyberpunk Netrunner HUD requires the Cyberpunk RED – CORE system (found: {found}). The module will stay inactive.",
+      "UntestedVersion": "Cyberpunk Netrunner HUD was tested with Cyberpunk RED – CORE {tested}; this world uses {found}. Some features may not work."
+    },
+    "Hud": {
+      "Target": "Target",
+      "Link": "Link",
+      "Online": "Jacked in",
+      "Offline": "Offline",
+      "Depth": "Floor",
+      "Netrunner": "Netrunner",
+      "Interface": "Interface",
+      "NetActions": "NET Actions",
+      "NetActionsLabel": "{left} of {max} NET Actions left",
+      "Programs": "Programs",
+      "Rezzed": "Rezzed",
+      "Derezzed": "Derezzed",
+      "Architecture": "NET Architecture",
+      "Log": "Log",
+      "LogEmpty": "awaiting connection",
+      "GmOnly": "Hidden from players",
+      "Spectating": "Spectator mode: watching the run"
+    },
+    "Role": {
+      "gm": "GM",
+      "netrunner": "Netrunner",
+      "spectator": "Spectator"
+    },
+    "Content": {
+      "password": "Password",
+      "file": "File",
+      "controlnode": "Control Node",
+      "blackice": "Black ICE",
+      "unknown": "Unknown"
+    },
+    "ProgramKind": {
+      "attacker": "Attacker",
+      "defender": "Defender",
+      "booster": "Booster"
+    },
+    "Action": {
+      "jackIn": "Jack In",
+      "pathfinder": "Pathfinder",
+      "advance": "Descend",
+      "backdoor": "Backdoor",
+      "zap": "Zap",
+      "control": "Control",
+      "newTurn": "New turn",
+      "jackOut": "Jack Out",
+      "slide": "Slide",
+      "eyedee": "Eye-Dee",
+      "cloak": "Cloak",
+      "virus": "Virus"
+    },
+    "Prototype": {
+      "WindowTitle": "Netrunner HUD — visual prototype",
+      "ControlTitle": "Netrunner HUD (visual prototype)",
+      "Preview": "Preview as",
+      "ReducedMotion": "Reduced motion",
+      "Banner": {
+        "jack-in": "Link established",
+        "jack-out": "Link closed",
+        "ice-alert": "Black ICE detected",
+        "breach": "Access granted",
+        "fail": "Access denied",
+        "denied": "Passage blocked",
+        "derez": "ICE derezzed",
+        "control": "Control seized"
+      },
+      "Log": {
+        "JackIn": "jacked in at floor {floor}: {label}",
+        "JackOut": "link closed safely",
+        "Scan": "pathfinder mapped floor {floor}: {label}",
+        "ScanNothing": "pathfinder found no new floors",
+        "Move": "descended to floor {floor}: {label}",
+        "IceAlert": "alert: {label} active on floor {floor}",
+        "Blocked": "floor {floor} blocks the way",
+        "BackdoorFail": "backdoor failed against {label}",
+        "Breach": "{label} password broken",
+        "Hit": "zap hit {label} (-{damage} REZ)",
+        "Derez": "{label} derezzed",
+        "Control": "control seized: {label}",
+        "NewTurn": "new turn: NET Actions restored",
+        "NoActions": "no NET Actions left this turn",
+        "AlreadyIn": "already jacked in",
+        "NotJackedIn": "no active link",
+        "Bottom": "last floor reached",
+        "NoPassword": "no password to break here",
+        "NoTarget": "no active target on this floor",
+        "NoControlNode": "no control node here"
+      }
+    },
+    "Session": {
+      "WindowTitle": "Netrunner HUD",
+      "ControlTitle": "Netrunner HUD",
+      "Eyebrow": "Netrunning session",
+      "StartTitle": "Start Netrunning session",
+      "Start": "Start",
+      "Actor": "Character",
+      "Controller": "Controller",
+      "NoController": "Nobody (GM only)",
+      "NoActors": "No character available for Netrunning.",
+      "NoActiveSession": "No active Netrunning session.",
+      "YourRole": "Your role",
+      "ActorMissing": "Character unavailable",
+      "ActorMissingHint": "This session's character was not found.",
+      "NoDeck": "No cyberdeck equipped",
+      "NoPrograms": "No programs installed",
+      "Depleted": "No REZ",
+      "Diagnostics": "Sheet diagnostics",
+      "End": "End session",
+      "EndTitle": "End session",
+      "EndConfirm": "End the Netrunning session for all participants?",
+      "YouControl": "You control this session",
+      "NetArch": "NET Architecture",
+      "NoNetArch": "None",
+      "NoNetArchInSession": "No NET Architecture in this session.",
+      "NetArchMissing": "Architecture item not found; showing only what was revealed.",
+      "RevealHint": "Click a node to reveal or hide it",
+      "Revealed": "Revealed to players",
+      "Unexplored": "Unmapped signal",
+      "Branch": "Branch",
+      "StoredDiscarded": "A saved session incompatible with this module version was discarded.",
+      "GmNote": "GM note",
+      "RevealedNote": "Revealed",
+      "UnexploredHint": "Whatever lies beyond what has been revealed is unknown.",
+      "Tabs": {
+        "Label": "Runs in progress",
+        "Add": "Start another run",
+        "Mine": "Your Netrunner",
+        "Unseen": "Something happened in this run"
+      },
+      "StartBlocked": {
+        "full": "Simultaneous run limit reached.",
+        "actor-busy": "This Netrunner is already in a run."
+      },
+      "MapOnly": "Reveal on the map only (contents hidden until the Netrunner enters)",
+      "Unmask": "Show the node contents"
+    },
+    "ProgramClass": {
+      "antipersonnelattacker": "Anti-personnel attacker",
+      "antiprogramattacker": "Anti-program attacker",
+      "booster": "Booster",
+      "defender": "Defender",
+      "blackice": "Black ICE",
+      "unknown": "Program"
+    },
+    "Issue": {
+      "no-net-role": "No active Netrunning role on the sheet.",
+      "no-equipped-cyberdeck": "No cyberdeck equipped.",
+      "multiple-equipped-cyberdecks": "{count} cyberdecks equipped; using the first, like the sheet.",
+      "missing-installed-item": "Installed item not found on the sheet ({id}).",
+      "invalid-item-data": "Invalid data on item {id} ({field})."
+    },
+    "Request": {
+      "Pending": "Waiting for the GM…",
+      "Move": "Move to",
+      "Error": {
+        "invalid-request": "Invalid request.",
+        "no-session": "No active session.",
+        "wrong-session": "The session changed; try again.",
+        "not-authorized": "You do not control this session.",
+        "stale-revision": "The state changed before your action; try again.",
+        "no-architecture": "This session has no NET Architecture.",
+        "already-jacked-in": "Already jacked in.",
+        "not-jacked-in": "No active link.",
+        "invalid-target": "Invalid target.",
+        "no-authority": "No GM connected to validate the action.",
+        "timeout": "The GM did not answer in time; check the current state before retrying.",
+        "no-net-role": "The sheet has no active NET role (Interface).",
+        "no-cyberdeck": "No cyberdeck equipped.",
+        "no-entry": "The architecture has no floor 1 on branch A.",
+        "no-actions-left": "No NET Actions left this turn.",
+        "wrong-node": "This action does not apply to the current node.",
+        "already-cleared": "This node is already resolved.",
+        "not-engaged": "No Black ICE is engaging the Netrunner.",
+        "engaged": "Engaged by Black ICE: cannot move.",
+        "password-locked": "The Password must be broken before going deeper.",
+        "not-adjacent": "Choose a node one floor away.",
+        "not-revealed": "That node has not been revealed yet.",
+        "invalid-roll": "Roll not recognized: use the card just created by the sheet itself.",
+        "check-pending": "A check is waiting for the GM.",
+        "no-pending-check": "No pending check.",
+        "awaiting-opposed": "The other side has not rolled yet.",
+        "nothing-to-oppose": "Nothing is waiting for an opposed roll.",
+        "no-ice-link": "Link a Black ICE actor to this node.",
+        "no-damage-pending": "No Zap damage to roll.",
+        "effect-failed": "Could not change the sheet; nothing was saved. Try again.",
+        "write-failed": "The sheet changed but the session was not saved. Try again: the value is not applied twice.",
+        "invalid-program": "Program not available for this action.",
+        "program-state": "The program is already in that state.",
+        "program-destroyed": "Program destroyed (REZ 0): it cannot be rezzed.",
+        "nothing-to-undo": "Nothing to undo.",
+        "ice-turn": "Enemy's turn: wait for your turn.",
+        "initiative": "Waiting for initiatives in the fight with the enemy Netrunner.",
+        "ambush": "Resolve the Black ICE encounter first.",
+        "program-used": "This copy was already activated this round (each copy activates once per round).",
+        "not-lowest": "Virus can only be used on the lowest floor of the architecture.",
+        "once-per-run": "This copy was already used this Netrun (Armor, Flak, Shield and Superglue: once per Netrun).",
+        "one-copy": "A copy of this program is already on (Armor, Flak and Shield: one at a time).",
+        "program-neutralized": "Program neutralized: derez it first (1 action) and rez it again later."
+      },
+      "Rolling": "Rolling on the sheet…",
+      "NoAuthorityPaused": "No GM connected: actions are paused until a GM joins."
+    },
+    "Run": {
+      "Turn": "Turn",
+      "Actions": "NET Actions",
+      "Clear": "Clear node",
+      "Restore": "Restore node",
+      "Evaded": "Evaded",
+      "Cleared": {
+        "password": "Broken",
+        "controlnode": "Controlled",
+        "blackice": "Defeated",
+        "file": "Identified"
+      },
+      "Engaged": "Engaged by Black ICE: defeat it or Slide to move (the GM can clear it).",
+      "PasswordLocked": "The Password blocks going deeper until it is broken.",
+      "NoActions": "No NET Actions left this turn; wait for the GM to start the next one.",
+      "AtBottom": "Lowest floor of the architecture: Virus can be used here."
+    },
+    "Check": {
+      "Pending": "Pending check",
+      "Waiting": "Waiting for the GM to confirm.",
+      "Cancelled": "Roll cancelled; no NET Action spent.",
+      "Kind": {
+        "backdoor": "Backdoor",
+        "control": "Control",
+        "zap": "Zap",
+        "slide": "Slide",
+        "damage": "Zap damage",
+        "iceAttack": "Black ICE attack",
+        "eyedee": "Eye-Dee",
+        "programAttack": "Program attack",
+        "programDamage": "Program damage",
+        "npcAttack": "Enemy Netrunner Zap",
+        "npcProgram": "Enemy Netrunner program",
+        "pathfinder": "Pathfinder",
+        "cloak": "Cloak",
+        "virus": "Virus",
+        "ambush": "Black ICE encounter"
+      },
+      "Suggest": {
+        "backdoor": {
+          "success": "Suggestion: success (beats the DV).",
+          "failure": "Suggestion: failure (does not beat the DV)."
+        },
+        "control": {
+          "success": "Suggestion: success (beats the DV).",
+          "failure": "Suggestion: failure (does not beat the DV)."
+        },
+        "zap": {
+          "success": "Suggestion: Zap hits (beats DEF).",
+          "failure": "Suggestion: Zap misses (does not beat DEF)."
+        },
+        "slide": {
+          "success": "Suggestion: Slide works (beats PER).",
+          "failure": "Suggestion: Slide fails (does not beat PER)."
+        },
+        "damage": {
+          "success": "Apply the damage to the Black ICE's REZ.",
+          "failure": ""
+        },
+        "iceAttack": {
+          "success": "Suggestion: Black ICE hits (beats Defense).",
+          "failure": "Suggestion: Black ICE misses (does not beat Defense)."
+        },
+        "eyedee": {
+          "success": "Suggestion: success (beats the DV).",
+          "failure": "Suggestion: failure (does not beat the DV)."
+        },
+        "programAttack": {
+          "success": "Suggestion: program hits (beats DEF).",
+          "failure": "Suggestion: program misses (does not beat DEF)."
+        },
+        "npcAttack": {
+          "success": "Suggestion: the enemy Netrunner hits (beats Defense).",
+          "failure": "Suggestion: the enemy Netrunner misses (doesn't beat Defense)."
+        },
+        "pathfinder": {
+          "success": "Reveals the floors below up to the total, stopping at a Password with a higher DV.",
+          "failure": ""
+        },
+        "cloak": {
+          "success": "Traces hidden: anyone searching must beat this total.",
+          "failure": ""
+        },
+        "virus": {
+          "success": "",
+          "failure": ""
+        },
+        "ambush": {
+          "success": "Suggestion: the Black ICE wins (beats the speed) and its effect applies at once.",
+          "failure": "Suggestion: the Netrunner reacts in time (the ICE does not beat the speed)."
+        }
+      },
+      "Confirm": {
+        "backdoor": {
+          "success": "Success",
+          "failure": "Failure"
+        },
+        "control": {
+          "success": "Success",
+          "failure": "Failure"
+        },
+        "zap": {
+          "success": "Hit",
+          "failure": "Miss"
+        },
+        "slide": {
+          "success": "Slid",
+          "failure": "Failed"
+        },
+        "damage": {
+          "success": "Apply damage",
+          "failure": "Discard"
+        },
+        "iceAttack": {
+          "success": "Hit",
+          "failure": "Miss"
+        },
+        "eyedee": {
+          "success": "Success",
+          "failure": "Failure"
+        },
+        "programAttack": {
+          "success": "Hit",
+          "failure": "Miss"
+        },
+        "npcAttack": {
+          "success": "Hit",
+          "failure": "Miss"
+        },
+        "pathfinder": {
+          "success": "Reveal floors",
+          "failure": "Nothing revealed"
+        },
+        "cloak": {
+          "success": "Traces hidden",
+          "failure": "Failed"
+        },
+        "virus": {
+          "success": "Virus planted",
+          "failure": "Failed"
+        },
+        "ambush": {
+          "success": "ICE got her",
+          "failure": "She reacted"
+        }
+      },
+      "WaitingRoll": {
+        "def": "Waiting for the GM to roll the Black ICE's DEF.",
+        "per": "Waiting for the GM to roll the Black ICE's PER.",
+        "defense": "Waiting for the Netrunner to roll Defense.",
+        "npcDefense": "Waiting for the GM to roll the enemy Netrunner's Defense.",
+        "speed": "Waiting for the Netrunner to roll speed (Speed)."
+      },
+      "Roll": {
+        "def": "Roll Black ICE DEF",
+        "per": "Roll Black ICE PER",
+        "defense": "Roll Defense",
+        "npcDefense": "Roll NPC Defense",
+        "speed": "Roll speed (Speed)"
+      },
+      "RezChange": "REZ {before} → {after}",
+      "AwaitingDamage": "Zap hit: roll the damage (1d6).",
+      "RollDamage": "Roll damage",
+      "SkipDamage": "Skip damage",
+      "DamageFlavor": "Zap — damage to the Black ICE's REZ",
+      "YourMove": "Your move",
+      "AwaitingProgramDamage": "Program hit: roll the program's damage."
+    },
+    "Ice": {
+      "Encounter": "Black ICE on node",
+      "NotLinked": "No linked actor: the GM picks the Black ICE sheet.",
+      "Actor": "Black ICE actor",
+      "Link": "Link",
+      "NoActors": "No Black ICE actors in the world.",
+      "Attack": "Black ICE attacks",
+      "BuiltinTag": "(basic, creates the sheet)",
+      "Seeded": "{count} basic Black ICE created in the \"Black ICE (CNH)\" folder."
+    },
+    "Fx": {
+      "jack-in": "Jacked in",
+      "jack-out": "Jacked out",
+      "ice-alert": "Black ICE detected",
+      "breach": "Password broken",
+      "control": "Node controlled",
+      "derez": "Black ICE derezzed",
+      "fail": "Failed",
+      "evade": "Evaded",
+      "ice-hit": "Black ICE hit",
+      "ice-miss": "Black ICE missed",
+      "new-turn": "New turn",
+      "zap-hit": "Zap hit",
+      "damage": "Damage applied",
+      "ice-attack": "Black ICE attacks",
+      "identify": "File identified",
+      "program-hit": "Program hit",
+      "brain-damage": "Brain damage",
+      "program-crash": "Program hit",
+      "undo": "Action undone",
+      "ice-turn": "Black ICE's turn",
+      "runner-turn": "Netrunner's turn",
+      "npc-alert": "Enemy Netrunner",
+      "npc-attack": "Enemy Netrunner attacks",
+      "npc-down": "Enemy Netrunner down",
+      "npc-turn": "Enemy Netrunner's turn",
+      "npc-hit": "Enemy Netrunner hit",
+      "npc-miss": "Enemy Netrunner missed"
+    },
+    "Settings": {
+      "Motion": {
+        "Name": "Animation motion",
+        "Hint": "Reduced replaces movement, shaking and blinking with a short fade. The operating system preference is also respected.",
+        "full": "Full",
+        "reduced": "Reduced"
+      },
+      "Sound": {
+        "Name": "HUD sounds",
+        "Hint": "Plays short synthesized sounds on intrusion events, at Foundry's interface volume."
+      },
+      "Log": {
+        "Name": "Show event log",
+        "Hint": "Shows the run's log in your HUD, if the GM made it available. Also via the \"Log\" checkbox in the HUD header."
+      },
+      "LogWorld": {
+        "Name": "Event log at the table",
+        "Hint": "Makes the log panel available in the HUD for everyone. Each user chooses to show it (hidden by default)."
+      },
+      "Auto": {
+        "Name": "Mode without GM confirmation",
+        "Hint": "Applies the result when the rules suggest one (DV, contest, damage) and rolls the Black ICE DEF/PER and hit damage without a dialog. Without a suggestion, the GM confirms. The Black ICE attack is still started by the GM. Requires a connected GM."
+      },
+      "SeedIce": {
+        "Name": "Create the basic Black ICE in the world",
+        "Hint": "The GM creates, in the \"Black ICE (CNH)\" folder, the sheets of the 12 basic Black ICE (actor and program) that do not exist yet. Sheets with the same name are reused."
+      }
+    },
+    "Start": {
+      "ShowAll": "Show all characters (includes NPCs)",
+      "IceLegend": "Black ICE in the architecture",
+      "IceNode": "Floor {where}: {name}",
+      "IceChoose": "— choose the actor —",
+      "NoIceActors": "There are no Black ICE actors in the world: create one per Black ICE (PER, SPD, ATK, DEF and REZ).",
+      "IceMissing": "Choose an actor for every Black ICE to start.",
+      "IceRepeated": "The same actor is on more than one node: REZ will be shared."
+    },
+    "Program": {
+      "Rez": "Rez",
+      "Derez": "Derez",
+      "Attack": "Attack",
+      "Attacker": "Attacker",
+      "AttackHint": "Anti-personnel attacker: targets Netrunners, not Black ICE.",
+      "Neutralized": "REZ 0 (no effect)",
+      "Destroyed": "Destroyed",
+      "Recover": "Derez"
+    },
+    "IceHit": {
+      "Awaiting": "Black ICE hit: damage to roll",
+      "TargetBrain": "Target: brain (HP {hp}, reduction {reduction})",
+      "TargetProgram": "Target: {name} (REZ {rez})",
+      "Formula": "Damage: {formula}",
+      "NoFormula": "No damage: create a Black ICE class program item named \"{name}\" with its damage filled in, or skip.",
+      "SpecialHint": "Special effects from the Black ICE description (fire, forced Jack Out…) are up to the GM.",
+      "Roll": "Roll Black ICE damage",
+      "WaitingGm": "Waiting for the GM to roll damage.",
+      "Flavor": "Black ICE damage",
+      "LastBrain": "Last hit: −{taken} HP brain damage (HP {after})",
+      "LastProgram": "Last hit: {name} −{taken} REZ (REZ {after})",
+      "LastDestroyed": "Last hit: {name} destroyed (REZ 0)",
+      "None": {
+        "no-program": "Hit with no effect: no rezzed programs.",
+        "manual": "Hit with a special effect: the GM applies it by hand.",
+        "shield": "Shield absorbed the hit and was neutralized."
+      },
+      "Pick": "Hit this program",
+      "PickLabel": "Program hit",
+      "LastNeutralized": "Last hit: {name} −{taken} REZ, neutralized (REZ 0)"
+    },
+    "Undo": {
+      "Button": "Undo",
+      "Tooltip": "Undo: {what}. Reverts the session and the sheet; rolls stay in chat.",
+      "Empty": "Nothing to undo.",
+      "GiveAction": "Give back one NET Action",
+      "TakeAction": "Take one NET Action",
+      "What": {
+        "jackIn": "Jack In",
+        "jackOut": "Jack Out",
+        "moveTo": "move",
+        "newTurn": "new turn",
+        "clearNode": "clear node",
+        "restoreNode": "restore node",
+        "check": "submitted roll",
+        "oppose": "opposed roll",
+        "rezProgram": "program rez",
+        "iceAttack": "Black ICE attack",
+        "linkIce": "Black ICE link",
+        "resolveCheck": "GM confirmation",
+        "iceDamage": "Black ICE damage",
+        "adjustActions": "action adjustment",
+        "endTurn": "end of turn",
+        "npcAttack": "enemy Netrunner attack",
+        "initiative": "initiative",
+        "npcSync": "NPC link",
+        "moveNpc": "NPC move",
+        "ambush": "Black ICE encounter",
+        "iceTarget": "choice of program hit"
+      }
+    },
+    "Turn": {
+      "Label": "Turn of",
+      "Ice": "Black ICE",
+      "Runner": "Netrunner",
+      "End": "End turn",
+      "PassIce": "Pass turn",
+      "IceHint": "Black ICE's turn: the Netrunner waits for its attack (the GM can pass the turn).",
+      "Npc": "Enemy Netrunner",
+      "NpcHint": "Enemy Netrunner's turn: wait for its attack (the GM can pass the turn)."
+    },
+    "Log": {
+      "HiddenNode": "hidden node",
+      "Program": "program",
+      "JackIn": "Jacked in at {node}",
+      "JackOut": "Jacked out",
+      "Move": "Moved to {node}",
+      "Reveal": "Revealed: {node}",
+      "Cleared": "GM cleared {node}",
+      "Restored": "GM restored {node}",
+      "Outcome": "{ability} ({rolls}): {result}",
+      "Success": "success",
+      "Failure": "failure",
+      "Damage": "{total} damage to Black ICE: REZ {before} → {after}",
+      "DamageDiscarded": "Damage discarded",
+      "DamageSkipped": "Damage skipped by the GM",
+      "IceBrain": "Black ICE dealt {taken} brain damage (HP {after})",
+      "IceProgram": "Black ICE took {taken} REZ from {program} (REZ {after})",
+      "IceDestroyed": "Black ICE destroyed {program}",
+      "RezOn": "Rezzed {program}",
+      "RezOff": "Derezzed {program}",
+      "NewTurn": "New turn {turn}",
+      "ActionGiven": "GM gave back one NET Action",
+      "ActionTaken": "GM took one NET Action",
+      "Undo": "GM undid: {what}",
+      "Empty": "cyberdeck online. No events yet.",
+      "Show": "Show the event log (just for you)",
+      "Hide": "Hide the event log (just for you)",
+      "Npc": "Enemy Netrunner detected at {node}",
+      "NpcDefeated": "Enemy Netrunner taken down",
+      "InitRunner": "Netrunner initiative: {total}",
+      "InitNpc": "Enemy Netrunner initiative: {total}",
+      "NpcBrain": "Enemy Netrunner dealt {taken} brain damage (HP {after})",
+      "NpcDamage": "{total} damage to the enemy Netrunner: HP {before} → {after}",
+      "NpcLeft": "Enemy Netrunner left the node",
+      "Mapped": "Node shown on the map only",
+      "Ambush": "Black ICE lying in wait at {node}!",
+      "IceTarget": "GM chose the program hit: {program}",
+      "PathfinderFound": "({count} node(s) revealed)",
+      "IceNeutralized": "Black ICE took {taken} REZ from {program}: neutralized (REZ 0)"
+    },
+    "Auto": {
+      "Hint": "Automatic mode: what the rules decide happens on its own; the GM can undo."
+    },
+    "Npc": {
+      "Encounter": "Enemy Netrunner on node",
+      "Unknown": "Unknown Netrunner",
+      "Link": "Link an NPC Netrunner to this node",
+      "Linked": "NPC Netrunner: {name}. Click to change; drag to another node (except Black ICE).",
+      "LinkTitle": "NPC Netrunner on node",
+      "Actor": "NPC Netrunner",
+      "None": "— none —",
+      "Save": "Save",
+      "LinkHint": "Stays hidden until the Netrunner reaches this node. Only characters or mooks with an equipped cyberdeck.",
+      "NoActors": "No character or mook with an equipped cyberdeck in the world.",
+      "InitiativeTitle": "Initiative",
+      "Initiative": "Initiative: Netrunner {runner} × NPC {npc}",
+      "RollRunner": "Roll initiative",
+      "RollNpc": "NPC initiative",
+      "WaitingInit": "Waiting for initiatives.",
+      "InitiativeFlavor": "Enemy Netrunner initiative (1d10 + REF)",
+      "RunnerInitiativeFlavor": "NET initiative (1d10 + REF)",
+      "DamageFlavor": "Enemy Netrunner brain damage",
+      "HitAwaiting": "Enemy Netrunner hit: awaiting damage",
+      "ProgramDamage": "{name} program damage",
+      "Actions": "NPC NET Actions",
+      "Zap": "NPC Zap",
+      "HpChange": "HP {before} → {after}"
+    },
+    "Enemy": {
+      "Show": "Show the node's enemy",
+      "Hide": "Hide the node's enemy",
+      "Pending": "The enemy has an action in progress",
+      "PendingGm": "Enemy action waiting for the GM",
+      "Label": "Enemy"
+    },
+    "Sound": {
+      "Label": "Sound",
+      "Mute": "Mute the HUD",
+      "Unmute": "Unmute the HUD"
+    },
+    "Ambush": {
+      "Title": "Black ICE lying in wait",
+      "Roll": "Roll Black ICE SPD",
+      "Skip": "Dismiss the encounter",
+      "GmHint": "The Black ICE's SPD + 1d10 contests the Netrunner's speed. If the ICE wins, its effect applies at once.",
+      "Waiting": "Waiting for the GM to roll the Black ICE SPD.",
+      "NeedsLink": "Link the Black ICE actor to roll the encounter."
+    },
+    "ResolveNow": {
+      "Button": "Resolve",
+      "Hint": "Does now, without dialogs, what the rules decide alone: enemy rolls, suggested result and damage."
+    },
+    "Help": {
+      "backdoor": "Backdoor: breaks this node's Password (Interface + 1d10 vs DV). Once broken, you can go deeper. 1 NET Action.",
+      "control": "Control: takes over the Control Node (Interface + 1d10 vs DV). The GM narrates what it runs: cameras, doors, turrets… 1 NET Action.",
+      "eyedee": "Eye-Dee: identifies this node's file (Interface + 1d10 vs DV). The description is shown to the Netrunner. 1 NET Action.",
+      "zap": "Zap: basic attack (Interface + 1d10 vs the Black ICE's DEF or the enemy Netrunner's Defense). Hit: 1d6 damage. 1 NET Action.",
+      "slide": "Slide: escapes the Black ICE (Interface + 1d10 vs its PER). On success you are no longer stuck and can move. 1 NET Action.",
+      "pathfinder": "Pathfinder: maps the architecture (Interface + 1d10). Reveals floors below up to the total, stopping at a Password with a higher DV. 1 NET Action.",
+      "cloak": "Cloak: hides the Netrunner's traces (and virus). The total becomes the DV for anyone searching later. 1 NET Action.",
+      "virus": "Virus: lowest floor only. Leaves a virus that changes the architecture even after Jack Out; the GM sets the DV and effect. 1 NET Action.",
+      "jackIn": "Jack In: connects to the architecture at the first node. 1 NET Action.",
+      "jackOut": "Jack Out: disconnects safely. 1 NET Action.",
+      "endTurn": "Ends your turn now; the enemy's turn begins.",
+      "passIce": "Ends the enemy's turn; the Netrunner gets her NET Actions back.",
+      "newTurn": "New turn: the Netrunner's NET Actions recharge.",
+      "rez": "Rezzing turns the program on (Booster/Defender) and its effect lasts while on; derezzing turns it off. 1 NET Action each. Each copy activates once per round; Armor, Flak and Shield: one copy on at a time and once per Netrun.",
+      "programAttack": "Attacks the node's target with this program (Interface + ATK + 1d10 vs DEF + 1d10). Attackers turn off after use: each copy attacks once per round (Superglue, once per Netrun). 1 NET Action.",
+      "iceAttack": "The Black ICE attacks: ATK + 1d10 vs the Netrunner's Defense.",
+      "npcZap": "Enemy Netrunner's Zap: Interface + 1d10 vs the player's Defense; a hit deals 1d6 brain damage.",
+      "npcProgram": "The enemy Netrunner attacks with this program: ATK + 1d10 vs the player's Defense.",
+      "initiative": "Initiative: 1d10 + REF. Highest goes first; ties favor the player.",
+      "recover": "Neutralized (REZ 0): still installed, no effect. Derez (1 NET Action) and rez again (1 NET Action, next round if already activated this one) to come back with full REZ."
+    }
+  }
+}
