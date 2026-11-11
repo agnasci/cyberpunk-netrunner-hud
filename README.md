@@ -1,56 +1,55 @@
 # Netrunner HUD — for Cyberpunk RED
 
-Painel de Netrunning compartilhado para o Foundry VTT, para uso com o sistema
-**Cyberpunk RED – CORE**. Mestre e Netrunner controlam a invasão; os demais jogadores
-acompanham. A ficha e o cyberdeck nativos continuam sendo a fonte de verdade.
+A shared Netrunning HUD for Foundry VTT, for use with the **Cyberpunk RED – CORE** system.
+The GM and the Netrunner control the run; everyone else at the table watches it live. The
+native character sheet and cyberdeck remain the source of truth.
 
-> **Beta.** Funciona no Foundry V12 (12.343) com o sistema Cyberpunk RED – CORE v0.92.4.
-> Outras versões não foram testadas.
+> **Beta.** Tested on Foundry V12 (12.343) with the Cyberpunk RED – CORE system v0.92.4.
+> Other versions have not been tested. The interface is available in English and Brazilian
+> Portuguese.
 
-*English: shared Netrunning HUD for Foundry VTT, for use with the Cyberpunk RED – CORE
-system (Foundry V12, system v0.92.4). Beta. UI in English and Brazilian Portuguese.*
+## Installation
 
-## Instalação
-
-No Foundry, em **Add-on Modules → Install Module**, cole no campo *Manifest URL*:
+In Foundry, go to **Add-on Modules → Install Module** and paste this into *Manifest URL*:
 
 ```
 https://github.com/agnasci/cyberpunk-netrunner-hud/releases/latest/download/module.json
 ```
 
-Ative o módulo no mundo. O botão do terminal na barra de ferramentas de tokens abre o HUD
-(o mestre escolhe a Netrunner e a arquitetura NET ao iniciar).
+Enable the module in your world. The terminal button in the token controls opens the HUD; the
+GM picks the Netrunner and the NET Architecture when starting a run.
 
-## O que faz
+## Features
 
-- Arquitetura NET em grade, com revelação pelo mestre (completa ou só no mapa) e caminhos
-  entre branches (a–h).
-- Ações NET com o limite por Interface: Jack In/Out, Backdoor, Control, Eye-Dee, Zap, Slide,
-  Pathfinder, Cloak, Virus (só no andar mais fundo), rezzar e atacar com programas.
-- Rolagens nativas do sistema; o mestre confirma o resultado ou usa o modo sem confirmação.
-- Black ICE vinculado a atores do mundo: encontro à espreita, vez alternada, ataque, dano no
-  cérebro ou no REZ dos programas (o mestre escolhe o programa atingido).
-- Netrunner NPC inimiga em qualquer nó, com iniciativa e ataques.
-- Regras de programas: uma ativação por cópia por rodada, neutralizado a REZ 0, Armor/Flak/
-  Shield/Superglue uma vez por Netrun.
-- Várias invasões ao mesmo tempo (abas), registro de eventos, desfazer do mestre, som opcional.
+- NET Architecture shown as a grid, with branches (a–h) and the paths between them. The GM
+  reveals nodes fully or on the map only (contents hidden until the Netrunner enters).
+- NET Actions limited by Interface rank: Jack In/Out, Backdoor, Control, Eye-Dee, Zap, Slide,
+  Pathfinder, Cloak, Virus (lowest floor only), rezzing and attacking with programs.
+- Native system rolls. The GM confirms each result, resolves it in one click, or turns on the
+  no-confirmation mode.
+- Black ICE linked to world actors: lying-in-wait encounters, alternating turns, attacks, and
+  damage to the Netrunner's brain or to her programs' REZ (the GM picks the program hit).
+- Enemy NPC Netrunners on any node, with initiative and attacks.
+- Program rules: one activation per copy per round, neutralized at 0 REZ, Armor/Flak/Shield/
+  Superglue once per Netrun.
+- Several runs at once (tabs), event log, GM undo and optional sound.
 
-O módulo **não traz atributos de Black ICE do livro**: o mestre cria os atores Black ICE (e
-os itens de programa com o dano) no próprio mundo, pelo livro.
+The module **does not include Black ICE stats from the rulebook**: create the Black ICE actors
+(and the program items with their damage) in your own world, from the book.
 
-## Desenvolvimento
+## Development
 
-Código em TypeScript, testes com Vitest. Comandos em [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md);
-para agentes de IA, comece por [AGENTS.md](AGENTS.md) e [STATUS.md](STATUS.md).
+TypeScript code, tests with Vitest. Commands are in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+(project documentation is in Portuguese).
 
 ```
 npm ci
 npm run check
 ```
 
-## Licença e aviso
+## License and notice
 
-Código sob a [licença MIT](LICENSE).
+The code is released under the [MIT License](LICENSE).
 
 Netrunner HUD is unofficial content provided under the Homebrew Content Policy of R. Talsorian
 Games and is not approved or endorsed by RTG. This content references materials that are the

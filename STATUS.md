@@ -21,6 +21,12 @@ Atualizado em: 2026-11-10.
   com eles (325); bundle público sem os dados.
 - Envio: instantâneo sem o histórico local (que contém os dados), autor noreply; passos em
   docs/DEVELOPMENT.md ("Publicar uma versão").
+- Publicado em 2026-11-10: https://github.com/agnasci/cyberpunk-netrunner-hud (1 commit, autor noreply)
+  e release v0.1.0 com `module.zip` (caminhos com barra normal) e `module.json`. Conferido: URL do
+  manifesto e do zip respondem 200; manifesto baixado traz versão 0.1.0 e o `download` certo; zip com
+  `module.json` na raiz; build feito num worktree do branch `public`, sem os arquivos locais (322
+  testes). Não conferido: instalar pelo manifesto num Foundry (a pasta do módulo aqui é um link para
+  `dist/` do desenvolvimento).
 - Rodapé do HUD: "Encerrar sessão" abaixo dos controles de vez, à direita (conferido no Foundry).
 
 ## Última entrega: E6-14 (ajustes do teste da mesa, D39)
