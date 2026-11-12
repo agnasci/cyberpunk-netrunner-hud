@@ -120,3 +120,18 @@ Testado em execução em 2026-11-11 (Foundry V12, CPR v0.92.4):
 - `item.update({"system.floors": [...]})` substitui o array inteiro; flags de vínculo são
   atualizadas chave a chave (`-=` para remover). A ficha nativa abre o item gravado ("Floors: 4").
 - Ferramenta de cena com `visible` (V12) some para jogadores.
+
+## Cyberdeck pelo módulo (E7-02)
+
+Verificado no código (CPR v0.92.4, `item/mixins/cpr-container.js`, `cpr-cyberdeck.js`) e testado
+em execução em 2026-11-11 (usuário jogador dono do ator):
+- `deck.installItems([program])` confere tipo e slots (`canInstallItems`), acrescenta o id em
+  `installedItems.list` e soma `usedSlots`; `deck.uninstallItems([program])` tira da lista,
+  recalcula `usedSlots` e derrezza o programa (`uninstallPrograms`).
+- Slots totais = `deck.availableInstallSlots()` + `installedItems.usedSlots` (inclui upgrades).
+- Equipar: `updateEmbeddedDocuments("Item", [{_id, "system.equipped"}])`; `getEquippedCyberdeck`
+  passa a devolver o deck novo.
+- Id de item apagado continua em `installedItems.list` e ocupa slot em `usedSlots` (o sistema não
+  limpa); a janela não mostra o id, mas a contagem de slots é a do sistema.
+- Ficha v1 do CPR: hook `getActorSheetHeaderButtons` (`client/apps/app.js`) acrescenta botão no
+  cabeçalho; só aparece ao abrir a ficha (o cabeçalho não é redesenhado depois).

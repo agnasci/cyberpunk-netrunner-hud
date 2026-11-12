@@ -23,6 +23,7 @@ import {
   runnerResources,
 } from "../domain/net-rules";
 import { readCharacterSnapshot } from "../integrations/cpr/foundry-actor";
+import { canOpenDeck } from "../integrations/cpr/foundry-deck";
 import { readNetArchitecture } from "../integrations/cpr/foundry-netarch";
 import { ensureIceActor, listWorldIce, readIceStats } from "../integrations/cpr/foundry-ice";
 import {
@@ -85,6 +86,8 @@ export interface SessionHudHandlers {
   resolveNow(sessionId: string): Promise<void>;
   /** Mestre abre o editor de arquitetura (E7-01); `null` = nova. */
   editArchitecture(itemUuid: string | null): void;
+  /** Abre a janela do cyberdeck do ator (E7-02). */
+  openDeck(actorUuid: string): void;
 }
 
 /** Atributos que identificam um controle entre renderizações (foco por teclado). */
@@ -142,6 +145,7 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       toggleSound: SessionHudApp.#onToggleSound,
       mapFloor: SessionHudApp.#onMapFloor,
       editArch: SessionHudApp.#onEditArch,
+      openDeck: SessionHudApp.#onOpenDeck,
     },
   };
 
@@ -690,6 +694,7 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       roleLabel: t(`CNH.Role.${role}`),
       isGm: role === "gm",
       controllerName: controller?.name ?? t("CNH.Session.NoController"),
+      canOpenDeck: canOpenDeck(this.#session.actorUuid, user ?? null),
       programs: view.programs.map((p) => {
         const programClass = "detailed" in p ? p.programClass : "";
         // Atacantes não se rezzam no CPR (E6-05): mostram "Atacante" em vez de "derezzed".
@@ -1357,6 +1362,12 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   /** Mestre abre a arquitetura desta sessão no editor (ou uma nova, sem arquitetura). */
+  static #onOpenDeck(this: SessionHudApp): void {
+    if (canOpenDeck(this.#session.actorUuid, game.user)) {
+      this.#handlers.openDeck(this.#session.actorUuid);
+    }
+  }
+
   static #onEditArch(this: SessionHudApp): void {
     if (game.user?.isGM) this.#handlers.editArchitecture(this.#session.netArch?.itemUuid ?? null);
   }

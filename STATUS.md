@@ -4,12 +4,49 @@ Atualizado em: 2026-11-11.
 
 ## Situação
 
-- E0–E5-01 concluídas. Teste em outra mesa gerou o backlog **E6** (11 itens, ROADMAP) e as
+- E7-02 concluída (janela do cyberdeck, D43). E0–E5-01 concluídas. Teste em outra mesa gerou o backlog **E6** (11 itens, ROADMAP) e as
   decisões D27–D30. **E6-01 a E6-11b concluídas**; E6-11c bloqueada (conferir no Core).
 - E5-02 (licença/pacote final) adiada pelo usuário; pasta `pacote-teste/` serve para testes.
 - Alvo: Foundry V12 (12.343) + Cyberpunk RED – CORE v0.92.4 (D09).
 
-## Última entrega: E7-01 (editor de arquitetura, D42)
+## Última entrega: E7-02 (cyberdeck da jogadora, D43)
+
+- Pedido do usuário (2026-11-11): UI à parte para a jogadora com cyberdeck configurar o deck antes do
+  Jack In (instalar/desinstalar, rezzar/derrezzar), reaproveitando a UI de ação; acesso à escolha.
+- Janela própria no visual do HUD (`ui/deck-app.ts`, `templates/deck.hbs`, CSS `.cnh-deckapp`):
+  cabeçalho com leituras do HUD (conexão, Interface, ações NET, slots, programas ligados); painel do
+  deck com abas por deck, "Equipar", barra de slots, cartões de programa do HUD (estado, classe,
+  REZ, botões Rezzar/Derrezzar e Desinstalar) e slots livres; painel "Programas na ficha" com
+  "Instalar"; arrastar por ponteiro (ficha → deck instala; deck → ficha desinstala); tooltips com o
+  motivo do bloqueio; seletor de personagem quando há mais de um.
+- Domínio `domain/deck-config.ts` (instalar, desinstalar, rezzar com as regras do D40, equipar) e
+  adaptador `integrations/cpr/deck-adapter.ts` (leitura) + `foundry-deck.ts` (funções nativas
+  `installItems`/`uninstallItems`, efeito `setProgramState`, `updateEmbeddedDocuments`). Grava
+  na ficha pelo cliente da dona do ator (sem autoridade; o servidor valida a posse).
+- Conectada numa sessão (`runnerPosition` não nulo): só leitura, com aviso.
+- Entradas: botão "Cyberdeck" no cabeçalho da ficha (dona, ator com cyberdeck); ferramenta de cena
+  "Cyberdeck" (camada de tokens) para quem tem ator com cyberdeck; nome do deck clicável no painel
+  da Netrunner do HUD de sessão.
+- Automatizado: `npm run check` exit 0; 350 testes (8 novos em `deck-config.test.ts`; código novo,
+  sem versão antiga para vê-los falhar).
+- Manual real (2026-11-11, Foundry V12 + CPR 0.92.4, usuário Runner Teste, ator "CNH Teste 2 —
+  Netrunner"): botão no cabeçalho da ficha abriu a janela; arrastar See Ya para a ficha desinstalou
+  (slots 3/7 → 2/7) e de volta instalou (3/7); "Rezzar" no Armor ligou com REZ cheio (3 → 7/7);
+  "Equipar" no Cyberdeck (Excellent) deixou o outro "carried", derrezzou os programas dele e
+  `getEquippedCyberdeck` passou a devolver o Excellent; voltar pelo "Equipar" funcionou. Ator
+  "CNH Teste — Netrunner" (conectado numa sessão): aviso e todos os botões desabilitados, sem
+  arrastar. HUD de sessão e ferramenta de cena abriram a janela. Sem erros do módulo no console.
+  Achado e corrigido no teste: contador de programas ligados contava o atacante (o CPR marca
+  atacantes como rezzados).
+- Mundo de teste restaurado: deck original equipado, Excellent "owned", Armor derrezzado com REZ 3,
+  Sword como estava.
+- Não conferido: usuário mestre abrindo deck de outra ficha; layout estreito (< 640 px); textos em
+  pt-BR na tela (mundo em inglês); Firefox. Limitações: id apagado na lista do deck ocupa slot sem
+  aparecer (comportamento do sistema); botão da ficha só aparece se a ficha já tem cyberdeck ao abrir;
+  rezzar antes do Jack In não conta para "uma vez por Netrun" (Core não conferido). README sem a
+  janela nova (atualizar na próxima versão publicada).
+
+## Entrega anterior: E7-01 (editor de arquitetura, D42)
 
 - Pedido do usuário (2026-11-11): "Criar arquitetura" pelo mestre, arrastando tipos de nó na UI do
   HUD, com configuração simples do nó e vínculos prontos.
@@ -42,6 +79,11 @@ Atualizado em: 2026-11-11.
   layout estreito (< 760 px); textos em pt-BR na tela (mundo em
   inglês); Firefox.
 - Mundo de teste: item "Teste do Editor" criado; sessões existentes intactas.
+- Publicado como v0.2.0 (2026-11-11, pedido do usuário): commit 1e090e4 no `main`; instantâneo
+  15ce58d (autor noreply) em `origin/main`; README com o editor; release v0.2.0 (não pre-release)
+  com `module.zip` e `module.json`. Conferido: URL do manifesto e do zip respondem 200; manifesto
+  com versão 0.2.0 e `download` certo; zip com o template do editor; build limpo no worktree do
+  `public` (339 testes, sem os arquivos locais). Não conferido: atualizar pelo manifesto num Foundry.
 
 ### Revisão do usuário na E7-01 (2026-11-11)
 
@@ -317,7 +359,7 @@ Lista de 15 itens do teste com o amigo, todos tratados:
 
 ## Próxima ação concreta
 
-E7-01 entregue localmente (sem commit/publicação). Próximas: revisão do editor pelo usuário; E6-13 (Netrunners NPC genéricas por dificuldade) quando
+E7-02 pronta no diretório de trabalho (sem commit, não publicada). Próximas: revisão da janela do cyberdeck e do editor pelo usuário; E6-13 (Netrunners NPC genéricas por dificuldade) quando
 o usuário pedir; E6-11c bloqueada (conferir no Core). Novas versões seguem docs/DEVELOPMENT.md.
 `pacote-teste/` só a pedido.
 

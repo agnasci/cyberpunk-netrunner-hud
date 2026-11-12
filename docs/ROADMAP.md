@@ -245,6 +245,29 @@ Itens do teste do usuário com um amigo, na ordem proposta. "A decidir" = pergun
 | ID | Estado | Entrega e aceite | Origem |
 |---|---|---|---|
 | E7-01 | DONE | Editor de arquitetura (D42): o mestre cria e edita NET Architectures no visual do HUD, arrastando tipos de nó para a grade, com painel simples de configuração do nó (tipo de Black ICE, DV, nota) e vínculos prontos (ator Black ICE sugerido no início, Netrunner NPC) | Pedido do usuário (2026-11-11) |
+| E7-02 | DONE | Cyberdeck da jogadora (D43): janela própria no visual do HUD para configurar o deck antes do Jack In (equipar deck, instalar/desinstalar programas por arrastar ou botão, rezzar/derrezzar Booster e Defender) com as funções nativas do CPR; travada enquanto conectada | Pedido do usuário (2026-11-11) |
+
+### Plano da E7-02
+
+Objetivo: a jogadora com cyberdeck configura o deck fora da invasão numa janela no visual do HUD,
+gravando direto na ficha nativa (dona do ator; o servidor do Foundry valida a posse). Nada novo no
+estado público da sessão.
+- Domínio puro `domain/deck-config.ts`: carga (decks, programas, slots), checagens de instalar
+  (slots livres, já instalado), desinstalar, rezzar/derrezzar (só Booster/Defender, destruído não
+  volta, Armor/Flak/Shield uma cópia ligada, rezzar volta com REZ cheio e limpa a marca, D40) e
+  equipar (um deck equipado; os outros viram "carried" e derrezzam).
+- Adaptador `integrations/cpr/foundry-deck.ts`: lê slots pelo método nativo
+  (`availableInstallSlots` + `usedSlots`), instala/desinstala com `installItems`/`uninstallItems`
+  do CPR, estado do programa pelo efeito `setProgramState` já existente, equipar com
+  `updateEmbeddedDocuments`.
+- UI `ui/deck-app.ts` + `templates/deck.hbs` + CSS `.cnh-deckapp`: cabeçalho com leituras do HUD
+  (Interface, ações NET, slots), slots do deck com os cartões de programa do HUD, programas da ficha
+  fora do deck; arrastar por ponteiro (ficha → slot instala; deck → ficha desinstala) e botões.
+- Travas: com a Netrunner conectada numa sessão (`runnerPosition`), só leitura (o HUD cuida).
+- Entradas: botão "Cyberdeck" no cabeçalho da ficha (dono, com cyberdeck), ferramenta de cena
+  para quem tem ator com cyberdeck e nome do deck clicável no HUD de sessão.
+Aceite: testes do domínio; `npm run check`; teste real no Foundry instalando, desinstalando,
+rezzando e equipando pela janela e conferindo na ficha nativa.
 
 ### Plano da E7-01
 

@@ -2488,3 +2488,167 @@
 .directory-footer .cnh-open-editor {
   flex: 1 1 100%;
 }
+
+/* Cyberdeck da jogadora (E7-02): cartões de programa do HUD em slots do deck e na ficha. */
+.cnh-deckapp {
+  display: flex;
+  flex-direction: column;
+}
+.cnh-deckapp .cnh-dk-body {
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+}
+.cnh-dk-header {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.cnh-dk-actor {
+  margin-top: 6px;
+}
+.cnh-dk-decks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.cnh-app .cnh-hud .cnh-dk-deck-tab small {
+  color: var(--cnh-muted);
+}
+.cnh-dk-deckhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.cnh-dk-deckname {
+  font-size: 16px;
+}
+.cnh-dk-equip {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cnh-amber);
+}
+.cnh-dk-equip.is-on {
+  color: var(--cnh-green);
+}
+.cnh-dk-slotbar {
+  margin-bottom: 10px;
+}
+.cnh-dk-slotbar.is-full > span {
+  background: var(--cnh-amber);
+  color: var(--cnh-amber);
+}
+.cnh-dk-slots,
+.cnh-dk-pool {
+  min-height: 60px;
+  padding: 4px;
+  border: 1px dashed transparent;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.cnh-deckapp.drag-loose .cnh-dk-slots,
+.cnh-deckapp.drag-installed .cnh-dk-pool {
+  border-color: rgba(62, 240, 230, 0.4);
+}
+.cnh-dk-slots.is-drop-over,
+.cnh-dk-pool.is-drop-over {
+  border-color: var(--cnh-cyan);
+  background: rgba(62, 240, 230, 0.08);
+}
+.cnh-dk-card {
+  position: relative;
+  padding-right: 22px;
+}
+.cnh-dk-card.is-draggable {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.cnh-dk-card.is-drag-source {
+  opacity: 0.3;
+}
+.cnh-dk-card.is-neutralized {
+  border-left-color: var(--cnh-amber);
+  opacity: 1;
+}
+.cnh-dk-icon {
+  width: 14px;
+  color: var(--cnh-cyan);
+}
+.cnh-dk-card:not(.is-rezzed) .cnh-dk-icon {
+  color: var(--cnh-muted);
+}
+.cnh-dk-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  grid-column: 1 / -1;
+}
+.cnh-dk-grip {
+  position: absolute;
+  top: 8px;
+  right: 6px;
+  font-size: 11px;
+}
+.cnh-dk-upgrade {
+  border-left-color: var(--cnh-amber);
+  opacity: 0.85;
+}
+.cnh-dk-free {
+  display: grid;
+  place-items: center;
+  min-height: 34px;
+  border: 1px dashed rgba(62, 240, 230, 0.14);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(62, 240, 230, 0.3);
+  list-style: none;
+}
+.cnh-deckapp.drag-loose .cnh-dk-free {
+  border-color: rgba(62, 240, 230, 0.45);
+  color: var(--cnh-cyan);
+}
+.cnh-dk-dropout {
+  display: none;
+  place-items: center;
+  min-height: 34px;
+  border: 1px dashed color-mix(in srgb, var(--cnh-magenta) 50%, transparent);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cnh-magenta);
+  list-style: none;
+}
+.cnh-deckapp.drag-installed .cnh-dk-dropout {
+  display: grid;
+}
+.cnh-dk-elsewhere {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+  color: var(--cnh-muted);
+}
+.cnh-dk-loose .cnh-action {
+  margin-top: 6px;
+}
+.cnh-app .cnh-hud .cnh-deck-open {
+  color: var(--cnh-cyan);
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
+@container (max-width: 640px) {
+  .cnh-app .cnh-hud .cnh-dk-body {
+    grid-template-columns: minmax(0, 1fr);
+    overflow: auto;
+  }
+  .cnh-dk-header {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cnh-app .cnh-hud .cnh-dk-header .cnh-readouts {
+    flex-wrap: wrap;
+  }
+}

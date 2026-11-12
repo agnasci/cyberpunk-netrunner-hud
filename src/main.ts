@@ -52,6 +52,8 @@ import {
 import { authorityGmId, RequestChannel } from "./transport/request-channel";
 import { NetrunnerHudPrototype } from "./ui/netrunner-hud-app";
 import { ArchEditorApp } from "./ui/arch-editor-app";
+import { DeckApp } from "./ui/deck-app";
+import { canOpenDeck, listDeckActors } from "./integrations/cpr/foundry-deck";
 import { SessionHudApp } from "./ui/session-hud-app";
 import { promptStartSession } from "./ui/start-session-dialog";
 
@@ -101,7 +103,24 @@ const hudHandlers = {
   startSession: (): void => promptAndStart(),
   resolveNow: (sessionId: string): Promise<void> => resolveNow(sessionId),
   editArchitecture: (itemUuid: string | null): void => openArchEditor(itemUuid),
+  openDeck: (actorUuid: string): void => openDeck(actorUuid),
 };
+
+let deckApp: DeckApp | null = null;
+
+/** Cyberdeck da jogadora (E7-02, D43); uma instância por cliente. */
+function openDeck(actorUuid: string | null): void {
+  deckApp ??= new DeckApp({
+    jackedIn: (uuid) =>
+      activeSessions.some((s) => s.actorUuid === uuid && s.runnerPosition !== null),
+  });
+  void deckApp.open(actorUuid);
+}
+
+/** Ficha mudou (itens, equipado, rez): a janela do deck mostra o estado novo. */
+const refreshDeck = foundry.utils.debounce(() => {
+  if (deckApp?.rendered) void deckApp.render();
+}, 50);
 
 let archEditor: ArchEditorApp | null = null;
 
@@ -263,6 +282,8 @@ function applySessions(sessions: PublicSession[]): void {
   // Travas do editor valem só enquanto a arquitetura está numa sessão (E7-01).
   const archsOf = (list: PublicSession[]) => list.map((x) => x.netArch?.itemUuid ?? "").join("|");
   if (archEditor?.rendered && archsOf(previous) !== archsOf(sessions)) void archEditor.render();
+  // Trava do deck: conectada numa sessão (E7-02).
+  if (deckApp?.rendered) refreshDeck();
   if (sessions.length === 0) {
     void sessionHud?.close();
     return;
@@ -346,7 +367,38 @@ Hooks.on("getSceneControlButtons", (controls) => {
       visible: game.user?.isGM === true,
       onClick: () => openArchEditor(null),
     });
+  controls
+    .find((control) => control.name === "token")
+    ?.tools.push({
+      name: `${MODULE_ID}-deck`,
+      title: "CNH.Deck.ControlTitle",
+      icon: "fa-solid fa-microchip",
+      button: true,
+      visible: listDeckActors(game.user).length > 0,
+      onClick: () => openDeck(null),
+    });
 });
+
+/** Botão "Cyberdeck" no cabeçalho da ficha (Application v1 do CPR) para a dona do ator. */
+Hooks.on("getActorSheetHeaderButtons", (app, buttons) => {
+  const uuid = app.actor?.uuid;
+  if (!uuid || !canOpenDeck(uuid, game.user)) return;
+  buttons.unshift({
+    label: game.i18n.localize("CNH.Deck.SheetButton"),
+    class: "cnh-open-deck",
+    icon: "fa-solid fa-microchip",
+    onclick: () => openDeck(uuid),
+  });
+});
+
+Hooks.on("updateActor", (actor) => {
+  if (actor.uuid === deckApp?.actorUuid) refreshDeck();
+});
+for (const hook of ["createItem", "updateItem", "deleteItem"] as const) {
+  Hooks.on(hook, (item) => {
+    if (item.parent?.uuid && item.parent.uuid === deckApp?.actorUuid) refreshDeck();
+  });
+}
 
 /** Botão do editor no rodapé da aba Items (pedido do usuário, E7-01), só para o mestre. */
 Hooks.on("renderItemDirectory", (_app, html) => {

@@ -139,7 +139,7 @@
       <p class="cnh-empty">{{localize "CNH.Session.ActorMissingHint"}}</p>
       {{else}}
       <div class="cnh-handle">{{view.actorName}}</div>
-      <div class="cnh-deck"><i class="fa-solid fa-microchip" aria-hidden="true"></i> {{#if view.cyberdeckName}}{{view.cyberdeckName}}{{else}}{{localize "CNH.Session.NoDeck"}}{{/if}}</div>
+      <div class="cnh-deck"><i class="fa-solid fa-microchip" aria-hidden="true"></i> {{#if canOpenDeck}}<button type="button" class="cnh-deck-open" data-action="openDeck" data-tooltip="{{localize "CNH.Deck.OpenFromHud"}}">{{#if view.cyberdeckName}}{{view.cyberdeckName}}{{else}}{{localize "CNH.Session.NoDeck"}}{{/if}}</button>{{else}}{{#if view.cyberdeckName}}{{view.cyberdeckName}}{{else}}{{localize "CNH.Session.NoDeck"}}{{/if}}{{/if}}</div>
       <div class="cnh-stat"><span>{{#if view.netRole}}{{view.netRole.abilityName}}{{else}}{{localize "CNH.Hud.Interface"}}{{/if}}</span><strong>{{#if view.netRole}}{{view.netRole.rank}}{{else}}—{{/if}}</strong></div>
 
       <h4 class="cnh-subtitle">{{localize "CNH.Hud.Programs"}}</h4>

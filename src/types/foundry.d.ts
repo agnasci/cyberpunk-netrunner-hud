@@ -65,6 +65,8 @@ interface FoundryUserDocument {
   readonly name: string;
   readonly isGM: boolean;
   readonly active: boolean;
+  /** Personagem atribuído ao usuário (V12). */
+  readonly character?: FoundryActorDocument | null;
 }
 
 interface FoundryItemWithParent extends FoundryItemDocument {
@@ -122,6 +124,14 @@ declare global {
     once(hook: "init" | "ready", fn: () => void): number;
     on(hook: "getSceneControlButtons", fn: (controls: FoundrySceneControl[]) => void): number;
     on(hook: "updateActor", fn: (actor: FoundryActorDocument) => void): number;
+    /** client/apps/app.js (V12): `get<Classe>HeaderButtons` para cada classe da janela v1. */
+    on(
+      hook: "getActorSheetHeaderButtons",
+      fn: (
+        app: { readonly actor?: FoundryActorDocument },
+        buttons: Array<{ label: string; class: string; icon: string; onclick: () => void }>,
+      ) => void,
+    ): number;
     on(
       hook: "createItem" | "updateItem" | "deleteItem",
       fn: (item: FoundryItemWithParent) => void,

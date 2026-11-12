@@ -18,10 +18,15 @@ https://github.com/agnasci/cyberpunk-netrunner-hud/releases/latest/download/modu
 
 Enable the module in your world. The terminal button in the token controls opens the HUD; the
 GM picks the Netrunner and the NET Architecture when starting a run. To build an architecture,
-the GM uses the **NET Architecture editor** button at the bottom of the Items tab.
+the GM uses the **NET Architecture editor** button at the bottom of the Items tab. Players set up
+their deck before a run with the **Cyberdeck** button in their character sheet's header.
 
 ## Features
 
+- Cyberdeck window for players: equip a deck, install and uninstall programs (drag and drop or
+  buttons) and rez/derez Boosters and Defenders before jacking in, at no NET Action cost. It
+  writes to the native sheet and becomes read-only while the Netrunner is jacked into a run. Open
+  it from the sheet header, the token controls or the deck name in the session HUD.
 - NET Architecture editor for the GM: drag node types (Password, File, Control Node, Black ICE)
   onto a grid with the HUD's look, then set each node's DV, Black ICE type, GM note, Black ICE
   actor and enemy NPC Netrunner in a small side panel. It saves to the system's own NET
