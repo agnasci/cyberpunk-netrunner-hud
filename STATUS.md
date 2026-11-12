@@ -43,8 +43,29 @@ Atualizado em: 2026-11-11.
 - Não conferido: usuário mestre abrindo deck de outra ficha; layout estreito (< 640 px); textos em
   pt-BR na tela (mundo em inglês); Firefox. Limitações: id apagado na lista do deck ocupa slot sem
   aparecer (comportamento do sistema); botão da ficha só aparece se a ficha já tem cyberdeck ao abrir;
-  rezzar antes do Jack In não conta para "uma vez por Netrun" (Core não conferido). README sem a
-  janela nova (atualizar na próxima versão publicada).
+  rezzar antes do Jack In não conta para "uma vez por Netrun" (Core não conferido).
+- Publicado como v0.3.0 (2026-11-11, pedido do usuário): commit 99f6357 no `main`; instantâneo
+  8252335 (autor noreply) em `origin/main`; README com a janela do cyberdeck; release v0.3.0 (não
+  pre-release) com `module.zip` e `module.json`. Conferido: URL do manifesto e do zip respondem 200;
+  manifesto com versão 0.3.0 e `download` certo; zip com `module.json` na raiz e o template do deck;
+  build limpo no worktree do `public` (347 testes, sem os arquivos locais e sem dados de Black ICE no
+  bundle). Não conferido: atualizar pelo manifesto num Foundry.
+
+### Visual de cyberdeck (pedido do usuário, 2026-11-11)
+
+- Janela redesenhada como hardware, mantendo ações e arrastar: chassi com parafusos e placa de
+  identificação (LED de energia "Ligado/Desligado", nome do deck, "Equipar"); medidor de slots
+  segmentado (programa, ligado aceso, upgrade âmbar, slot preso listrado); baias numeradas 01, 02…
+  (intervalo para programas de mais de um slot) com encaixes vazios; programas como cartuchos com
+  pinos, ícone por classe, LED de estado (verde ligado, âmbar neutralizado, vermelho destruído,
+  magenta atacante), barra de REZ e botões Rezzar/Derrezzar e ejetar; rodapé com a porta neural
+  (livre ou em uso/conectada); programas fora do deck num "estojo". Slot ocupado por item apagado
+  agora aparece como "Slot preso", com explicação. Janela padrão 880×640.
+- Automatizado: `npm run check` exit 0 (350 testes).
+- Manual real (Runner Teste): deck original, deck Excellent (slot preso visível), Armor ligado
+  (cartucho e segmento acesos), See Ya arrastado ao estojo e reinstalado, ator conectado travado com
+  a porta em uso; sem erros do módulo. Mundo restaurado (Armor derrezzado com REZ 3).
+- Não conferido: layout estreito (< 680 px), movimento reduzido, pt-BR na tela.
 
 ## Entrega anterior: E7-01 (editor de arquitetura, D42)
 
@@ -359,7 +380,7 @@ Lista de 15 itens do teste com o amigo, todos tratados:
 
 ## Próxima ação concreta
 
-E7-02 pronta no diretório de trabalho (sem commit, não publicada). Próximas: revisão da janela do cyberdeck e do editor pelo usuário; E6-13 (Netrunners NPC genéricas por dificuldade) quando
+E7-02 publicada como v0.3.0; visual de cyberdeck publicado como v0.3.1. Próximas: revisão da janela do cyberdeck e do editor pelo usuário; E6-13 (Netrunners NPC genéricas por dificuldade) quando
 o usuário pedir; E6-11c bloqueada (conferir no Core). Novas versões seguem docs/DEVELOPMENT.md.
 `pacote-teste/` só a pedido.
 

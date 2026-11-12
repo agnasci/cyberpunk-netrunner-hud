@@ -2489,14 +2489,21 @@
   flex: 1 1 100%;
 }
 
-/* Cyberdeck da jogadora (E7-02): cartões de programa do HUD em slots do deck e na ficha. */
+/* Cyberdeck da jogadora (E7-02): chassi com placa, medidor de slots, baias numeradas e programas
+   como cartuchos; a lista da ficha é um estojo de chips. */
 .cnh-deckapp {
+  --dk-metal: #0d161d;
+  --dk-metal-2: #131f28;
+  --dk-edge: rgba(62, 240, 230, 0.28);
   display: flex;
   flex-direction: column;
 }
-.cnh-deckapp .cnh-dk-body {
+.cnh-dk-body {
+  display: grid;
   flex: 1 1 auto;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 12px;
+  min-height: 0;
 }
 .cnh-dk-header {
   grid-template-columns: minmax(0, 1fr) auto;
@@ -2504,123 +2511,523 @@
 .cnh-dk-actor {
   margin-top: 6px;
 }
+
+/* Abas de deck: etiquetas de cartucho com LED de equipado. */
+.cnh-dk-rig {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
 .cnh-dk-decks {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-bottom: 10px;
+  gap: 6px;
+}
+.cnh-app .cnh-hud .cnh-dk-deck-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border: 1px solid var(--cnh-line);
+  background: var(--dk-metal);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cnh-muted);
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+.cnh-app .cnh-hud .cnh-dk-deck-tab.is-active {
+  border-color: var(--cnh-cyan);
+  color: var(--cnh-text);
+  background: rgba(62, 240, 230, 0.1);
 }
 .cnh-app .cnh-hud .cnh-dk-deck-tab small {
   color: var(--cnh-muted);
 }
-.cnh-dk-deckhead {
+
+/* LEDs */
+.cnh-dk-led {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #26333b;
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.8);
+}
+.cnh-dk-deck-tab.is-equipped .cnh-dk-led,
+.cnh-dk-chassis.is-on .cnh-dk-led.is-power,
+.cnh-dk-chip.is-led-on .cnh-dk-led {
+  background: var(--cnh-green);
+  box-shadow: 0 0 6px var(--cnh-green);
+}
+.cnh-dk-chip.is-led-on .cnh-dk-led {
+  animation: cnh-blink 1.8s ease-in-out infinite;
+}
+.cnh-dk-chip.is-led-warn .cnh-dk-led {
+  background: var(--cnh-amber);
+  box-shadow: 0 0 6px var(--cnh-amber);
+}
+.cnh-dk-chip.is-led-dead .cnh-dk-led {
+  background: var(--cnh-red);
+  box-shadow: 0 0 6px var(--cnh-red);
+}
+.cnh-dk-chip.is-led-ready .cnh-dk-led {
+  background: var(--cnh-magenta);
+  box-shadow: 0 0 5px var(--cnh-magenta);
+}
+
+/* Chassi do deck */
+.cnh-dk-chassis {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  padding: 16px 18px 12px;
+  border: 1px solid var(--dk-edge);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 40%),
+    repeating-linear-gradient(90deg, transparent 0 3px, rgba(255, 255, 255, 0.012) 3px 4px),
+    var(--dk-metal);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 0 3px rgba(0, 0, 0, 0.35);
+  clip-path: polygon(
+    18px 0,
+    calc(100% - 18px) 0,
+    100% 18px,
+    100% calc(100% - 18px),
+    calc(100% - 18px) 100%,
+    18px 100%,
+    0 calc(100% - 18px),
+    0 18px
+  );
+}
+.cnh-dk-chassis.is-on {
+  border-color: rgba(62, 240, 230, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 0 3px rgba(0, 0, 0, 0.35),
+    inset 0 0 40px rgba(62, 240, 230, 0.06);
+}
+.cnh-dk-screw {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #4a5a63, #1a252c 70%);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+}
+.cnh-dk-screw::after {
+  content: "";
+  position: absolute;
+  inset: 3.5px 1px;
+  background: rgba(0, 0, 0, 0.6);
+  transform: rotate(35deg);
+}
+.cnh-dk-screw.is-tl {
+  top: 5px;
+  left: 24px;
+}
+.cnh-dk-screw.is-tr {
+  top: 5px;
+  right: 24px;
+}
+.cnh-dk-screw.is-bl {
+  bottom: 5px;
+  left: 24px;
+}
+.cnh-dk-screw.is-br {
+  bottom: 5px;
+  right: 24px;
+}
+
+/* Placa de identificação */
+.cnh-dk-plate {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 12px;
+  padding: 6px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.6);
+  background: linear-gradient(180deg, #0a1116, #060b0f);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
 }
-.cnh-dk-deckname {
-  font-size: 16px;
-}
-.cnh-dk-equip {
-  font-size: 10px;
-  letter-spacing: 0.12em;
+.cnh-dk-power {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--cnh-amber);
+  white-space: nowrap;
+  color: var(--cnh-muted);
 }
-.cnh-dk-equip.is-on {
+.cnh-dk-chassis.is-on .cnh-dk-power {
   color: var(--cnh-green);
 }
-.cnh-dk-slotbar {
-  margin-bottom: 10px;
+.cnh-dk-brand {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--cnh-font-display);
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--cnh-muted);
 }
-.cnh-dk-slotbar.is-full > span {
-  background: var(--cnh-amber);
-  color: var(--cnh-amber);
+.cnh-dk-chassis.is-on .cnh-dk-brand {
+  color: var(--cnh-cyan);
+  text-shadow: 0 0 10px rgba(62, 240, 230, 0.45);
 }
-.cnh-dk-slots,
-.cnh-dk-pool {
-  min-height: 60px;
+.cnh-app .cnh-hud .cnh-dk-equip-btn {
+  padding: 5px 12px;
+}
+
+/* Medidor de slots segmentado */
+.cnh-dk-meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cnh-muted);
+}
+.cnh-dk-segments {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 3px;
+}
+.cnh-dk-seg {
+  flex: 1 1 0;
+  height: 9px;
+  border: 1px solid rgba(62, 240, 230, 0.2);
+  transform: skewX(-20deg);
+}
+.cnh-dk-seg.is-program {
+  background: rgba(62, 240, 230, 0.4);
+}
+.cnh-dk-seg.is-program.is-on {
+  background: var(--cnh-cyan);
+  box-shadow: 0 0 6px rgba(62, 240, 230, 0.7);
+}
+.cnh-dk-seg.is-upgrade {
+  background: color-mix(in srgb, var(--cnh-amber) 55%, transparent);
+}
+.cnh-dk-seg.is-ghost {
+  background: repeating-linear-gradient(45deg, rgba(255, 59, 78, 0.55) 0 2px, transparent 2px 4px);
+}
+.cnh-dk-meter-value {
+  font-family: var(--cnh-font-display);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  color: var(--cnh-cyan);
+}
+
+/* Baias */
+.cnh-dk-bays {
+  display: grid;
+  flex: 1 1 auto;
+  align-content: start;
+  gap: 6px;
+  min-height: 0;
+  margin: 0;
   padding: 4px;
+  overflow: auto;
+  list-style: none;
   border: 1px dashed transparent;
   transition:
     border-color 0.15s,
     background 0.15s;
 }
-.cnh-deckapp.drag-loose .cnh-dk-slots,
-.cnh-deckapp.drag-installed .cnh-dk-pool {
-  border-color: rgba(62, 240, 230, 0.4);
+.cnh-dk-bay {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: stretch;
+  gap: 6px;
 }
-.cnh-dk-slots.is-drop-over,
-.cnh-dk-pool.is-drop-over {
-  border-color: var(--cnh-cyan);
-  background: rgba(62, 240, 230, 0.08);
+.cnh-dk-bay-num {
+  display: grid;
+  place-items: center;
+  border-right: 1px solid rgba(62, 240, 230, 0.18);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: rgba(62, 240, 230, 0.45);
 }
-.cnh-dk-card {
+.cnh-dk-socket {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  border: 1px dashed rgba(62, 240, 230, 0.16);
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.7);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(62, 240, 230, 0.3);
+}
+.cnh-dk-socket.is-ghost {
+  border-color: rgba(255, 59, 78, 0.3);
+  color: color-mix(in srgb, var(--cnh-red) 65%, var(--cnh-muted));
+}
+
+/* Cartucho de programa */
+.cnh-dk-chip {
   position: relative;
-  padding-right: 22px;
+  display: grid;
+  grid-template-columns: 7px 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 6px 8px 6px 0;
+  border: 1px solid rgba(62, 240, 230, 0.2);
+  background: linear-gradient(90deg, var(--dk-metal-2), #0b141a);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    opacity 0.15s;
 }
-.cnh-dk-card.is-draggable {
+.cnh-dk-pins {
+  align-self: stretch;
+  background: repeating-linear-gradient(180deg, #b58f3c 0 3px, transparent 3px 6px);
+  opacity: 0.5;
+}
+.cnh-dk-chip-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(62, 240, 230, 0.2);
+  background: #060b0f;
+  font-size: 13px;
+  color: var(--cnh-muted);
+}
+.cnh-dk-chip-main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.cnh-dk-chip-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.cnh-dk-chip-name {
+  overflow: hidden;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cnh-dk-chip-state {
+  margin-left: auto;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--cnh-muted);
+}
+.cnh-dk-chip-meta {
+  overflow: hidden;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--cnh-muted);
+}
+.cnh-dk-rez {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--cnh-muted);
+}
+.cnh-dk-chip-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.cnh-dk-chip.is-led-on {
+  border-color: rgba(62, 240, 230, 0.55);
+  background: linear-gradient(90deg, rgba(62, 240, 230, 0.12), #0b141a 60%);
+}
+.cnh-dk-chip.is-led-on .cnh-dk-pins {
+  opacity: 0.95;
+}
+.cnh-dk-chip.is-led-on .cnh-dk-chip-icon {
+  border-color: var(--cnh-cyan);
+  color: var(--cnh-cyan);
+  text-shadow: 0 0 8px var(--cnh-cyan);
+}
+.cnh-dk-chip.is-led-on .cnh-dk-chip-state {
+  color: var(--cnh-green);
+}
+.cnh-dk-chip.is-attacker .cnh-dk-chip-icon,
+.cnh-dk-chip.is-attacker .cnh-dk-chip-state {
+  color: var(--cnh-magenta);
+}
+.cnh-dk-chip.is-led-warn {
+  border-color: color-mix(in srgb, var(--cnh-amber) 45%, transparent);
+}
+.cnh-dk-chip.is-led-warn .cnh-dk-chip-state {
+  color: var(--cnh-amber);
+}
+.cnh-dk-chip.is-led-dead {
+  opacity: 0.55;
+  filter: grayscale(0.6);
+}
+.cnh-dk-chip.is-led-dead .cnh-dk-chip-state {
+  color: var(--cnh-red);
+}
+.cnh-dk-chip.is-upgrade .cnh-dk-chip-icon,
+.cnh-dk-chip.is-upgrade .cnh-dk-chip-state {
+  color: var(--cnh-amber);
+}
+.cnh-dk-chip.is-draggable {
   cursor: grab;
   touch-action: none;
   user-select: none;
 }
-.cnh-dk-card.is-drag-source {
-  opacity: 0.3;
+.cnh-dk-chip.is-draggable:hover {
+  border-color: rgba(62, 240, 230, 0.6);
 }
-.cnh-dk-card.is-neutralized {
-  border-left-color: var(--cnh-amber);
-  opacity: 1;
+.cnh-dk-chip.is-drag-source {
+  opacity: 0.25;
 }
-.cnh-dk-icon {
-  width: 14px;
+
+/* Botões do cartucho */
+.cnh-app .cnh-hud .cnh-dk-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--cnh-line);
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--cnh-cyan);
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
-.cnh-dk-card:not(.is-rezzed) .cnh-dk-icon {
+.cnh-app .cnh-hud .cnh-dk-btn:hover:not(:disabled) {
+  background: rgba(62, 240, 230, 0.18);
+  color: #fff;
+}
+.cnh-app .cnh-hud .cnh-dk-btn.is-derez {
+  border-color: rgba(109, 255, 160, 0.4);
+  color: var(--cnh-green);
+}
+.cnh-app .cnh-hud .cnh-dk-btn.is-eject {
+  width: 24px;
+  justify-content: center;
+  padding: 0;
+  border-color: rgba(255, 46, 136, 0.35);
+  color: var(--cnh-magenta);
+}
+.cnh-app .cnh-hud .cnh-dk-btn.is-eject:hover:not(:disabled) {
+  background: rgba(255, 46, 136, 0.18);
+}
+.cnh-app .cnh-hud .cnh-dk-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+/* Porta neural (rodapé do chassi) */
+.cnh-dk-port {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(62, 240, 230, 0.12);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--cnh-muted);
 }
-.cnh-dk-buttons {
+.cnh-dk-vents {
+  flex: none;
+  width: 64px;
+  height: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.7) 0 3px, transparent 3px 6px);
+}
+.cnh-dk-jack {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--cnh-line);
+  border-radius: 50%;
+  background: #05090c;
+  font-size: 9px;
+  color: var(--cnh-muted);
+}
+.cnh-dk-jack.is-live {
+  border-color: var(--cnh-magenta);
+  color: var(--cnh-magenta);
+  box-shadow: 0 0 8px rgba(255, 46, 136, 0.5);
+}
+
+/* Estojo de chips (programas na ficha) */
+.cnh-dk-case {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  grid-column: 1 / -1;
+  flex-direction: column;
 }
-.cnh-dk-grip {
-  position: absolute;
-  top: 8px;
-  right: 6px;
-  font-size: 11px;
+.cnh-dk-pool {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-height: 70px;
+  padding: 6px;
+  border: 1px dashed rgba(62, 240, 230, 0.12);
+  background: rgba(0, 0, 0, 0.25);
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
-.cnh-dk-upgrade {
-  border-left-color: var(--cnh-amber);
+.cnh-dk-pool .cnh-dk-chip {
   opacity: 0.85;
 }
-.cnh-dk-free {
-  display: grid;
-  place-items: center;
-  min-height: 34px;
-  border: 1px dashed rgba(62, 240, 230, 0.14);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(62, 240, 230, 0.3);
-  list-style: none;
+.cnh-dk-pool .cnh-dk-chip:hover {
+  opacity: 1;
 }
-.cnh-deckapp.drag-loose .cnh-dk-free {
+
+/* Arrastar: destino aceso */
+.cnh-deckapp.drag-loose .cnh-dk-bays,
+.cnh-deckapp.drag-installed .cnh-dk-pool {
   border-color: rgba(62, 240, 230, 0.45);
+}
+.cnh-deckapp.drag-loose .cnh-dk-bay.is-free .cnh-dk-socket {
+  border-color: rgba(62, 240, 230, 0.5);
   color: var(--cnh-cyan);
+}
+.cnh-dk-bays.is-drop-over,
+.cnh-dk-pool.is-drop-over {
+  border-color: var(--cnh-cyan);
+  background: rgba(62, 240, 230, 0.07);
 }
 .cnh-dk-dropout {
   display: none;
   place-items: center;
-  min-height: 34px;
+  min-height: 38px;
   border: 1px dashed color-mix(in srgb, var(--cnh-magenta) 50%, transparent);
-  font-size: 11px;
-  letter-spacing: 0.12em;
+  font-size: 10px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--cnh-magenta);
-  list-style: none;
 }
 .cnh-deckapp.drag-installed .cnh-dk-dropout {
   display: grid;
@@ -2632,7 +3039,8 @@
   font-size: 11px;
   color: var(--cnh-muted);
 }
-.cnh-dk-loose .cnh-action {
+.cnh-dk-case .cnh-action {
+  align-self: flex-start;
   margin-top: 6px;
 }
 .cnh-app .cnh-hud .cnh-deck-open {
@@ -2640,7 +3048,12 @@
   text-decoration: underline dotted;
   cursor: pointer;
 }
-@container (max-width: 640px) {
+@media (prefers-reduced-motion: reduce) {
+  .cnh-dk-chip.is-led-on .cnh-dk-led {
+    animation: none;
+  }
+}
+@container (max-width: 680px) {
   .cnh-app .cnh-hud .cnh-dk-body {
     grid-template-columns: minmax(0, 1fr);
     overflow: auto;
@@ -2650,5 +3063,8 @@
   }
   .cnh-app .cnh-hud .cnh-dk-header .cnh-readouts {
     flex-wrap: wrap;
+  }
+  .cnh-dk-chassis {
+    flex: none;
   }
 }

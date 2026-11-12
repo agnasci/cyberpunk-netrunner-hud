@@ -744,7 +744,13 @@
         "one-copy": "a copy is already on (Armor, Flak and Shield: one at a time)",
         "already-equipped": "the deck is already equipped"
       },
-      "OpenFromHud": "Open the cyberdeck (set up before Jack In)"
+      "OpenFromHud": "Open the cyberdeck (set up before Jack In)",
+      "PowerOn": "Powered",
+      "PowerOff": "Unpowered",
+      "GhostSlot": "Stuck slot",
+      "GhostHint": "Taken by an item that was deleted from the sheet (the system still counts it). Fix the deck from the sheet to free it.",
+      "PortIdle": "Neural port free · ready to Jack In",
+      "PortLive": "Neural port in use · jacked in"
     }
   }
 }

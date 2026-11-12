@@ -1,18 +1,24 @@
-{{#*inline "cnhDeckCard"}}
-<li class="cnh-program cnh-dk-card {{#if isRezzed}}is-rezzed{{/if}} {{#if isDepleted}}is-depleted{{/if}} {{#if isNeutralized}}is-neutralized{{/if}} {{#if draggable}}is-draggable{{/if}}" data-program-id="{{itemId}}" data-zone="{{zone}}">
-  <span class="cnh-program-name"><i class="fa-solid {{icon}} cnh-dk-icon" aria-hidden="true"></i> {{name}}</span>
-  <span class="cnh-program-state">{{stateLabel}}</span>
-  {{#if kindLabel}}<span class="cnh-program-kind">{{kindLabel}}</span>{{/if}}
-  <span class="cnh-program-kind">{{#if statLabel}}{{statLabel}} · {{/if}}{{sizeLabel}}</span>
-  {{#if rezLabel}}<span class="cnh-program-kind">REZ {{rezLabel}}</span>
-  <span class="cnh-bar" role="img" aria-label="REZ {{rezLabel}}"><span style="--fill: {{percent}}%"></span></span>{{/if}}
-  <span class="cnh-dk-buttons">
-    {{#if rezAction}}<button type="button" class="cnh-program-action" data-action="rez" data-program-id="{{itemId}}" data-rez="{{rezAction.rez}}" data-tooltip="{{rezAction.tip}}" aria-label="{{rezAction.label}} {{name}}" {{#if rezAction.disabled}}disabled{{/if}}><i class="fa-solid {{#if rezAction.rez}}fa-circle-up{{else}}fa-circle-down{{/if}}" aria-hidden="true"></i> {{rezAction.label}}</button>{{/if}}
-    {{#if installAction}}<button type="button" class="cnh-program-action" data-action="install" data-program-id="{{itemId}}" data-tooltip="{{installAction.tip}}" aria-label="{{localize "CNH.Deck.Install"}} {{name}}" {{#if installAction.disabled}}disabled{{/if}}><i class="fa-solid fa-download" aria-hidden="true"></i> {{localize "CNH.Deck.Install"}}</button>{{/if}}
-    {{#if uninstallAction}}<button type="button" class="cnh-program-action is-attack" data-action="uninstall" data-program-id="{{itemId}}" data-tooltip="{{uninstallAction.tip}}" aria-label="{{localize "CNH.Deck.Uninstall"}} {{name}}" {{#if uninstallAction.disabled}}disabled{{/if}}><i class="fa-solid fa-eject" aria-hidden="true"></i> {{localize "CNH.Deck.Uninstall"}}</button>{{/if}}
+{{#*inline "cnhDeckChip"}}
+<div class="cnh-dk-chip cnh-dk-card is-led-{{led}} {{#if isRezzed}}is-rezzed{{/if}} {{#if isNeutralized}}is-neutralized{{/if}} {{#if isDepleted}}is-depleted{{/if}} {{#if isAttacker}}is-attacker{{/if}} {{#if draggable}}is-draggable{{/if}}" data-program-id="{{itemId}}" data-zone="{{zone}}">
+  <span class="cnh-dk-pins" aria-hidden="true"></span>
+  <span class="cnh-dk-chip-icon" aria-hidden="true"><i class="fa-solid {{icon}}"></i></span>
+  <span class="cnh-dk-chip-main">
+    <span class="cnh-dk-chip-top">
+      <span class="cnh-dk-chip-name">{{name}}</span>
+      <span class="cnh-dk-led" aria-hidden="true"></span>
+      <span class="cnh-dk-chip-state">{{stateLabel}}</span>
+    </span>
+    <span class="cnh-dk-chip-meta">{{#if kindLabel}}{{kindLabel}}{{/if}}{{#if statLabel}} · {{statLabel}}{{/if}} · {{sizeLabel}}</span>
+    {{#if rezLabel}}
+    <span class="cnh-dk-rez"><span class="cnh-dk-rez-label">REZ {{rezLabel}}</span><span class="cnh-bar" role="img" aria-label="REZ {{rezLabel}}"><span style="--fill: {{percent}}%"></span></span></span>
+    {{/if}}
   </span>
-  {{#if draggable}}<i class="fa-solid fa-grip-vertical cnh-ed-grip cnh-dk-grip" aria-hidden="true"></i>{{/if}}
-</li>
+  <span class="cnh-dk-chip-actions">
+    {{#if rezAction}}<button type="button" class="cnh-dk-btn {{#if rezAction.rez}}is-rez{{else}}is-derez{{/if}}" data-action="rez" data-program-id="{{itemId}}" data-rez="{{rezAction.rez}}" data-tooltip="{{rezAction.tip}}" aria-label="{{rezAction.label}} {{name}}" {{#if rezAction.disabled}}disabled{{/if}}><i class="fa-solid fa-power-off" aria-hidden="true"></i><span>{{rezAction.label}}</span></button>{{/if}}
+    {{#if installAction}}<button type="button" class="cnh-dk-btn is-install" data-action="install" data-program-id="{{itemId}}" data-tooltip="{{installAction.tip}}" aria-label="{{localize "CNH.Deck.Install"}} {{name}}" {{#if installAction.disabled}}disabled{{/if}}><i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>{{localize "CNH.Deck.Install"}}</span></button>{{/if}}
+    {{#if uninstallAction}}<button type="button" class="cnh-dk-btn is-eject" data-action="uninstall" data-program-id="{{itemId}}" data-tooltip="{{uninstallAction.tip}}" aria-label="{{localize "CNH.Deck.Uninstall"}} {{name}}" {{#if uninstallAction.disabled}}disabled{{/if}}><i class="fa-solid fa-eject" aria-hidden="true"></i></button>{{/if}}
+  </span>
+</div>
 {{/inline}}
 <div class="cnh-hud cnh-deckapp">
   <div class="cnh-scanlines" aria-hidden="true"></div>
@@ -43,12 +49,6 @@
         <dt>{{localize "CNH.Hud.NetActions"}}</dt>
         <dd>{{netActions}}</dd>
       </div>
-      {{#if deck}}
-      <div class="cnh-readout">
-        <dt>{{localize "CNH.Deck.Slots"}}</dt>
-        <dd>{{deck.slotsLabel}}</dd>
-      </div>
-      {{/if}}
       <div class="cnh-readout">
         <dt>{{localize "CNH.Hud.Rezzed"}}</dt>
         <dd>{{rezzedCount}}</dd>
@@ -60,51 +60,63 @@
   {{#if noEquipped}}<p class="cnh-ed-banner" role="note"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {{localize "CNH.Deck.NoEquipped"}}</p>{{/if}}
   {{#if multipleEquipped}}<p class="cnh-ed-banner" role="note"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {{localize "CNH.Deck.MultipleEquipped"}}</p>{{/if}}
 
-  <div class="cnh-body cnh-dk-body">
-    <section class="cnh-panel cnh-dk-deck" aria-label="{{localize "CNH.Deck.DeckPanel"}}">
-      <h3 class="cnh-panel-title">{{localize "CNH.Deck.DeckPanel"}}</h3>
+  <div class="cnh-dk-body">
+    <section class="cnh-dk-rig" aria-label="{{localize "CNH.Deck.DeckPanel"}}">
       {{#if manyDecks}}
       <div class="cnh-dk-decks" role="group" aria-label="{{localize "CNH.Deck.Choose"}}">
         {{#each decks}}
-        <button type="button" class="cnh-tab cnh-dk-deck-tab {{#if active}}is-active{{/if}}" data-action="selectDeck" data-deck-id="{{itemId}}" aria-pressed="{{active}}">
-          {{#if equipped}}<i class="fa-solid fa-plug-circle-check" aria-hidden="true" data-tooltip="{{localize "CNH.Deck.Equipped"}}"></i>{{/if}}<span>{{name}}</span> <small>{{slotsLabel}}</small>
+        <button type="button" class="cnh-dk-deck-tab {{#if active}}is-active{{/if}} {{#if equipped}}is-equipped{{/if}}" data-action="selectDeck" data-deck-id="{{itemId}}" aria-pressed="{{active}}">
+          <span class="cnh-dk-led" aria-hidden="true"></span><span>{{name}}</span><small>{{slotsLabel}}</small>
         </button>
         {{/each}}
       </div>
       {{/if}}
       {{#if deck}}
-      <div class="cnh-dk-deckhead">
-        <div>
-          <div class="cnh-handle cnh-dk-deckname"><i class="fa-solid fa-microchip" aria-hidden="true"></i> {{deck.name}}</div>
-          <span class="cnh-dk-equip {{#if deck.equipped}}is-on{{/if}}">{{#if deck.equipped}}<i class="fa-solid fa-plug-circle-check" aria-hidden="true"></i> {{localize "CNH.Deck.Equipped"}}{{else}}<i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i> {{localize "CNH.Deck.NotEquipped"}}{{/if}}</span>
+      <div class="cnh-dk-chassis {{#if deck.equipped}}is-on{{/if}} {{#if locked}}is-locked{{/if}}">
+        <span class="cnh-dk-screw is-tl" aria-hidden="true"></span><span class="cnh-dk-screw is-tr" aria-hidden="true"></span>
+        <span class="cnh-dk-screw is-bl" aria-hidden="true"></span><span class="cnh-dk-screw is-br" aria-hidden="true"></span>
+        <div class="cnh-dk-plate">
+          <span class="cnh-dk-power" data-tooltip="{{#if deck.equipped}}{{localize "CNH.Deck.Equipped"}}{{else}}{{localize "CNH.Deck.NotEquipped"}}{{/if}}"><span class="cnh-dk-led is-power" aria-hidden="true"></span>{{#if deck.equipped}}{{localize "CNH.Deck.PowerOn"}}{{else}}{{localize "CNH.Deck.PowerOff"}}{{/if}}</span>
+          <span class="cnh-dk-brand"><i class="fa-solid fa-microchip" aria-hidden="true"></i> {{deck.name}}</span>
+          {{#if deck.equipAction}}<button type="button" class="cnh-action cnh-action--success cnh-dk-equip-btn" data-action="equipDeck" data-tooltip="{{deck.equipAction.tip}}" {{#if deck.equipAction.disabled}}disabled{{/if}}><i class="fa-solid fa-plug" aria-hidden="true"></i><span>{{localize "CNH.Deck.Equip"}}</span></button>{{/if}}
         </div>
-        {{#if deck.equipAction}}<button type="button" class="cnh-action cnh-action--success" data-action="equipDeck" data-tooltip="{{deck.equipAction.tip}}" {{#if deck.equipAction.disabled}}disabled{{/if}}><i class="fa-solid fa-plug" aria-hidden="true"></i><span>{{localize "CNH.Deck.Equip"}}</span></button>{{/if}}
+        <div class="cnh-dk-meter" role="img" aria-label="{{localize "CNH.Deck.Slots"}} {{deck.slotsLabel}}">
+          <span class="cnh-dk-meter-label">{{localize "CNH.Deck.Slots"}}</span>
+          <span class="cnh-dk-segments">{{#each segments}}<span class="cnh-dk-seg is-{{kind}} {{#if on}}is-on{{/if}}"></span>{{/each}}</span>
+          <span class="cnh-dk-meter-value">{{deck.slotsLabel}}</span>
+        </div>
+        <ol class="cnh-dk-bays" data-drop="deck">
+          {{#each bays}}
+          <li class="cnh-dk-bay is-{{kind}}">
+            <span class="cnh-dk-bay-num">{{num}}</span>
+            {{#if card}}{{> cnhDeckChip card zone="deck"}}{{/if}}
+            {{#if name}}<div class="cnh-dk-chip is-upgrade"><span class="cnh-dk-pins" aria-hidden="true"></span><span class="cnh-dk-chip-icon" aria-hidden="true"><i class="fa-solid fa-screwdriver-wrench"></i></span><span class="cnh-dk-chip-main"><span class="cnh-dk-chip-top"><span class="cnh-dk-chip-name">{{name}}</span><span class="cnh-dk-chip-state">{{localize "CNH.Deck.Upgrade"}}</span></span><span class="cnh-dk-chip-meta">{{sizeLabel}}</span></span></div>{{/if}}
+            {{#if ghost}}<span class="cnh-dk-socket is-ghost" data-tooltip="{{localize "CNH.Deck.GhostHint"}}"><i class="fa-solid fa-ban" aria-hidden="true"></i> {{localize "CNH.Deck.GhostSlot"}}</span>{{/if}}
+            {{#if free}}<span class="cnh-dk-socket"><i class="fa-solid fa-plus" aria-hidden="true"></i> {{localize "CNH.Deck.FreeSlot"}}</span>{{/if}}
+          </li>
+          {{/each}}
+        </ol>
+        <div class="cnh-dk-port">
+          <span class="cnh-dk-vents" aria-hidden="true"></span>
+          <span class="cnh-dk-jack {{#if locked}}is-live{{/if}}" aria-hidden="true"><i class="fa-solid fa-plug"></i></span>
+          <span class="cnh-dk-port-label">{{#if locked}}{{localize "CNH.Deck.PortLive"}}{{else}}{{localize "CNH.Deck.PortIdle"}}{{/if}}</span>
+        </div>
       </div>
-      <div class="cnh-stat"><span>{{localize "CNH.Deck.Slots"}}</span><strong>{{deck.slotsLabel}}</strong></div>
-      <span class="cnh-bar cnh-dk-slotbar {{#if deck.full}}is-full{{/if}}" role="img" aria-label="{{localize "CNH.Deck.Slots"}} {{deck.slotsLabel}}"><span style="--fill: {{deck.slotsPercent}}%"></span></span>
-      <ul class="cnh-programs cnh-dk-slots" data-drop="deck">
-        {{#each installed}}{{> cnhDeckCard zone="deck"}}{{/each}}
-        {{#each upgrades}}
-        <li class="cnh-program cnh-dk-upgrade"><span class="cnh-program-name"><i class="fa-solid fa-screwdriver-wrench cnh-dk-icon" aria-hidden="true"></i> {{name}}</span><span class="cnh-program-state">{{localize "CNH.Deck.Upgrade"}}</span><span class="cnh-program-kind">{{sizeLabel}}</span></li>
-        {{/each}}
-        {{#each freeSlots}}<li class="cnh-dk-free" aria-hidden="true"><i class="fa-solid fa-plus" aria-hidden="true"></i> {{localize "CNH.Deck.FreeSlot"}}</li>{{/each}}
-        {{#unless installed.length}}{{#unless freeSlots.length}}<li class="cnh-empty">{{localize "CNH.Session.NoPrograms"}}</li>{{/unless}}{{/unless}}
-      </ul>
       {{/if}}
     </section>
 
-    <section class="cnh-panel cnh-dk-loose" aria-label="{{localize "CNH.Deck.SheetPanel"}}">
-      <h3 class="cnh-panel-title">{{localize "CNH.Deck.SheetPanel"}}</h3>
-      <ul class="cnh-programs cnh-dk-pool" data-drop="loose">
-        {{#each loose}}{{> cnhDeckCard zone="loose"}}{{/each}}
-        {{#unless loose.length}}<li class="cnh-empty">{{localize "CNH.Deck.NoLoose"}}</li>{{/unless}}
-        <li class="cnh-dk-dropout" aria-hidden="true"><i class="fa-solid fa-eject" aria-hidden="true"></i> {{localize "CNH.Deck.DropUninstall"}}</li>
-      </ul>
+    <section class="cnh-panel cnh-dk-case" aria-label="{{localize "CNH.Deck.SheetPanel"}}">
+      <h3 class="cnh-panel-title"><i class="fa-solid fa-box-archive" aria-hidden="true"></i> {{localize "CNH.Deck.SheetPanel"}}</h3>
+      <div class="cnh-dk-pool" data-drop="loose">
+        {{#each loose}}{{> cnhDeckChip zone="loose"}}{{/each}}
+        {{#unless loose.length}}<p class="cnh-empty">{{localize "CNH.Deck.NoLoose"}}</p>{{/unless}}
+        <div class="cnh-dk-dropout" aria-hidden="true"><i class="fa-solid fa-eject"></i> {{localize "CNH.Deck.DropUninstall"}}</div>
+      </div>
       {{#if elsewhere.length}}
       <h4 class="cnh-subtitle">{{localize "CNH.Deck.Elsewhere"}}</h4>
       <ul class="cnh-dk-elsewhere">{{#each elsewhere}}<li>{{name}} <small>· {{deckName}}</small></li>{{/each}}</ul>
       {{/if}}
-      <p class="cnh-ed-hint">{{localize "CNH.Deck.Hint"}}</p>
+      <p class="cnh-ed-hint"><i class="fa-solid fa-hand-pointer" aria-hidden="true"></i> {{localize "CNH.Deck.Hint"}}</p>
       <button type="button" class="cnh-action" data-action="openSheet"><i class="fa-solid fa-id-card" aria-hidden="true"></i><span>{{localize "CNH.Deck.OpenSheet"}}</span></button>
     </section>
   </div>

@@ -60,7 +60,7 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       icon: "fa-solid fa-microchip",
       resizable: true,
     },
-    position: { width: 820, height: 600 },
+    position: { width: 880, height: 640 },
     actions: {
       selectDeck: DeckApp.#onSelectDeck,
       equipDeck: DeckApp.#onEquip,
@@ -182,6 +182,18 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
         kindLabel: p.programClass ? t(`CNH.ProgramClass.${p.programClass}`) : "",
         sizeLabel: t("CNH.Deck.Size", { size: String(p.size) }),
         isRezzed: p.rezzed && p.mark === "none",
+        isAttacker: attacker,
+        // LED do cartucho: ligado, neutralizado, destruído, atacante (pronto) ou desligado.
+        led:
+          p.mark === "destroyed"
+            ? "dead"
+            : p.mark === "neutralized"
+              ? "warn"
+              : attacker
+                ? "ready"
+                : p.rezzed
+                  ? "on"
+                  : "off",
         isNeutralized: p.mark === "neutralized",
         isDepleted: p.mark === "destroyed",
         rezLabel: p.rez.max > 0 ? `${p.rez.value}/${p.rez.max}` : "",
@@ -222,8 +234,43 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
         p.rezzed && REZZABLE_CLASSES.has(p.programClass) && equipped?.installed.includes(p.itemId),
     ).length;
 
+    // Baias numeradas do deck: programas (um intervalo se ocupam mais de um slot), upgrades, slots
+    // presos por item apagado (o sistema conta em usedSlots) e livres.
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const bays: Array<Record<string, unknown>> = [];
+    const segments: Array<{ kind: string; on: boolean }> = [];
+    let next = 1;
+    const take = (size: number, kind: string, on = false) => {
+      const span = Math.max(1, size);
+      const label = span > 1 ? `${pad(next)}–${pad(next + span - 1)}` : pad(next);
+      for (let i = 0; i < span; i += 1) segments.push({ kind, on });
+      next += span;
+      return label;
+    };
+    for (const p of installed) {
+      const view = programView(p, true);
+      bays.push({ kind: "program", num: take(p.size, "program", view.led === "on"), card: view });
+    }
+    for (const u of upgrades) {
+      bays.push({
+        kind: "upgrade",
+        num: take(u.size, "upgrade"),
+        name: u.name,
+        sizeLabel: t("CNH.Deck.Size", { size: String(u.size) }),
+      });
+    }
+    if (deck) {
+      const known = [...installed, ...upgrades].reduce((sum, i) => sum + Math.max(1, i.size), 0);
+      const ghost = Math.max(0, deck.usedSlots - known);
+      if (ghost > 0) bays.push({ kind: "ghost", ghost: true, num: take(ghost, "ghost") });
+      for (let i = 0; i < free; i += 1)
+        bays.push({ kind: "free", free: true, num: take(1, "free") });
+    }
+
     return {
       missing: false,
+      bays,
+      segments,
       actorName: snapshot.actorName,
       actorUuid: uuid,
       actors: choices.map((c) => ({ ...c, selected: c.uuid === uuid })),

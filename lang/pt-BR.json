@@ -744,7 +744,13 @@
         "one-copy": "já há uma cópia ligada (Armor, Flak e Shield: uma por vez)",
         "already-equipped": "o deck já está equipado"
       },
-      "OpenFromHud": "Abrir o cyberdeck (configurar antes do Jack In)"
+      "OpenFromHud": "Abrir o cyberdeck (configurar antes do Jack In)",
+      "PowerOn": "Ligado",
+      "PowerOff": "Desligado",
+      "GhostSlot": "Slot preso",
+      "GhostHint": "Ocupado por um item que foi apagado da ficha (o sistema continua contando). Reinstale ou ajuste o deck pela ficha para liberar.",
+      "PortIdle": "Porta neural livre · pronta p/ Jack In",
+      "PortLive": "Porta neural em uso · conectada"
     }
   }
 }
