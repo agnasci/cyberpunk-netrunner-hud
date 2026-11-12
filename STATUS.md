@@ -1,6 +1,6 @@
 # Estado e passagem de contexto
 
-Atualizado em: 2026-11-10.
+Atualizado em: 2026-11-11.
 
 ## Situação
 
@@ -8,6 +8,61 @@ Atualizado em: 2026-11-10.
   decisões D27–D30. **E6-01 a E6-11b concluídas**; E6-11c bloqueada (conferir no Core).
 - E5-02 (licença/pacote final) adiada pelo usuário; pasta `pacote-teste/` serve para testes.
 - Alvo: Foundry V12 (12.343) + Cyberpunk RED – CORE v0.92.4 (D09).
+
+## Última entrega: E7-01 (editor de arquitetura, D42)
+
+- Pedido do usuário (2026-11-11): "Criar arquitetura" pelo mestre, arrastando tipos de nó na UI do
+  HUD, com configuração simples do nó e vínculos prontos.
+- Janela própria no visual do HUD (`ui/arch-editor-app.ts`, `templates/arch-editor.hbs`, CSS
+  `.cnh-editor`): paleta (Password, File, Control Node, Black ICE) arrastável por ponteiro ou por
+  clique + clique na célula; grade com cartões e conectores do HUD (uma linha/branch livre a mais);
+  arrastar nó move (sobre outro troca) ou remove (lixeira); painel do nó com tipo, tipo de Black
+  ICE (sugere a ficha de mesmo nome), ficha do Black ICE, DV (N/A, 4–20), Netrunner NPC e nota;
+  avisos (sem 1A, nó sem caminho pela D28, Black ICE sem tipo, sem nome); "não salvo".
+- Grava no item `netarch` nativo (`saveNetArch`): andares pelo adaptador (`toCprFloors`), vínculo
+  de Black ICE em `flags.<módulo>.ice` (básico vira ficha ao salvar) e de NPC em `npcs` (D37).
+  O diálogo de início seleciona o Black ICE vinculado antes da sugestão por nome.
+- Arquitetura em uso numa sessão ativa: nós gravados travados (lugar, tipo, remoção, NPC); DV,
+  nota e tipo de Black ICE editáveis; nós novos permitidos; a NPC dos nós em uso fica a do HUD.
+- Entradas: ferramenta de cena do mestre "Editor de arquitetura NET"; botão no cabeçalho da
+  arquitetura do HUD (abre a da sessão) e "Criar arquitetura" no HUD sem arquitetura.
+- Automatizado: `npm run check` exit 0; 339 testes (9 novos em `arch-draft.test.ts`: rascunho,
+  travas, avisos, grade, conversão ida e volta pelo adaptador). Testes de código novo: não há versão
+  antiga para vê-los falhar.
+- Manual real (2026-11-11, Foundry V12 + CPR 0.92.4, usuário de teste Gamemaster): ferramenta de
+  cena abre arquitetura nova; arrastar com o mouse colocou Password/File/Black ICE/Control Node,
+  trocou File↔Password e removeu pela lixeira; colocar por clique; bifurcação 2B desenhada; tipo
+  Raven sugeriu a ficha Raven; NPC no Control Node; DV 7 e nota; salvo como "Teste do Editor"
+  (`Item.f39dnCrPUUQr74Ie`, andares e flags conferidos; ficha nativa lê 4 andares); diálogo de
+  início trouxe o Black ICE da flag mesmo apontando para outro ator que o nome sugeriria; botão do
+  HUD abriu a arquitetura da sessão ativa com os 4 nós travados. Achado e corrigido no teste: o
+  fantasma do arrasto ficava deslocado (a container query do `.window-content` vira referência do
+  `position: fixed`).
+- Não conferido: iniciar uma sessão com a arquitetura criada (mesmo caminho de qualquer NetArch);
+  layout estreito (< 760 px); textos em pt-BR na tela (mundo em
+  inglês); Firefox.
+- Mundo de teste: item "Teste do Editor" criado; sessões existentes intactas.
+
+### Revisão do usuário na E7-01 (2026-11-11)
+
+- Botão "Editor de arquitetura NET" no rodapé da aba Items (hook `renderItemDirectory`, só o mestre).
+- Travas só enquanto a arquitetura está numa sessão ativa: recalculadas a cada renderização; o
+  editor renderiza de novo quando as sessões mudam; ao salvar, se a arquitetura entrou em uso
+  depois da edição, nós em uso movidos/removidos/com tipo trocado recusam o salvamento com aviso
+  (`lockConflicts`). Sem sessão, tudo é editável.
+- Netrunner NPC: só personagem/mook sem dono jogador e com cyberdeck equipado (vale também para o
+  vínculo pelo HUD). Um vínculo que já existe continua visível mesmo se sair da lista.
+- Rascunho guardado no navegador do mestre (`localStorage`, um por arquitetura, validado ao ler com
+  `parseDraft`): fechar a janela, trocar de arquitetura ou recarregar não perde a edição; aviso
+  "Rascunho não salvo restaurado"; botão "Descartar" volta ao gravado; salvar apaga o rascunho. A
+  confirmação ao fechar saiu.
+- Automatizado: `npm run check` exit 0; 342 testes (3 novos: conflito de travas, rascunho guardado).
+- Manual real: botão no rodapé da aba Items abre o editor; "Teste do Editor" sem sessão abre sem
+  travas; File removido, janela fechada e reaberta → rascunho restaurado (item gravado intacto, 4
+  andares); sobreviveu a recarregar a página; "Descartar" voltou aos 4 nós e limpou o navegador;
+  lista de NPC sem as Netrunners dos jogadores. Achado: a "Netrunner NPC (CNH)" do mundo de teste
+  tem dono jogador (Runner Teste), então sai da lista; o vínculo dela ao Control Node continua
+  mostrado. Não conferido: destravar ao encerrar a sessão em tela (não encerrei sessões do mundo).
 
 ## Ajustes pós-beta (2026-11-11, revisão do usuário)
 
@@ -262,7 +317,7 @@ Lista de 15 itens do teste com o amigo, todos tratados:
 
 ## Próxima ação concreta
 
-Beta 0.1.0 publicada (ver E5-02). Próximas: E6-13 (Netrunners NPC genéricas por dificuldade) quando
+E7-01 entregue localmente (sem commit/publicação). Próximas: revisão do editor pelo usuário; E6-13 (Netrunners NPC genéricas por dificuldade) quando
 o usuário pedir; E6-11c bloqueada (conferir no Core). Novas versões seguem docs/DEVELOPMENT.md.
 `pacote-teste/` só a pedido.
 

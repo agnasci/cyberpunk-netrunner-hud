@@ -170,6 +170,7 @@
         <span class="cnh-netarch-name">{{architecture.name}}</span>
         {{#if architecture.canReveal}}<span class="cnh-netarch-hint"><i class="fa-solid fa-hand-pointer" aria-hidden="true"></i> {{localize "CNH.Session.RevealHint"}}</span>{{/if}}
         {{#if architecture.itemMissing}}<span class="cnh-netarch-hint cnh-netarch-hint--warn">{{localize "CNH.Session.NetArchMissing"}}</span>{{/if}}
+        {{#if architecture.canReveal}}<button type="button" class="cnh-ed-open" data-action="editArch" data-tooltip="{{localize "CNH.Editor.Edit"}}" aria-label="{{localize "CNH.Editor.Edit"}}"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i></button>{{/if}}
       </div>
       <div class="cnh-grid" style="--cols: {{architecture.columns.length}}">
         {{#if architecture.showBranchHeader}}
@@ -246,6 +247,7 @@
       <div class="cnh-empty-state">
         <i class="fa-solid fa-network-wired" aria-hidden="true"></i>
         <p>{{localize "CNH.Session.NoNetArchInSession"}}</p>
+        {{#if isGm}}<button type="button" class="cnh-action" data-action="editArch"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i><span>{{localize "CNH.Editor.Create"}}</span></button>{{/if}}
       </div>
     </section>
     {{/if}}

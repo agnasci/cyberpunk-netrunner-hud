@@ -109,3 +109,14 @@ Verificado em 2026-11-10 (Foundry V12, CPR v0.92.4):
 - Ator `blackIce`: `system.class`, `system.stats.{per,spd,atk,def,rez:{value,max}}`, `system.notes`,
   `system.cost`. Item `program` de Black ICE: `system.class = "blackice"`, `blackIceType`,
   `damage.{standard,blackIce}`, `atk/def/per/spd`, `rez`, `price.market`, `description.value`.
+
+## Gravar NET Architecture pelo módulo (E7-01)
+
+Testado em execução em 2026-11-11 (Foundry V12, CPR v0.92.4):
+- `CONFIG.Item.documentClass.create({type: "netarch", system: {floors}, flags})` aceita os andares
+  com os campos de texto do modelo (`floor` "1"–"18", `branch` a–h, `content` chave i18n,
+  `blackice` chave ou "--", `dv` "N/A"/"4"–"20", `index` inteiro). O módulo marca o item com uma
+  flag e espera ele aparecer em `game.items` (mesma cautela dos atores do CPR).
+- `item.update({"system.floors": [...]})` substitui o array inteiro; flags de vínculo são
+  atualizadas chave a chave (`-=` para remover). A ficha nativa abre o item gravado ("Floors: 4").
+- Ferramenta de cena com `visible` (V12) some para jogadores.

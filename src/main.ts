@@ -51,6 +51,7 @@ import {
 } from "./session/session-store";
 import { authorityGmId, RequestChannel } from "./transport/request-channel";
 import { NetrunnerHudPrototype } from "./ui/netrunner-hud-app";
+import { ArchEditorApp } from "./ui/arch-editor-app";
 import { SessionHudApp } from "./ui/session-hud-app";
 import { promptStartSession } from "./ui/start-session-dialog";
 
@@ -99,7 +100,18 @@ const hudHandlers = {
     channel.queryNotes(sessionId),
   startSession: (): void => promptAndStart(),
   resolveNow: (sessionId: string): Promise<void> => resolveNow(sessionId),
+  editArchitecture: (itemUuid: string | null): void => openArchEditor(itemUuid),
 };
+
+let archEditor: ArchEditorApp | null = null;
+
+/** Editor de arquitetura do mestre (E7-01); uma instância por cliente (COMPATIBILITY). */
+function openArchEditor(itemUuid: string | null): void {
+  archEditor ??= new ArchEditorApp({
+    inUse: (uuid) => activeSessions.some((s) => s.netArch?.itemUuid === uuid),
+  });
+  void archEditor.open(itemUuid);
+}
 
 /** Abre (ou traz à frente) o protótipo visual local (E1-00). */
 function openPrototype(): void {
@@ -248,6 +260,9 @@ function applySessions(sessions: PublicSession[]): void {
   for (const session of sessions) {
     runAutopilot(previous.find((s) => s.id === session.id) ?? null, session);
   }
+  // Travas do editor valem só enquanto a arquitetura está numa sessão (E7-01).
+  const archsOf = (list: PublicSession[]) => list.map((x) => x.netArch?.itemUuid ?? "").join("|");
+  if (archEditor?.rendered && archsOf(previous) !== archsOf(sessions)) void archEditor.render();
   if (sessions.length === 0) {
     void sessionHud?.close();
     return;
@@ -321,6 +336,30 @@ Hooks.on("getSceneControlButtons", (controls) => {
       button: true,
       onClick: openSessionHud,
     });
+  controls
+    .find((control) => control.name === "token")
+    ?.tools.push({
+      name: `${MODULE_ID}-arch-editor`,
+      title: "CNH.Editor.ControlTitle",
+      icon: "fa-solid fa-diagram-project",
+      button: true,
+      visible: game.user?.isGM === true,
+      onClick: () => openArchEditor(null),
+    });
+});
+
+/** Botão do editor no rodapé da aba Items (pedido do usuário, E7-01), só para o mestre. */
+Hooks.on("renderItemDirectory", (_app, html) => {
+  if (!game.user?.isGM) return;
+  const root = (html as { 0?: HTMLElement })[0] ?? (html as HTMLElement);
+  const footer = root.querySelector?.(".directory-footer");
+  if (!footer || footer.querySelector(".cnh-open-editor")) return;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "cnh-open-editor";
+  button.innerHTML = `<i class="fa-solid fa-diagram-project"></i> ${game.i18n.localize("CNH.Editor.ControlTitle")}`;
+  button.addEventListener("click", () => openArchEditor(null));
+  footer.append(button);
 });
 
 Hooks.once("init", () => {

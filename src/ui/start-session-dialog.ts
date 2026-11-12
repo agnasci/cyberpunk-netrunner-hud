@@ -1,5 +1,9 @@
 import { type IceChoice, listWorldIce } from "../integrations/cpr/foundry-ice";
-import { listWorldNetArchs, readNetArchitecture } from "../integrations/cpr/foundry-netarch";
+import {
+  listWorldNetArchs,
+  readLinkFlag,
+  readNetArchitecture,
+} from "../integrations/cpr/foundry-netarch";
 import type { IceLink } from "../session/session-state";
 import {
   type ActorOption,
@@ -166,10 +170,18 @@ export async function promptStartSession(): Promise<StartSessionChoice | null> {
     };
     const fillIce = () => {
       const nodes = iceNodesOf(archSelect.value);
-      const used = new Set<string>();
+      // Vínculo feito no editor de arquitetura (E7-01) vem antes da sugestão pelo nome.
+      const preset = archSelect.value ? readLinkFlag(archSelect.value, "ice") : {};
+      const used = new Set<string>(
+        Object.values(preset).filter((uuid) => iceActors.some((a) => a.uuid === uuid)),
+      );
       iceRows.innerHTML = nodes
         .map((node) => {
-          const suggested = suggestIce(node.iceName, iceActors, used);
+          const linked = preset[node.key];
+          const suggested =
+            linked && iceActors.some((a) => a.uuid === linked)
+              ? linked
+              : suggestIce(node.iceName, iceActors, used);
           if (suggested) used.add(suggested);
           const options = [
             option("", t("CNH.Start.IceChoose")),

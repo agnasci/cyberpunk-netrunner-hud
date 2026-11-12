@@ -96,3 +96,52 @@ function readFloor(entry: unknown, issues: NetArchIssue[]): NetFloor | null {
   const description = typeof e["description"] === "string" ? e["description"] : "";
   return { key, floor: floorNo, branch, content, blackIceKey, dv, description };
 }
+
+/** Tipos de Black ICE aceitos em `floors[].blackice` (modelo de dados do CPR v0.92.4). */
+export const BLACK_ICE_KEYS = [
+  "asp",
+  "giant",
+  "hellhound",
+  "kraken",
+  "liche",
+  "raven",
+  "scorpion",
+  "skunk",
+  "wisp",
+  "dragon",
+  "killer",
+  "sabertooth",
+].map((id) => `${BLACK_ICE_KEY_PREFIX}${id}`);
+
+const KEY_BY_CONTENT = Object.fromEntries(
+  Object.entries(CONTENT_BY_KEY).map(([key, content]) => [content, key]),
+) as Record<NetFloorContent, string>;
+
+/** Andar no formato do item do CPR v0.92.4 (campos de texto com as escolhas do modelo). */
+export interface CprFloorData {
+  index: number;
+  floor: string;
+  branch: string;
+  content: string;
+  blackice: string;
+  dv: string;
+  description: string;
+}
+
+/** Inverso de `normalizeNetArch` para os andares (editor de arquitetura, E7-01). */
+export function toCprFloors(floors: readonly NetFloor[]): CprFloorData[] {
+  return [...floors]
+    .sort((a, b) => a.floor - b.floor || a.branch.localeCompare(b.branch))
+    .map((f) => ({
+      index: f.key,
+      floor: String(f.floor),
+      branch: f.branch,
+      content: KEY_BY_CONTENT[f.content],
+      blackice:
+        f.content === "blackice" && f.blackIceKey && BLACK_ICE_KEYS.includes(f.blackIceKey)
+          ? f.blackIceKey
+          : "--",
+      dv: f.dv !== null && f.dv >= 4 && f.dv <= 20 ? String(f.dv) : "N/A",
+      description: f.description,
+    }));
+}

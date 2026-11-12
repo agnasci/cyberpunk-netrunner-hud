@@ -1,6 +1,7 @@
 import {
   areLinked,
   type NetArchitecture,
+  type NodePosition,
   type NetFloorContent,
   type PublicFloor,
 } from "../domain/net-architecture";
@@ -160,11 +161,14 @@ export function buildArchitectureView(
   };
 }
 
-/** Conectores entre duas linhas, pelos caminhos entre os nós que este cliente vê. */
-function linksBetween(
-  upper: ReadonlyArray<ArchitectureNodeView | null>,
-  lower: ReadonlyArray<ArchitectureNodeView | null>,
-  known: readonly ArchitectureNodeView[],
+/**
+ * Conectores entre duas linhas, pelos caminhos entre os nós que este cliente vê
+ * (também usado pela grade do editor de arquitetura, E7-01).
+ */
+export function linksBetween(
+  upper: ReadonlyArray<NodePosition | null>,
+  lower: ReadonlyArray<NodePosition | null>,
+  known: readonly NodePosition[],
 ): LinkCell[] {
   const links = lower.map(() => ({ down: false, forkIn: false, forkOut: false, forkPass: false }));
   lower.forEach((node, col) => {

@@ -126,6 +126,8 @@ declare global {
       hook: "createItem" | "updateItem" | "deleteItem",
       fn: (item: FoundryItemWithParent) => void,
     ): number;
+    /** Aba Items (Application v1, V12): `html` é um jQuery do elemento. */
+    on(hook: "renderItemDirectory", fn: (app: unknown, html: unknown) => void): number;
     on(hook: "createChatMessage", fn: (message: FoundryChatMessageDocument) => void): number;
     /** client/data/collections/users.js (V12): usuário entrou ou saiu. */
     on(hook: "userConnected", fn: (user: FoundryUserDocument, connected: boolean) => void): number;

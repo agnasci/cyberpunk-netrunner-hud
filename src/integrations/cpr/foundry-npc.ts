@@ -51,9 +51,15 @@ interface ActorLike {
   items: Iterable<{ type: string; system?: { equipped?: unknown } }>;
 }
 
-/** Atores que podem ser Netrunner NPC: personagem ou mook com cyberdeck equipado. */
+/**
+ * Atores que podem ser Netrunner NPC: personagem ou mook sem dono jogador (nenhum usuário não-GM
+ * com permissão de dono, como no diálogo de início) e com cyberdeck equipado.
+ */
 export function listWorldNetrunners(excludeUuid: string): Array<{ uuid: string; name: string }> {
-  return (game.actors.contents as unknown as ActorLike[])
+  const players = game.users.contents.filter((u) => !u.isGM);
+  return game.actors.contents
+    .filter((a) => !players.some((u) => a.testUserPermission(u, "OWNER")))
+    .map((a) => a as unknown as ActorLike)
     .filter((a) => (a.type === "character" || a.type === "mook") && a.uuid !== excludeUuid)
     .filter((a) =>
       Array.from(a.items).some((i) => i.type === "cyberdeck" && i.system?.equipped === "equipped"),
@@ -108,4 +114,10 @@ export async function applyNpcMoveEffect(effect: {
     [`${path}.${effect.to}`]: effect.actorUuid,
     [`${path}.-=${effect.from}`]: null,
   });
+}
+
+/** Nome do ator vinculado (mesmo que ele não entre mais na lista de escolhas). */
+export function readActorName(actorUuid: string): string | null {
+  const doc = fromUuidSync(actorUuid) as { documentName?: string; name?: unknown } | null;
+  return doc?.documentName === "Actor" && typeof doc.name === "string" ? doc.name : null;
 }

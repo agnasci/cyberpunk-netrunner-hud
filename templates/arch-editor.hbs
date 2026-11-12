@@ -1,0 +1,150 @@
+<div class="cnh-hud cnh-editor {{#if dragging}}is-dragging{{/if}}">
+  <div class="cnh-scanlines" aria-hidden="true"></div>
+  <header class="cnh-header cnh-ed-header">
+    <div class="cnh-target">
+      <span class="cnh-eyebrow">{{localize "CNH.Editor.Eyebrow"}}</span>
+      <input type="text" class="cnh-ed-name" name="archName" value="{{name}}" placeholder="{{localize "CNH.Editor.DefaultName"}}" aria-label="{{localize "CNH.Editor.Name"}}" maxlength="80">
+    </div>
+    <div class="cnh-ed-toolbar">
+      <label class="cnh-ed-field cnh-ed-field--inline">
+        <span>{{localize "CNH.Editor.Open"}}</span>
+        <select name="archSelect">
+          <option value="" {{#unless itemUuid}}selected{{/unless}}>{{localize "CNH.Editor.NewOption"}}</option>
+          {{#each archs}}<option value="{{uuid}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}
+        </select>
+      </label>
+      {{#if dirty}}<span class="cnh-ed-dirty"><i class="fa-solid fa-circle" aria-hidden="true"></i> {{localize "CNH.Editor.Unsaved"}}</span>
+      <button type="button" class="cnh-action" data-action="discardDraft" data-tooltip="{{localize "CNH.Editor.DiscardHint"}}" {{#if saving}}disabled{{/if}}><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>{{localize "CNH.Editor.Discard"}}</span></button>{{/if}}
+      <button type="button" class="cnh-action cnh-action--success" data-action="saveArch" {{#if saving}}disabled{{/if}}>
+        <i class="fa-solid {{#if saving}}fa-spinner fa-spin{{else}}fa-floppy-disk{{/if}}" aria-hidden="true"></i><span>{{#if saving}}{{localize "CNH.Editor.Saving"}}{{else}}{{localize "CNH.Editor.Save"}}{{/if}}</span>
+      </button>
+    </div>
+  </header>
+
+  {{#if restored}}<p class="cnh-ed-banner cnh-ed-banner--info" role="status"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> {{restored}}</p>{{/if}}
+  {{#if inUse}}<p class="cnh-ed-banner" role="note"><i class="fa-solid fa-lock" aria-hidden="true"></i> {{localize "CNH.Editor.InUse"}}</p>{{/if}}
+
+  <div class="cnh-body cnh-ed-body">
+    <aside class="cnh-panel cnh-ed-palette">
+      <h3 class="cnh-panel-title">{{localize "CNH.Editor.Palette"}}</h3>
+      <ul class="cnh-ed-tiles">
+        {{#each palette}}
+        <li>
+          <button type="button" class="cnh-node-card cnh-ed-tile cnh-floor--{{content}} {{#if armed}}is-armed{{/if}}" data-action="armTile" data-content="{{content}}" aria-pressed="{{armed}}">
+            <span class="cnh-node" aria-hidden="true">
+              <svg viewBox="0 0 40 46" focusable="false"><polygon points="20,2 38,12.5 38,33.5 20,44 2,33.5 2,12.5" /></svg>
+              <i class="fa-solid {{icon}}"></i>
+            </span>
+            <span class="cnh-floor-info"><span class="cnh-floor-type">{{label}}</span></span>
+            <i class="fa-solid fa-grip-vertical cnh-ed-grip" aria-hidden="true"></i>
+          </button>
+        </li>
+        {{/each}}
+      </ul>
+      <p class="cnh-ed-hint">{{#if armedLabel}}<i class="fa-solid fa-hand-pointer" aria-hidden="true"></i> {{armedLabel}}{{else}}{{localize "CNH.Editor.PaletteHint"}}{{/if}}</p>
+      <div class="cnh-ed-trash" data-drop="trash" aria-hidden="true"><i class="fa-solid fa-trash-can"></i> {{localize "CNH.Editor.Trash"}}</div>
+    </aside>
+
+    <section class="cnh-arch cnh-netarch cnh-ed-grid-wrap" aria-label="{{localize "CNH.Hud.Architecture"}}">
+      <div class="cnh-grid cnh-ed-grid" style="--cols: {{grid.columns.length}}">
+        <span class="cnh-grid-corner"></span>
+        {{#each grid.columns}}<span class="cnh-grid-branch">{{localize "CNH.Session.Branch"}} {{this}}</span>{{/each}}
+        {{#each grid.rows}}
+        {{#if linksAbove.length}}
+        <span class="cnh-link-gutter" aria-hidden="true"></span>
+        {{#each linksAbove}}<span class="cnh-link {{#if down}}is-down{{/if}} {{#if forkIn}}is-fork-in{{/if}} {{#if forkOut}}is-fork-out{{/if}} {{#if forkPass}}is-fork-pass{{/if}}" aria-hidden="true"></span>{{/each}}
+        {{/if}}
+        <span class="cnh-floor-num">{{floorLabel}}</span>
+        {{#each cells}}
+        {{#if node}}
+        <div class="cnh-node-slot cnh-ed-cell" data-floor="{{floor}}" data-branch="{{branch}}">
+          <button type="button" class="cnh-node-card cnh-ed-node cnh-floor--{{node.content}} {{#if node.selected}}is-selected{{/if}} {{#if node.warn}}is-warn{{/if}} {{#if node.locked}}is-locked{{/if}}" data-action="selectNode" data-key="{{node.key}}" aria-pressed="{{node.selected}}" {{#if node.tip}}data-tooltip="{{node.tip}}"{{/if}}>
+            <span class="cnh-node" aria-hidden="true">
+              <svg viewBox="0 0 40 46" focusable="false"><polygon points="20,2 38,12.5 38,33.5 20,44 2,33.5 2,12.5" /></svg>
+              <i class="fa-solid {{node.icon}}"></i>
+            </span>
+            <span class="cnh-floor-info">
+              <span class="cnh-floor-type">{{node.typeLabel}}</span>
+              {{#if node.iceLabel}}<span class="cnh-floor-label">{{node.iceLabel}}</span>{{/if}}
+              {{#if node.description}}<span class="cnh-node-note"><i class="fa-solid fa-note-sticky" aria-hidden="true"></i> {{node.description}}</span>{{/if}}
+            </span>
+            <span class="cnh-floor-meta">
+              {{#if node.dvLabel}}<span class="cnh-dv">{{node.dvLabel}}</span>{{/if}}
+              {{#if node.locked}}<i class="fa-solid fa-lock cnh-ed-badge" aria-hidden="true"></i>{{/if}}
+              {{#if node.warn}}<i class="fa-solid fa-triangle-exclamation cnh-ed-badge is-warn" aria-hidden="true"></i>{{/if}}
+            </span>
+            {{#if node.linkIcon}}<span class="cnh-npc-marker cnh-ed-link" data-tooltip="{{node.linkName}}"><i class="fa-solid {{node.linkIcon}}" aria-hidden="true"></i></span>{{/if}}
+          </button>
+        </div>
+        {{else}}
+        <button type="button" class="cnh-ed-cell cnh-ed-empty {{#if @root.armedLabel}}is-armed{{/if}}" data-action="placeArmed" data-floor="{{floor}}" data-branch="{{branch}}" aria-label="{{label}}"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>
+        {{/if}}
+        {{/each}}
+        {{/each}}
+      </div>
+    </section>
+
+    <aside class="cnh-panel cnh-ed-config">
+      <h3 class="cnh-panel-title">{{localize "CNH.Editor.Config"}}</h3>
+      {{#if selected}}
+      <div class="cnh-ed-where cnh-floor--{{selected.content}}">{{selected.where}}{{#if selected.locked}} <i class="fa-solid fa-lock" aria-hidden="true" data-tooltip="{{localize "CNH.Editor.Locked"}}"></i>{{/if}}</div>
+      <label class="cnh-ed-field">
+        <span>{{localize "CNH.Editor.Type"}}</span>
+        <select data-field="content" {{#if selected.locked}}disabled{{/if}}>
+          {{#each selected.types}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+        </select>
+      </label>
+      {{#if selected.isIce}}
+      <label class="cnh-ed-field">
+        <span>{{localize "CNH.Editor.IceType"}}</span>
+        <select data-field="blackIceKey">
+          <option value="">{{localize "CNH.Editor.Choose"}}</option>
+          {{#each selected.iceTypes}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+        </select>
+      </label>
+      <label class="cnh-ed-field">
+        <span>{{localize "CNH.Editor.IceActor"}}</span>
+        <select data-field="iceActor">
+          <option value="">{{localize "CNH.Editor.IceActorNone"}}</option>
+          {{#each selected.iceActors}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+        </select>
+        <small class="cnh-ed-hint">{{localize "CNH.Editor.IceActorHint"}}</small>
+      </label>
+      {{/if}}
+      <div class="cnh-ed-field">
+        <span>{{localize "CNH.Editor.Dv"}}</span>
+        <div class="cnh-ed-dvs" role="group" aria-label="{{localize "CNH.Editor.Dv"}}">
+          {{#each selected.dvs}}<button type="button" class="cnh-ed-dv {{#if selected}}is-active{{/if}}" data-action="setDv" data-dv="{{value}}" aria-pressed="{{selected}}">{{label}}</button>{{/each}}
+        </div>
+      </div>
+      {{#unless selected.isIce}}
+      <label class="cnh-ed-field">
+        <span>{{localize "CNH.Editor.Npc"}}</span>
+        <select data-field="npcActor" {{#if selected.locked}}disabled{{/if}}>
+          <option value="">{{localize "CNH.Editor.NpcNone"}}</option>
+          {{#each selected.npcs}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+        </select>
+        <small class="cnh-ed-hint">{{#if selected.locked}}{{localize "CNH.Editor.NpcLocked"}}{{else}}{{localize "CNH.Editor.NpcHint"}}{{/if}}</small>
+      </label>
+      {{/unless}}
+      <label class="cnh-ed-field">
+        <span>{{localize "CNH.Editor.Note"}}</span>
+        <textarea data-field="description" rows="3">{{selected.description}}</textarea>
+        <small class="cnh-ed-hint">{{localize "CNH.Editor.NoteHint"}}</small>
+      </label>
+      <button type="button" class="cnh-action cnh-action--failure cnh-ed-remove" data-action="removeNode" {{#if selected.locked}}disabled data-tooltip="{{localize "CNH.Editor.Locked"}}"{{/if}}><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span>{{localize "CNH.Editor.Remove"}}</span></button>
+      {{else}}
+      <p class="cnh-empty">{{localize "CNH.Editor.NoSelection"}}</p>
+      {{/if}}
+
+      <h4 class="cnh-subtitle">{{localize "CNH.Editor.Issues"}}</h4>
+      {{#if issues.length}}
+      <ul class="cnh-ed-issues">
+        {{#each issues}}<li><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {{this}}</li>{{/each}}
+      </ul>
+      {{else}}
+      <p class="cnh-ed-ok"><i class="fa-solid fa-check" aria-hidden="true"></i> {{localize "CNH.Editor.NoIssues"}}</p>
+      {{/if}}
+    </aside>
+  </div>
+</div>

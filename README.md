@@ -17,10 +17,16 @@ https://github.com/agnasci/cyberpunk-netrunner-hud/releases/latest/download/modu
 ```
 
 Enable the module in your world. The terminal button in the token controls opens the HUD; the
-GM picks the Netrunner and the NET Architecture when starting a run.
+GM picks the Netrunner and the NET Architecture when starting a run. To build an architecture,
+the GM uses the **NET Architecture editor** button at the bottom of the Items tab.
 
 ## Features
 
+- NET Architecture editor for the GM: drag node types (Password, File, Control Node, Black ICE)
+  onto a grid with the HUD's look, then set each node's DV, Black ICE type, GM note, Black ICE
+  actor and enemy NPC Netrunner in a small side panel. It saves to the system's own NET
+  Architecture item, warns about nodes with no path to the entry floor, keeps unsaved drafts in
+  your browser, and locks nodes that are in use while a run is active.
 - NET Architecture shown as a grid, with branches (a–h) and the paths between them. The GM
   reveals nodes fully or on the map only (contents hidden until the Netrunner enters).
 - NET Actions limited by Interface rank: Jack In/Out, Backdoor, Control, Eye-Dee, Zap, Slide,

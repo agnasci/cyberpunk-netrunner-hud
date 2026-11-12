@@ -62,7 +62,8 @@ inferidas por nome: dependem de vínculo configurado e permissão validada.
 
 Backend externo, conta própria, banco paralelo de personagens, IA generativa no
 produto, 3D pesado, suporte universal a versões, múltiplas Netrunners concorrentes,
-automação completa de todas as regras e editor independente de NET Architectures.
+automação completa de todas as regras. (O editor de NET Architectures entrou a pedido
+do usuário: E7-01, D42.)
 Esses limites são propostas de escopo, não cancelamento da visão de longo prazo.
 
 ## Qualidade e sucesso

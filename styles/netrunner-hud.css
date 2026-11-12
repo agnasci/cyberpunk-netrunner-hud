@@ -2199,3 +2199,292 @@
   top: -10px;
   bottom: -10px;
 }
+
+/* Editor de arquitetura (E7-01): mesmo visual do HUD, com paleta, grade e painel do nó. */
+.cnh-editor {
+  display: flex;
+  flex-direction: column;
+}
+.cnh-editor .cnh-ed-body {
+  flex: 1 1 auto;
+  grid-template-columns: 200px minmax(0, 1fr) 260px;
+}
+.cnh-ed-header {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+.cnh-app .cnh-hud .cnh-ed-name {
+  width: 100%;
+  height: auto;
+  padding: 2px 0;
+  border: 0;
+  border-bottom: 1px dashed var(--cnh-line);
+  border-radius: 0;
+  background: transparent;
+  font-family: var(--cnh-font-display);
+  font-size: 20px;
+  color: var(--cnh-cyan);
+  text-shadow: 0 0 10px rgba(62, 240, 230, 0.45);
+}
+.cnh-app .cnh-hud .cnh-ed-name:focus {
+  outline: none;
+  border-bottom-color: var(--cnh-cyan);
+  box-shadow: none;
+}
+.cnh-ed-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cnh-ed-dirty {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--cnh-amber);
+}
+.cnh-ed-dirty i {
+  font-size: 7px;
+  vertical-align: middle;
+}
+.cnh-ed-banner {
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--cnh-amber) 45%, transparent);
+  background: color-mix(in srgb, var(--cnh-amber) 8%, transparent);
+  font-size: 12px;
+  color: var(--cnh-amber);
+}
+.cnh-ed-field {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 10px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cnh-muted);
+}
+.cnh-ed-field--inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.cnh-app .cnh-hud .cnh-ed-field select,
+.cnh-app .cnh-hud .cnh-ed-field textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--cnh-line);
+  border-radius: 0;
+  background: var(--cnh-bg-2);
+  font-family: var(--cnh-font-mono);
+  font-size: 12px;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--cnh-text);
+}
+.cnh-app .cnh-hud .cnh-ed-field--inline select {
+  width: 210px;
+}
+.cnh-app .cnh-hud .cnh-ed-field textarea {
+  resize: vertical;
+  padding: 4px 6px;
+}
+.cnh-app .cnh-hud .cnh-ed-field select:disabled {
+  opacity: 0.55;
+}
+.cnh-ed-hint {
+  font-size: 11px;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--cnh-muted);
+}
+.cnh-ed-tiles {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+.cnh-app .cnh-hud .cnh-ed-tile {
+  width: 100%;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.cnh-app .cnh-hud .cnh-ed-tile.is-armed {
+  border-color: var(--node);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--node) 45%, transparent);
+}
+.cnh-ed-grip {
+  color: var(--cnh-muted);
+}
+.cnh-ed-trash {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 14px 8px;
+  border: 1px dashed color-mix(in srgb, var(--cnh-red) 45%, transparent);
+  font-size: 11px;
+  text-align: center;
+  color: color-mix(in srgb, var(--cnh-red) 70%, var(--cnh-muted));
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.cnh-editor.is-dragging .cnh-ed-trash {
+  opacity: 1;
+}
+.cnh-ed-trash.is-drop-over {
+  background: color-mix(in srgb, var(--cnh-red) 18%, transparent);
+  color: var(--cnh-red);
+}
+.cnh-ed-grid-wrap {
+  border: 1px solid var(--cnh-line);
+  background: rgba(5, 8, 12, 0.5);
+}
+.cnh-app .cnh-hud .cnh-ed-node {
+  touch-action: none;
+  user-select: none;
+}
+.cnh-app .cnh-hud .cnh-ed-node:not(.is-locked) {
+  cursor: grab;
+}
+.cnh-app .cnh-hud .cnh-ed-node.is-selected {
+  border-color: var(--node);
+  box-shadow:
+    0 0 0 1px var(--node),
+    0 0 14px color-mix(in srgb, var(--node) 40%, transparent);
+}
+.cnh-app .cnh-hud .cnh-ed-node.is-warn {
+  border-style: dashed;
+}
+.cnh-ed-badge {
+  font-size: 11px;
+  color: var(--cnh-muted);
+}
+.cnh-ed-badge.is-warn {
+  color: var(--cnh-amber);
+}
+.cnh-ed-link {
+  right: 8px;
+  top: auto;
+  bottom: 4px;
+  color: var(--cnh-cyan);
+  text-shadow: 0 0 6px var(--cnh-cyan);
+}
+.cnh-app .cnh-hud .cnh-ed-empty {
+  display: grid;
+  place-items: center;
+  min-height: 56px;
+  border: 1px dashed rgba(62, 240, 230, 0.12);
+  font-size: 12px;
+  color: rgba(62, 240, 230, 0.2);
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+}
+.cnh-app .cnh-hud .cnh-ed-empty:hover,
+.cnh-app .cnh-hud .cnh-ed-empty.is-armed,
+.cnh-editor.is-dragging .cnh-ed-empty {
+  border-color: rgba(62, 240, 230, 0.4);
+  color: var(--cnh-cyan);
+}
+.cnh-app .cnh-hud .cnh-ed-cell.is-drop-over {
+  border-color: var(--cnh-cyan);
+  background: rgba(62, 240, 230, 0.12);
+  outline: 1px solid var(--cnh-cyan);
+}
+.cnh-app .cnh-hud .cnh-ed-node.is-drag-source {
+  opacity: 0.35;
+}
+.cnh-app .cnh-hud .cnh-ed-ghost {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0.9;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+.cnh-ed-where {
+  margin-bottom: 10px;
+  font-family: var(--cnh-font-display);
+  font-size: 14px;
+  color: var(--node);
+}
+.cnh-ed-dvs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.cnh-app .cnh-hud .cnh-ed-dv {
+  min-width: 26px;
+  padding: 2px 4px;
+  border: 1px solid var(--cnh-line);
+  font-size: 11px;
+  text-align: center;
+  color: var(--cnh-muted);
+}
+.cnh-app .cnh-hud .cnh-ed-dv:hover {
+  color: var(--cnh-text);
+}
+.cnh-app .cnh-hud .cnh-ed-dv.is-active {
+  border-color: var(--cnh-amber);
+  background: color-mix(in srgb, var(--cnh-amber) 15%, transparent);
+  color: var(--cnh-amber);
+}
+.cnh-ed-remove {
+  margin-top: 4px;
+}
+.cnh-ed-issues {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+  color: var(--cnh-amber);
+}
+.cnh-ed-ok {
+  margin: 0;
+  font-size: 11px;
+  color: var(--cnh-green);
+}
+.cnh-app .cnh-hud .cnh-ed-open {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--cnh-line);
+  font-size: 11px;
+  color: var(--cnh-amber);
+}
+.cnh-app .cnh-hud .cnh-ed-open:hover {
+  border-color: var(--cnh-amber);
+}
+@container (max-width: 760px) {
+  .cnh-app .cnh-hud .cnh-ed-body {
+    grid-template-columns: minmax(0, 1fr);
+    overflow: auto;
+  }
+  .cnh-ed-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* No editor o Black ICE não está "adormecido": cor cheia. Rótulos da paleta sem corte. */
+.cnh-editor .cnh-floor--blackice .cnh-node {
+  filter: none;
+  opacity: 1;
+}
+.cnh-app .cnh-hud .cnh-ed-tile .cnh-floor-type {
+  overflow: visible;
+  white-space: normal;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+}
+.cnh-ed-banner--info {
+  border-color: var(--cnh-line);
+  background: rgba(62, 240, 230, 0.06);
+  color: var(--cnh-cyan);
+}
+.directory-footer .cnh-open-editor {
+  flex: 1 1 100%;
+}

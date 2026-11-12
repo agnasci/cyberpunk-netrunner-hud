@@ -240,6 +240,31 @@ Itens do teste do usuário com um amigo, na ordem proposta. "A decidir" = pergun
 | E6-14 | DONE | Ajustes do teste da mesa (D39): Pathfinder, Cloak e Virus; Black ICE à espreita; atacante 1x por rodada; Jack In custa ação; mestre escolhe o programa atingido; revelar só no mapa; card de inimigo flutuante com alerta; "Resolver" em 1 clique; ataque automático do Black ICE; som no HUD; scroll mantido; arrastar NPC por ponteiro; NPC desvinculada some | Lista de 15 itens do teste com o amigo (2026-11-10) |
 | E6-11c | BLOCKED | Duas Netrunners aliadas na mesma rede (D36): só depois de conferir no Core se é permitido e como funciona | Pergunta do usuário |
 
+## E7 — Ferramentas do mestre
+
+| ID | Estado | Entrega e aceite | Origem |
+|---|---|---|---|
+| E7-01 | DONE | Editor de arquitetura (D42): o mestre cria e edita NET Architectures no visual do HUD, arrastando tipos de nó para a grade, com painel simples de configuração do nó (tipo de Black ICE, DV, nota) e vínculos prontos (ator Black ICE sugerido no início, Netrunner NPC) | Pedido do usuário (2026-11-11) |
+
+### Plano da E7-01
+
+Objetivo: criar/editar arquiteturas sem a ficha nativa, gravando no próprio item `netarch` do CPR
+(fonte de verdade); nada novo no estado público.
+- Domínio puro `domain/arch-draft.ts`: rascunho (nós com chave estável), colocar/mover/remover/
+  editar nó numa célula livre (andar 1–18, branch a–h), chave nova = maior + 1, grade de edição
+  (uma linha e uma coluna livres além das usadas), problemas (sem nó 1A, nó sem caminho até 1A
+  pela regra D28, Black ICE sem tipo).
+- Adaptador: conversão nó → `floors[]` do CPR (strings do modelo de dados v0.92.4) e gravação
+  (`Item.create`/`update`), vínculos na flag do item (`ice` novo, `npcs` existente).
+- UI `ui/arch-editor-app.ts` + template + CSS: paleta (Password, File, Control Node, Black ICE)
+  arrastável por ponteiro e por clique (teclado), grade com os mesmos cartões/conectores do HUD,
+  painel do nó, lista de problemas, salvar. Entradas: ferramenta de cena do GM, botão no HUD.
+- Arquitetura em uso numa sessão ativa: nós existentes não mudam de lugar/tipo nem saem
+  (posições são públicas); DV, nota e tipo de Black ICE editáveis; nós novos permitidos.
+- Diálogo de início: o ator Black ICE vinculado no editor vem selecionado.
+Aceite: testes do domínio e da conversão (vistos falhando antes); `npm run check`; teste real no
+Foundry criando, salvando, reabrindo e iniciando uma sessão com a arquitetura criada.
+
 ### Plano da E6-12
 
 Fonte: arquivo do usuário com a tabela de Black ICE do livro (12: 9 antipessoal, 3 antiprograma).

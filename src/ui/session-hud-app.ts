@@ -83,6 +83,8 @@ export interface SessionHudHandlers {
   startSession(): void;
   /** Mestre resolve em um clique o que a regra decide sozinha (rolagens sem diálogo). */
   resolveNow(sessionId: string): Promise<void>;
+  /** Mestre abre o editor de arquitetura (E7-01); `null` = nova. */
+  editArchitecture(itemUuid: string | null): void;
 }
 
 /** Atributos que identificam um controle entre renderizações (foco por teclado). */
@@ -139,6 +141,7 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       resolveNow: SessionHudApp.#onResolveNow,
       toggleSound: SessionHudApp.#onToggleSound,
       mapFloor: SessionHudApp.#onMapFloor,
+      editArch: SessionHudApp.#onEditArch,
     },
   };
 
@@ -685,6 +688,7 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       clearLabel: t("CNH.Run.Clear"),
       restoreLabel: t("CNH.Run.Restore"),
       roleLabel: t(`CNH.Role.${role}`),
+      isGm: role === "gm",
       controllerName: controller?.name ?? t("CNH.Session.NoController"),
       programs: view.programs.map((p) => {
         const programClass = "detailed" in p ? p.programClass : "";
@@ -1350,6 +1354,11 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     if (!session || this.#busy || session.id === this.#session.id) return;
     this.#show(session);
     this.#rerender();
+  }
+
+  /** Mestre abre a arquitetura desta sessão no editor (ou uma nova, sem arquitetura). */
+  static #onEditArch(this: SessionHudApp): void {
+    if (game.user?.isGM) this.#handlers.editArchitecture(this.#session.netArch?.itemUuid ?? null);
   }
 
   static #onNewSession(this: SessionHudApp): void {
