@@ -61,7 +61,6 @@ function chain(h: Harness, start: PublicSession) {
   };
 }
 
-/** Netrunner no 1a (Password vencida), Black ICE vinculado no 2a. */
 function beforeIce(): PublicSession {
   return {
     ...withRun(reveal(base(), [0, 1]), {
@@ -156,7 +155,6 @@ describe("Black ICE à espreita (encontro ao chegar)", () => {
     c.step({ type: "ambush", messageId: "m-spd" }, GM);
     expect(c.session.run.pending).toMatchObject({ ability: "ambush", total: 12 });
     expect(c.session.run.ambush).toBeNull();
-    // A jogadora responde com a velocidade; o GM não rola por ela pelo ICE.
     c.step({ type: "oppose", messageId: "m-speed-low" });
     c.step({ type: "resolveCheck", outcome: "success" }, GM);
     expect(c.session.run.iceHit).toEqual({
@@ -265,10 +263,8 @@ describe("revelar só no mapa (conteúdo oculto até entrar)", () => {
     c.step({ type: "reveal", key: 2, masked: true }, GM);
     expect(c.session.netArch?.mapped).toEqual([{ key: 2, floor: 3, branch: "a" }]);
     expect(c.session.netArch?.discovered.some((f) => f.key === 2)).toBe(false);
-    // O estado gravado não carrega o conteúdo do nó mapeado.
     const stored = JSON.parse(JSON.stringify(c.session)) as Record<string, unknown>;
     expect(JSON.stringify(parseSession(stored)?.netArch?.mapped)).not.toContain("file");
-    // Nó da Netrunner não some do que ela vê.
     expect(c.step({ type: "reveal", key: 1, masked: true }, GM).session).toBeNull();
     c.step({ type: "moveTo", key: 2 });
     expect(c.session.runnerPosition).toBe(2);
@@ -316,7 +312,6 @@ describe("Virus no andar mais fundo (marcado pela autoridade)", () => {
     expect(c.session.run.atBottom).toBe(false);
     c.step({ type: "moveTo", key: 2 });
     expect(c.session.run.atBottom).toBe(true);
-    // Cliente da Netrunner: só conhece os nós revelados, mas confia na marca pública.
     const client: RuleContext = {
       runner: DECK,
       run: toRunState(c.session),

@@ -54,10 +54,6 @@ export interface HudView {
   lastEvent: DemoEvent | null;
 }
 
-/**
- * Monta a visão do protótipo para um papel. Campos ocultos são omitidos, não
- * apenas marcados, para que o template nunca os receba (D11).
- */
 export function buildHudView(state: DemoState, role: ViewerRole): HudView {
   const isGm = role === "gm";
   const canAct = role !== "spectator";

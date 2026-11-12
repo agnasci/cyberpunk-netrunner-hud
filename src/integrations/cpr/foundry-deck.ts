@@ -3,12 +3,6 @@ import { normalizeLoadout } from "./deck-adapter";
 import { toActorSource } from "./foundry-actor";
 import { applyProgramEffect } from "./foundry-program";
 
-/**
- * Gravação do cyberdeck pela janela do deck (E7-02, D43), com as funções nativas do CPR v0.92.4
- * (`item/mixins/cpr-container.js`): `installItems` confere tipo e slots e grava a lista;
- * `uninstallItems` tira da lista, recalcula os slots e derrezza o programa
- * (`cyberdeck.uninstallPrograms`). Roda no cliente da dona do ator: o servidor valida a posse.
- */
 type DeckUser = NonNullable<typeof game.user>;
 
 interface NativeItem {
@@ -82,7 +76,6 @@ export async function uninstallProgram(
   await deck.uninstallItems([program]);
 }
 
-/** Rezzar/derrezzar fora da invasão: o mesmo estado absoluto da sessão (D40). */
 export async function setDeckProgramState(
   actorUuid: string,
   programId: string,
@@ -97,7 +90,6 @@ export async function setDeckProgramState(
   });
 }
 
-/** Equipar: `system.equipped` dos decks e derrezzar o que estava ligado nos outros. */
 export async function equipDeck(actorUuid: string, plan: EquipPlan): Promise<void> {
   const actor = actorOf(actorUuid);
   if (!actor) throw new Error(`Ator não encontrado: ${actorUuid}`);
@@ -116,7 +108,6 @@ function hasCyberdeck(actor: { items: Iterable<{ type: string }> }): boolean {
   return Array.from(actor.items).some((i) => i.type === "cyberdeck");
 }
 
-/** Atores com cyberdeck de que o usuário é dono (o mestre vê todos os personagens e mooks). */
 export function listDeckActors(user: DeckUser | null): DeckActorChoice[] {
   if (!user) return [];
   return game.actors.contents
@@ -127,7 +118,6 @@ export function listDeckActors(user: DeckUser | null): DeckActorChoice[] {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/** O ator tem cyberdeck e o usuário é dono (botão no cabeçalho da ficha). */
 export function canOpenDeck(actorUuid: string, user: DeckUser | null): boolean {
   const actor = actorOf(actorUuid);
   return !!actor && !!user && hasCyberdeck(actor) && actor.testUserPermission(user, "OWNER");

@@ -4,11 +4,6 @@ import { checkMove, type RuleContext } from "../../src/domain/net-rules";
 
 const n = (floor: number, branch: string): NodePosition => ({ floor, branch });
 
-/**
- * 1a─2a─3a─4a
- *       └3b─4b
- *             └5c
- */
 const TREE = [n(1, "a"), n(2, "a"), n(3, "a"), n(4, "a"), n(3, "b"), n(4, "b"), n(5, "c")];
 
 describe("areLinked (D28)", () => {

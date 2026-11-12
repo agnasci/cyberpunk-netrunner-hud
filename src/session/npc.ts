@@ -1,17 +1,10 @@
 import type { NetFloor } from "../domain/net-architecture";
 import type { PublicSession } from "./session-state";
 
-/**
- * Netrunner NPC inimiga (E6-11b, D37). Puro: o vínculo nó↔NPC fica na flag do item da
- * arquitetura (só o GM lê); a autoridade só o torna público quando a jogadora está no
- * nó. Nós de Black ICE não recebem NPC (um encontro por nó).
- */
 export function revealNpc(
   current: PublicSession,
   npcLinkAt: (key: number) => string | null,
 ): PublicSession {
-  // Vínculo removido ou trocado pelo GM: a NPC antiga sai do estado público (não reaparece
-  // ao voltar ao nó nem pede iniciativa).
   const kept = current.run.npcs.filter((n) => npcLinkAt(n.key) === n.actorUuid);
   const session =
     kept.length === current.run.npcs.length
@@ -31,11 +24,6 @@ export function revealNpc(
 
 export type NpcMoveError = "invalid-target";
 
-/**
- * O GM arrasta a NPC para qualquer nó (pedido do usuário, sem regras de caminho): só não
- * entra em nó de Black ICE nem em nó com outra NPC (um inimigo por nó, como o vínculo);
- * derrotada não se move. `floors` = arquitetura completa.
- */
 export function checkNpcMove(
   session: PublicSession,
   floors: readonly NetFloor[],
@@ -51,10 +39,6 @@ export function checkNpcMove(
   return null;
 }
 
-/**
- * Estado público depois do movimento: a NPC só fica visível onde a jogadora está. Sai do
- * nó dela → some do estado público; chega ao nó dela → aparece.
- */
 export function moveNpcPublic(
   session: PublicSession,
   from: number,

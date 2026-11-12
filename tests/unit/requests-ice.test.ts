@@ -38,7 +38,6 @@ const HARNESS: Harness = {
   },
 };
 
-/** Netrunner no nó Black ICE (chave 1), Password já vencida, Black ICE vinculado. */
 function atIce(link: string | null = "Actor.ice1"): PublicSession {
   return withRun(
     { ...reveal(base(), [0, 1, 2]), runnerPosition: 1 },
@@ -48,7 +47,6 @@ function atIce(link: string | null = "Actor.ice1"): PublicSession {
 
 const act = (s: PublicSession, action: unknown, id = "r1") => request(s, action, id);
 
-/** Encadeia passos sobre a sessão resultante, com requestIds distintos. */
 function chain(run: ReturnType<typeof runWith>, start: PublicSession = atIce()) {
   let session = start;
   let n = 0;

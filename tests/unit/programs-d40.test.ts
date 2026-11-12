@@ -13,7 +13,6 @@ import {
   withRun,
 } from "../fixtures/requests-harness";
 
-/** Regras de uso dos programas (Core, errata e manual do Netrunning Deck; D40). */
 function chain(h: Harness, start: PublicSession) {
   const run = runWith(h);
   let current = start;
@@ -32,7 +31,6 @@ function chain(h: Harness, start: PublicSession) {
 }
 
 function runner(programs: RunnerProgram[]): RunnerResources {
-  // Interface 10: ações de sobra para os testes.
   return { ...DECK, interfaceRank: 10, programs };
 }
 
@@ -125,9 +123,7 @@ describe("Armor, Flak, Shield e Superglue (D40)", () => {
     expect(c.step({ type: "rezProgram", programId: "a1", rez: true }).result).toMatchObject({
       error: "once-per-run",
     });
-    // A outra cópia serve de reserva.
     expect(c.step({ type: "rezProgram", programId: "a2", rez: true }).result.ok).toBe(true);
-    // Nova Netrun (Jack Out e Jack In) libera as cópias.
     c.step({ type: "jackOut" });
     c.step({ type: "newTurn" }, GM);
     c.step({ type: "jackIn" });

@@ -82,7 +82,6 @@ describe("Eye-Dee (E6-04)", () => {
 });
 
 describe("revealedNotes (D29)", () => {
-  // Fixture: 0 Password (descrição secreta), 1 Black ICE, 2 File, 3 Control Node.
   const full = arch();
   full.floors = full.floors.map((f) =>
     f.key === 2

@@ -1,9 +1,9 @@
+import { MODULE_ID } from "../../constants";
 import type { CharacterSnapshot } from "../../domain/character";
 import type { RunnerVitals } from "../../domain/ice-hit";
 import type { SheetEffect } from "../../session/requests";
 import { type CprActorSource, normalizeCharacter } from "./character-adapter";
 
-/** Converte um documento Actor do Foundry em dados planos para o adaptador. */
 export function toActorSource(actor: FoundryActor): CprActorSource {
   return {
     uuid: actor.uuid,
@@ -16,12 +16,11 @@ export function toActorSource(actor: FoundryActor): CprActorSource {
       type: item.type,
       system: item.system,
       programState: (item as { flags?: Record<string, Record<string, unknown> | undefined> })
-        .flags?.["cyberpunk-netrunner-hud"]?.["programState"],
+        .flags?.[MODULE_ID]?.["programState"],
     })),
   };
 }
 
-/** Lê o snapshot pelo UUID; `null` se o documento não existe ou não é um ator. */
 export function readCharacterSnapshot(actorUuid: string): CharacterSnapshot | null {
   const doc = fromUuidSync(actorUuid);
   if (!isActor(doc)) return null;
@@ -36,11 +35,6 @@ function isActor(doc: unknown): doc is FoundryActor {
   );
 }
 
-/**
- * HP e redução de dano cerebral (E6-06). CPR v0.92.4: `system.derivedStats.hp.value`
- * e `actor.bonuses.brainDamageReduction` (somado dos efeitos ativos em `prepareData`),
- * os mesmos que `_applyDamage` usa com `location: "brain"`.
- */
 export function readRunnerVitals(actorUuid: string): RunnerVitals | null {
   const doc = fromUuidSync(actorUuid);
   if (!isActor(doc)) return null;
@@ -54,7 +48,6 @@ export function readRunnerVitals(actorUuid: string): RunnerVitals | null {
   return { hp, brainDamageReduction: Number.isFinite(reduction) ? reduction : 0 };
 }
 
-/** Grava o HP absoluto (D26); só a autoridade GM chama. */
 export async function applyRunnerHpEffect(
   effect: Extract<SheetEffect, { type: "setRunnerHp" }>,
 ): Promise<void> {

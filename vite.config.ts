@@ -1,7 +1,6 @@
 import { cpSync } from "node:fs";
 import { defineConfig } from "vitest/config";
 
-/** Arquivos estáticos copiados para a raiz do módulo em dist/. */
 const STATIC_PATHS = ["module.json", "lang", "templates", "styles", "LICENSE", "README.md"];
 
 export default defineConfig({

@@ -70,30 +70,20 @@ const CONTENT_ICON: Record<NetFloorContent | "unknown", string> = {
   unknown: "fa-question",
 };
 
-/** Áreas com rolagem própria: a posição volta depois de cada renderização. */
 const SCROLLERS = [".cnh-arch", ".cnh-runner", ".cnh-body--session", ".cnh-enemy-float"];
 
 export interface SessionHudHandlers {
-  /** Envia uma ação da sessão ao GM autoridade (D19). */
   request(sessionId: string, action: NetAction): Promise<ActionResult>;
-  /** Há um GM ativo para validar ações (SPEC: sem mestre, pausar e comunicar). */
   hasAuthority(): boolean;
-  /** Notas reveladas à Netrunner (D29), consultadas à autoridade. */
   requestNotes(sessionId: string): Promise<Record<number, string>>;
-  /** Mestre inicia mais uma invasão (E6-11a). */
   startSession(): void;
-  /** Mestre resolve em um clique o que a regra decide sozinha (rolagens sem diálogo). */
   resolveNow(sessionId: string): Promise<void>;
-  /** Mestre abre o editor de arquitetura (E7-01); `null` = nova. */
   editArchitecture(itemUuid: string | null): void;
-  /** Abre a janela do cyberdeck do ator (E7-02). */
   openDeck(actorUuid: string): void;
 }
 
-/** Atributos que identificam um controle entre renderizações (foco por teclado). */
 const FOCUS_KEYS = ["action", "netAction", "key", "ability", "outcome"] as const;
 
-/** Duração máxima dos efeitos de evento (faixa 1,9 s; vinheta 1,8 s). */
 const FX_WINDOW_MS = 2500;
 
 const STATUS_KEY = {
@@ -103,10 +93,6 @@ const STATUS_KEY = {
   destroyed: "CNH.Program.Destroyed",
 };
 
-/**
- * HUD da sessão ativa. Cada cliente monta sua visão a partir do estado público e
- * da cópia local do ator; ações viram requisições validadas pelo GM (E2-02).
- */
 export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static override DEFAULT_OPTIONS = {
     id: `${MODULE_ID}-session`,
@@ -155,42 +141,26 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   #session: PublicSession;
   readonly #handlers: SessionHudHandlers;
-  /**
-   * Efeitos da última mudança de estado (E4-01). Valem por `FX_WINDOW_MS`: outras
-   * renderizações nesse intervalo retomam as animações do ponto em que estavam.
-   */
   #fx: { fx: HudFx; at: number } | null = null;
   #hookIds: Array<[string, number]> = [];
   #booting = true;
-  /** Tarefa em andamento (bloqueia novos envios): rolando no cliente ou aguardando o GM. */
   #busy: "rolling" | "waiting" | null = null;
-  /** Último erro de requisição, visível no HUD até a próxima ação (E4-02a). */
   #lastError: string | null = null;
-  /** Última entrada do registro já mostrada: só as novas digitam (E6-09). */
   #logSeen = 0;
-  /** Rolar o registro até o fim na próxima renderização (entrada nova ou painel aberto). */
   #logScroll = true;
-  /** Card de inimigo recolhido (preferência deste navegador). */
   #enemyCollapsed = readEnemyCollapsed();
-  /** Posição do registro entre renderizações: no fim (padrão) ou onde a pessoa parou. */
   #logAtEnd = true;
   #logTop = 0;
-  /** Controle focado antes de renderizar, para devolver o foco depois. */
   #focus: string | null = null;
-  /** Notas reveladas à Netrunner (só neste cliente, em memória) e a chave da última consulta. */
   #notes: Record<number, string> = {};
   #notesKey = "";
-  /** Rolagem das áreas do HUD entre renderizações (o HTML é trocado a cada aviso). */
   #scroll: Record<string, number> = {};
-  /** Fim de um arrasto da NPC: ignora o clique que o navegador dispara em seguida. */
   #dragEndedAt = 0;
   readonly #refresh = foundry.utils.debounce(() => {
     this.#rerender();
   }, 100);
 
-  /** Todas as sessões (E6-11a); `#session` é a da aba à vista. */
   #sessions: PublicSession[];
-  /** Sessões com novidade fora de vista (a aba marca). */
   readonly #unseen = new Set<string>();
 
   constructor(sessions: PublicSession[], handlers: SessionHudHandlers) {
@@ -203,7 +173,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#handlers = handlers;
   }
 
-  /** Troca a aba: sem animar o estado da outra sessão. */
   #show(session: PublicSession): void {
     this.#session = session;
     this.#unseen.delete(session.id);
@@ -216,28 +185,17 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#notesKey = "";
   }
 
-  /**
-   * Re-renderiza sem checar `rendered`: durante uma renderização o estado é RENDERING e
-   * `rendered` é falso, o que descartava a atualização (visto no teste da E3-02c). O
-   * semáforo do ApplicationV2 enfileira; sem `force`, janela fechada não reabre.
-   */
   #rerender(): void {
     void this.render();
   }
 
-  /** Som opcional do evento (desligado por padrão), só com o HUD visível. */
   #playSound(fx: HudFx): void {
-    // `rendered` é falso durante uma renderização; vale a janela estar no DOM.
     const visible = this.element?.isConnected === true;
     if (!visible || game.settings.get(MODULE_ID, SOUND_SETTING) !== true) return;
     const tones = soundCue(fx.banner);
     if (tones) playTones(tones);
   }
 
-  /**
-   * Consulta as notas quando muda o conjunto de nós resolvidos (D29). Só a Netrunner
-   * pede; a resposta chega só a ela. Refresh refaz a consulta (memória do cliente).
-   */
   #syncNotes(): void {
     const key = `${this.#session.id}:${[...this.#session.run.cleared].sort((a, b) => a - b).join(",")}`;
     if (key === this.#notesKey) return;
@@ -253,7 +211,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     return this.#session;
   }
 
-  /** Novo estado de todas as sessões; anima só a da aba à vista. */
   setSessions(sessions: PublicSession[]): void {
     const previous = this.#sessions;
     this.#sessions = sessions;
@@ -284,8 +241,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const booting = this.#booting;
     this.#booting = false;
     this.#saveScroll();
-    // Guarda o controle focado; se o foco caiu no vazio (controle desabilitado durante a
-    // espera), mantém o anterior até ele voltar a estar disponível.
     const active = document.activeElement;
     const lost = active === null || active === document.body;
     this.#focus = focusSelector(this.element, active) ?? (lost ? this.#focus : null);
@@ -301,7 +256,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const arch = this.#session.netArch;
     const full = arch && role === "gm" ? readNetArchitecture(arch.itemUuid) : null;
     const canControl = role === "gm" || role === "netrunner";
-    // Dica local; a autoridade revalida com a ficha e a arquitetura completa (D21/D22).
     const rules: RuleContext = {
       runner: runnerResources(snapshot),
       run: toRunState(this.#session),
@@ -322,7 +276,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
           this.#session.runnerPosition,
           {
             run: this.#session.run,
-            // Checagem pendente bloqueia movimento até o GM decidir (E3-02b).
             rules: busy ? null : rules,
           },
           arch.mapped,
@@ -330,7 +283,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       : null;
     const jackedIn = this.#session.runnerPosition !== null;
     const reason = (e: Eligibility) => (e.allowed ? "" : t(`CNH.Request.Error.${e.reason}`));
-    // Tooltip: o que a ação faz e, se bloqueada, por quê.
     const tip = (helpKey: string, why = "") => (why ? `${t(helpKey)} — ${why}` : t(helpKey));
     const jackCheck = checkAction(rules, jackedIn ? "jackOut" : "jackIn");
     const at = rules.run.position;
@@ -344,7 +296,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       jackedIn && holder === null && actionsLeft(rules) === 0 ? t("CNH.Run.NoActions") : "",
       jackedIn && this.#session.run.atBottom ? t("CNH.Run.AtBottom") : "",
     ].filter((h) => h !== "");
-    // Botões de checagem só no nó do tipo certo; o motor diz se está liberado.
     const abilityChecks = ABILITY_CHECKS.map((ability) => ({
       ability,
       eligibility: checkAction(rules, ability),
@@ -352,7 +303,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       .filter(({ eligibility }) => eligibility.allowed || eligibility.reason !== "wrong-node")
       .filter(({ eligibility }) => eligibility.allowed || eligibility.reason !== "not-jacked-in")
       .filter(({ eligibility }) => eligibility.allowed || eligibility.reason !== "not-lowest")
-      // Arquitetura toda revelada (sem nós só no mapa): nada a mapear.
       .filter(
         ({ ability }) =>
           ability !== "pathfinder" ||
@@ -386,8 +336,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
           }))
         : [];
     const ep = encounter.pending;
-    // "Sua vez" só para quem deve agir: o GM confirma e rola pelo Black ICE; a Netrunner
-    // rola Defense e o dano (o GM pode rolar por ela, mas não é destacado).
     const runnerRoll = ep?.opposedRoll === "defense" || ep?.opposedRoll === "speed";
     const myMove =
       (ep !== null &&
@@ -398,14 +346,12 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       encounter.ambush?.canRoll === true ||
       (encounter.npc?.canRollRunner === true && role === "netrunner") ||
       encounter.npc?.canRollNpc === true;
-    // Abrir o HUD não anima; dentro da janela, renderizações retomam a animação.
     const elapsed = this.#fx ? Date.now() - this.#fx.at : Infinity;
     const fx = !booting && this.#fx && elapsed < FX_WINDOW_MS ? this.#fx.fx : null;
     const reduced = game.settings.get(MODULE_ID, MOTION_SETTING) === "reduced";
     const controllerId = this.#session.controllerUserId;
     const controller = controllerId ? game.users.get(controllerId) : undefined;
 
-    // O mestre libera o registro na mesa; cada usuário escolhe mostrar (padrão escondido).
     const logAvailable = game.settings.get(MODULE_ID, LOG_WORLD_SETTING) !== false;
     const showLog = logAvailable && game.settings.get(MODULE_ID, LOG_SETTING) === true;
     const logSeen = this.#logSeen;
@@ -418,18 +364,14 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const lastSeq = this.#session.log.at(-1)?.seq ?? 0;
     if (lastSeq !== logSeen) this.#logScroll = true;
     this.#logSeen = lastSeq;
-    // Netrunner NPC do nó (E6-11b): nome, HP e programas lidos da ficha dela.
     const npcView = encounter.npc;
     const npcSnapshot = npcView ? readCharacterSnapshot(npcView.actorUuid) : null;
     const npcHp = npcView ? readActorHp(npcView.actorUuid) : null;
     const npcMax = netActionsPerTurn(npcSnapshot?.netRole?.rank ?? 0);
-    // GM: NPC vinculada por nó (flag do item; só o cliente do GM lê).
     const npcLinks = role === "gm" && arch ? listNpcLinks(arch.itemUuid) : {};
-    // Card de inimigo (E6-11b): só com Black ICE ativo ou NPC no nó da Netrunner.
     const iceActive =
       iceNode !== null && !iceNode.defeated && !this.#session.run.evaded.includes(iceNode.key);
     const iceTitle = iceNode?.link?.stats?.name ?? iceName;
-    // Algo do inimigo espera alguém: o mestre vê um alerta; os jogadores, só um ícone discreto.
     const enemyPending =
       encounter.ambush !== null ||
       encounter.iceHit !== null ||
@@ -455,7 +397,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
           ? `REZ ${iceNode.link.stats.rez.value}/${iceNode.link.stats.rez.max}`
           : "",
       toggleLabel: t(this.#enemyCollapsed ? "CNH.Enemy.Show" : "CNH.Enemy.Hide"),
-      // Ícone discreto no cabeçalho: nome, vida/REZ e pendência; clique abre a visão completa.
       headerTip: [
         npcView
           ? `${t("CNH.Npc.Encounter")}: ${npcSnapshot?.actorName || t("CNH.Npc.Unknown")}`
@@ -551,7 +492,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
         canRoll: encounter.iceHit.canRoll,
         canSkip: encounter.iceHit.canSkip,
         isGm: role === "gm",
-        // Antiprograma: o mestre escolhe qual programa rezzado da Netrunner é atingido.
         pick: encounter.iceHit.pickProgram && {
           options: (snapshot?.programs ?? [])
             .filter((p) => p.status === "rezzed" && p.rez.value > 0)
@@ -575,7 +515,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
             : "CNH.Ambush.NeedsLink",
         ),
       },
-      // Mestre, modo manual: resolve em um clique o que a regra decide (sem diálogo).
       canResolveNow:
         role === "gm" &&
         game.settings.get(MODULE_ID, AUTO_SETTING) !== true &&
@@ -644,7 +583,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
         hints: canControl ? hints : [],
       },
       canNewTurn: role === "gm" && holder === null,
-      // Encerrar a própria vez (Netrunner ou GM); a do Black ICE só o GM passa (D33).
       endTurn: canControl &&
         holder !== null &&
         (holder === "runner" || role === "gm") && {
@@ -697,13 +635,10 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       canOpenDeck: canOpenDeck(this.#session.actorUuid, user ?? null),
       programs: view.programs.map((p) => {
         const programClass = "detailed" in p ? p.programClass : "";
-        // Atacantes não se rezzam no CPR (E6-05): mostram "Atacante" em vez de "derezzed".
         const attacker = programClass.endsWith("attacker");
         const rezzable = REZZABLE_CLASSES.has(programClass);
-        // Em execução (inclusive neutralizado): o botão derrezza; senão, rezza (D40).
         const running = p.status === "rezzed" || p.status === "neutralized";
         const rezCheck = rezzable ? checkProgramRez(rules, p.itemId, !running) : null;
-        // Diante de uma Netrunner NPC, valem os atacantes antipessoal (E6-11b).
         const attackClasses = rules.run.npcAt ? NETRUNNER_ATTACKER_CLASSES : ICE_ATTACKER_CLASSES;
         const atkCheck = attackClasses.has(programClass)
           ? checkProgramAttack(rules, p.itemId)
@@ -781,7 +716,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 ...node,
                 icon: CONTENT_ICON[node.content],
                 typeLabel: t(`CNH.Content.${node.content}`),
-                // GM: revelar só no mapa (sem conteúdo) ou voltar a mostrar o conteúdo.
                 mapLabel: t(node.masked ? "CNH.Session.Unmask" : "CNH.Session.MapOnly"),
                 mappable: role === "gm" && node.key !== this.#session.runnerPosition,
                 iceLabel: node.blackIceKey ? t(node.blackIceKey) : "",
@@ -790,7 +724,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 runnerNote: role === "netrunner" ? (this.#notes[node.key] ?? "") : "",
                 npcLinkable: role === "gm" && node.content !== "blackice",
 
-                // Jogadores: só a NPC do nó onde a Netrunner está (E6-11b).
                 npcHere:
                   role !== "gm" &&
                   node.key === this.#session.runnerPosition &&
@@ -798,7 +731,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
                     ? t("CNH.Npc.Encounter")
                     : "",
                 npcName: npcLinks[node.key] ? actorName(npcLinks[node.key] ?? "") : "",
-                // Um só ícone: clique troca o vínculo; arrastar move a NPC (E6-11b).
                 npcLabel: npcLinks[node.key]
                   ? t("CNH.Npc.Linked", { name: actorName(npcLinks[node.key] ?? "") })
                   : t("CNH.Npc.Link"),
@@ -829,7 +761,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       "updateActor",
       Hooks.on("updateActor", (actor) => isOurActor(actor.uuid) && this.#refresh()),
     ]);
-    // Mestre entra/sai: atualiza o aviso de pausa e os controles (E4-02a).
     this.#hookIds.push(["userConnected", Hooks.on("userConnected", () => this.#refresh())]);
     for (const hook of ["createItem", "updateItem", "deleteItem"] as const) {
       this.#hookIds.push([
@@ -849,10 +780,8 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     super._onRender(context, options);
     this.#restoreScroll();
     if (game.user?.isGM) this.#bindNpcDrag();
-    // Registro como terminal: a linha mais nova (e o cursor) fica à vista.
     const logPanel = this.element.querySelector<HTMLElement>(".cnh-log--terminal");
     if (logPanel) {
-      // Cada renderização troca o HTML: volta ao fim (ou onde a pessoa parou de ler).
       const follow = this.#logScroll || this.#logAtEnd;
       const restore = () => {
         logPanel.scrollTop = follow ? logPanel.scrollHeight : this.#logTop;
@@ -865,7 +794,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.#logAtEnd = logPanel.scrollHeight - logPanel.clientHeight - logPanel.scrollTop < 8;
       });
     }
-    // A renderização troca o HTML: devolve o foco ao mesmo controle, se ainda ativo.
     const selector = this.#focus;
     if (!selector) return;
     const target = this.element.querySelector<HTMLElement>(selector);
@@ -886,7 +814,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#fx = null;
   }
 
-  /** Netrunner (ou GM) solicita uma ação; a autoridade valida e responde. */
   static async #onNetAction(
     this: SessionHudApp,
     _event: Event,
@@ -901,13 +828,11 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     await this.#send(action);
   }
 
-  /** Envia à autoridade com bloqueio de duplo envio e aviso de erro. */
   async #send(action: NetAction): Promise<void> {
     const sessionId = this.#session.id;
     await this.#withPending("waiting", () => this.#request(action, sessionId));
   }
 
-  /** Bloqueia novos envios enquanto a tarefa roda (inclui o diálogo de rolagem). */
   async #withPending(kind: "rolling" | "waiting", task: () => Promise<void>): Promise<void> {
     if (this.#busy) return;
     this.#busy = kind;
@@ -921,7 +846,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /** `sessionId` fixado ao começar: trocar de aba durante a rolagem não muda o destino. */
   async #request(action: NetAction, sessionId: string): Promise<void> {
     if (this.#busy === "rolling") {
       this.#busy = "waiting";
@@ -935,7 +859,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /** GM revela ou oculta um nó; a autoridade aplica (D20). */
   static async #onToggleFloor(
     this: SessionHudApp,
     _event: Event,
@@ -949,7 +872,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     await this.#send({ type: revealed ? "conceal" : "reveal", key });
   }
 
-  /** GM libera (marca resolvido) ou restaura um nó (D22). */
   static async #onToggleClear(
     this: SessionHudApp,
     _event: Event,
@@ -963,7 +885,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     await this.#send({ type: resolved ? "restoreNode" : "clearNode", key });
   }
 
-  /** Netrunner (ou GM) rola a habilidade no próprio cliente e envia o card (D23). */
   static async #onAbilityCheck(
     this: SessionHudApp,
     _event: Event,
@@ -977,20 +898,17 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     );
   }
 
-  /** GM vincula o ator Black ICE escolhido ao nó (D25). */
   static async #onLinkIce(this: SessionHudApp, _event: Event, target: HTMLElement): Promise<void> {
     if (!game.user?.isGM) return;
     const key = Number(target.dataset["key"]);
     const select = this.element.querySelector<HTMLSelectElement>("select[name='iceActor']");
     const value = select?.value ?? "";
     if (!Number.isInteger(key) || value === "") return;
-    // Básico ainda não criado (E6-12): ganha a ficha no mundo antes do vínculo.
     const actorUuid = await ensureIceActor(value);
     if (!actorUuid) return;
     await this.#send({ type: "linkIce", key, actorUuid });
   }
 
-  /** GM rola o ATK do Black ICE na ficha dele. */
   static async #onIceAttack(this: SessionHudApp): Promise<void> {
     const link = this.#iceLinkAtRunner();
     if (!game.user?.isGM || !link) return;
@@ -1000,7 +918,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     );
   }
 
-  /** Rolagem do lado oposto: DEF/PER do Black ICE (GM) ou Defense da Netrunner. */
   static async #onRollOpposed(this: SessionHudApp): Promise<void> {
     const pending = this.#session.run.pending;
     if (!pending) return;
@@ -1008,12 +925,10 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const npc = this.#session.run.npcs.find((n) => n.key === pending.key && !n.defeated);
     let roll: () => Promise<string | null>;
     if (pending.ability === "ambush") {
-      // Encontro: velocidade da Netrunner (Interface + bônus de SPD + 1d10).
       roll = () => rollInterfaceAbility(this.#session.actorUuid, "speed");
     } else if (pending.ability === "iceAttack" || pending.ability === "npcAttack") {
       roll = () => rollInterfaceAbility(this.#session.actorUuid, "defense");
     } else if (npc && (pending.ability === "zap" || pending.ability === "programAttack")) {
-      // Defense da Netrunner NPC (Interface + 1d10), rolada pelo GM na ficha dela.
       roll = () => rollInterfaceAbility(npc.actorUuid, "defense");
     } else if (
       link &&
@@ -1026,7 +941,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     await this.#rollAndSend(roll, (messageId) => ({ type: "oppose", messageId }));
   }
 
-  /** Dano do Zap vencido (1d6), rolado por quem controla a Netrunner. */
   static async #onRollDamage(this: SessionHudApp): Promise<void> {
     const flavor = game.i18n.localize("CNH.Check.DamageFlavor");
     const programId = this.#session.run.damageProgram;
@@ -1039,7 +953,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     );
   }
 
-  /** Rezzar/derrezzar Booster ou Defender (1 ação NET; ficha alterada pela autoridade). */
   static async #onProgramRez(
     this: SessionHudApp,
     _event: Event,
@@ -1050,7 +963,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     await this.#send({ type: "rezProgram", programId, rez: target.dataset["rez"] === "true" });
   }
 
-  /** Ataque com programa antiprograma contra o Black ICE do nó (rolagem nativa). */
   static async #onProgramAttack(
     this: SessionHudApp,
     _event: Event,
@@ -1064,12 +976,10 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     );
   }
 
-  /** GM rola o dano do acerto do Black ICE (fórmula do programa Black ICE, D31). */
   static async #onRollIceDamage(this: SessionHudApp): Promise<void> {
     const hit = this.#session.run.iceHit;
     if (!game.user?.isGM || !hit) return;
     if (hit.byNpc) {
-      // Acerto da NPC: 1d6 do Zap ou o card de dano do programa dela.
       const { actorUuid, programId } = hit.byNpc;
       const npcFlavor = game.i18n.localize("CNH.Npc.DamageFlavor");
       await this.#rollAndSend(
@@ -1091,7 +1001,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     );
   }
 
-  /** Iniciativa 1d10 + REF: a jogadora rola a dela; o GM, a da NPC (D37). */
   static async #onRollInitiative(
     this: SessionHudApp,
     _event: Event,
@@ -1112,7 +1021,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     );
   }
 
-  /** GM ataca com a NPC: Zap (Interface) ou programa antipessoal dela (ATK). */
   static async #onNpcAttack(
     this: SessionHudApp,
     _event: Event,
@@ -1134,7 +1042,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     );
   }
 
-  /** Guarda a rolagem de cada área antes de o HTML ser trocado. */
   #saveScroll(): void {
     const root = this.element as HTMLElement | null | undefined;
     if (!root?.isConnected) return;
@@ -1144,7 +1051,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /** Devolve a rolagem: um aviso novo não leva a tela de volta ao topo. */
   #restoreScroll(): void {
     const apply = () => {
       for (const selector of SCROLLERS) {
@@ -1157,11 +1063,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     requestAnimationFrame(apply);
   }
 
-  /**
-   * GM arrasta a NPC (ícone no nó) para outro nó. Arrasto por ponteiro, não pelo arrastar do
-   * HTML (botões não arrastam em alguns navegadores, como o Firefox). Os destinos válidos
-   * acendem pela mesma regra que a autoridade confere (`checkNpcMove`).
-   */
   #bindNpcDrag(): void {
     const arch = this.#session.netArch;
     if (!arch) return;
@@ -1220,7 +1121,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /** GM rola o SPD do Black ICE à espreita (encontro ao chegar no nó). */
   static async #onRollAmbush(this: SessionHudApp): Promise<void> {
     const key = this.#session.run.ambush;
     const link = this.#session.run.ice.find((l) => l.key === key)?.actorUuid;
@@ -1231,7 +1131,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     );
   }
 
-  /** GM escolhe o programa atingido pelo Black ICE antiprograma. */
   static async #onIceTarget(this: SessionHudApp): Promise<void> {
     if (!game.user?.isGM) return;
     const select = this.element.querySelector<HTMLSelectElement>("select[name='iceTarget']");
@@ -1239,20 +1138,17 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     if (programId) await this.#send({ type: "iceTarget", programId });
   }
 
-  /** Mestre: faz em um clique os passos que a regra decide (sem diálogo). */
   static async #onResolveNow(this: SessionHudApp): Promise<void> {
     if (!game.user?.isGM) return;
     const sessionId = this.#session.id;
     await this.#withPending("waiting", () => this.#handlers.resolveNow(sessionId));
   }
 
-  /** Liga ou desliga o som do HUD (só neste navegador). */
   static async #onToggleSound(this: SessionHudApp): Promise<void> {
     const on = game.settings.get(MODULE_ID, SOUND_SETTING) === true;
     await game.settings.set(MODULE_ID, SOUND_SETTING, !on);
   }
 
-  /** GM mostra o nó só no mapa (sem conteúdo) ou volta a mostrar o conteúdo. */
   static async #onMapFloor(this: SessionHudApp, _event: Event, target: HTMLElement): Promise<void> {
     if (!game.user?.isGM) return;
     const key = Number(target.dataset["key"]);
@@ -1262,12 +1158,10 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     await this.#send(masked ? { type: "reveal", key } : { type: "reveal", key, masked: true });
   }
 
-  /** GM vincula (ou remove) a Netrunner NPC de um nó; fica na flag do item (D37). */
   static async #onLinkNpc(this: SessionHudApp, _event: Event, target: HTMLElement): Promise<void> {
     const arch = this.#session.netArch;
     const key = Number(target.dataset["key"]);
     if (!game.user?.isGM || !arch || !Number.isInteger(key)) return;
-    // Clique que encerra um arrasto não abre o diálogo de vínculo.
     if (Date.now() - this.#dragEndedAt < 400) return;
     const current = listNpcLinks(arch.itemUuid)[key] ?? "";
     const options = listWorldNetrunners(this.#session.actorUuid);
@@ -1293,17 +1187,14 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     });
     if (typeof choice !== "string") return;
     await setNpcLink(arch.itemUuid, key, choice || null);
-    // Sincroniza o estado público: revela se ela está no nó; tira a NPC desvinculada.
     await this.#send({ type: "npcSync" });
   }
 
-  /** GM desfaz a última ação registrada (E6-07, D32). */
   static async #onUndo(this: SessionHudApp): Promise<void> {
     if (!game.user?.isGM) return;
     await this.#send({ type: "undo" });
   }
 
-  /** GM devolve (−1 gasta) ou tira (+1 gasta) uma ação NET do turno. */
   static async #onAdjustActions(
     this: SessionHudApp,
     _event: Event,
@@ -1324,7 +1215,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     return this.#session.run.ice.find((l) => l.key === key)?.actorUuid ?? null;
   }
 
-  /** Rola no cliente atual e envia o card; diálogo cancelado não envia nada. */
   async #rollAndSend(
     roll: () => Promise<string | null>,
     toAction: (messageId: string) => NetAction,
@@ -1340,7 +1230,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     });
   }
 
-  /** GM confirma o resultado da checagem pendente, sem rerrolar (E3-02b). */
   static async #onResolveCheck(
     this: SessionHudApp,
     _event: Event,
@@ -1352,7 +1241,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     await this.#send({ type: "resolveCheck", outcome });
   }
 
-  /** Troca a aba da sessão mostrada (E6-11a); bloqueado durante um envio. */
   static #onSelectSession(this: SessionHudApp, _event: Event, target: HTMLElement): void {
     const id = target.dataset["sessionId"];
     const session = this.#sessions.find((s) => s.id === id);
@@ -1361,7 +1249,6 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#rerender();
   }
 
-  /** Mestre abre a arquitetura desta sessão no editor (ou uma nova, sem arquitetura). */
   static #onOpenDeck(this: SessionHudApp): void {
     if (canOpenDeck(this.#session.actorUuid, game.user)) {
       this.#handlers.openDeck(this.#session.actorUuid);
@@ -1376,18 +1263,12 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
     if (game.user?.isGM) this.#handlers.startSession();
   }
 
-  /** Mostrar/esconder o card de inimigo (só neste navegador). */
   static #onToggleEnemy(this: SessionHudApp): void {
     this.#enemyCollapsed = !this.#enemyCollapsed;
-    try {
-      localStorage.setItem(ENEMY_KEY, this.#enemyCollapsed ? "1" : "0");
-    } catch {
-      // Armazenamento indisponível: vale só nesta janela.
-    }
+    writeEnemyCollapsed(this.#enemyCollapsed);
     this.#rerender();
   }
 
-  /** Mostrar/esconder o registro só para este usuário (ajuste do cliente). */
   static async #onToggleLog(this: SessionHudApp): Promise<void> {
     const shown = game.settings.get(MODULE_ID, LOG_SETTING) === true;
     this.#logScroll = true;
@@ -1436,7 +1317,6 @@ function programName(snapshot: CharacterSnapshot | null, programId: string | nul
 
 type Translate = (key: string, data?: Record<string, string>) => string;
 
-/** Alvo do acerto do Black ICE (E6-06): HP e REZ são da Netrunner, sem segredo do GM. */
 function iceTargetLabel(
   target: NonNullable<EncounterView["iceHit"]>["target"],
   snapshot: CharacterSnapshot | null,
@@ -1491,7 +1371,6 @@ function hasFx(fx: HudFx): boolean {
   return fx.banner !== null || fx.alert !== null || Object.keys(fx.nodes).length > 0;
 }
 
-/** Seletor do controle focado dentro do HUD, pelos `data-*` estáveis; `null` se fora. */
 function focusSelector(root: HTMLElement | null, active: Element | null): string | null {
   if (!root || !(active instanceof HTMLElement) || !root.contains(active)) return null;
   if (active instanceof HTMLSelectElement && active.name) return `select[name="${active.name}"]`;
@@ -1504,7 +1383,6 @@ function focusSelector(root: HTMLElement | null, active: Element | null): string
   return parts.length > 0 ? parts.join("") : null;
 }
 
-/** Nome de um ator do mundo (vínculo de NPC, visto só pelo GM). */
 function actorName(uuid: string): string {
   return (fromUuidSync(uuid) as { name?: string } | null)?.name ?? "?";
 }
@@ -1517,9 +1395,17 @@ const ENEMY_KEY = `${MODULE_ID}.enemyCollapsed`;
 
 function readEnemyCollapsed(): boolean {
   try {
-    // Padrão: fechado (só o ícone no cabeçalho).
     return localStorage.getItem(ENEMY_KEY) !== "0";
   } catch {
     return true;
+  }
+}
+
+function writeEnemyCollapsed(collapsed: boolean): boolean {
+  try {
+    localStorage.setItem(ENEMY_KEY, collapsed ? "1" : "0");
+    return true;
+  } catch {
+    return false;
   }
 }

@@ -27,14 +27,15 @@ import {
   applyNpcAttack,
   applyOppose,
   applyResolve,
-  isId,
   withRun,
 } from "./checks";
 import {
   ABILITY_CHECKS,
   type AbilityCheck,
   concealFloor,
+  isId,
   mapFloor,
+  MAX_ID_LENGTH,
   npcAt,
   type PublicSession,
   revealFloor,
@@ -48,21 +49,14 @@ import { checkNpcMove, moveNpcPublic, revealNpc } from "./npc";
 import { programStateOf, type SheetEffect } from "./sheet-effects";
 import { applyUndo, isRecorded, pushHistory } from "./undo";
 
-/**
- * Contrato de requisições → GM autoridade e processador puro (E2-02/E2-03, D19/D20).
- * Elegibilidade, custo e bloqueios vêm do motor `net-rules` (E3-02a, D21/D22).
- * Ações de GM também passam pela autoridade (D20).
- */
 export type NetAction =
   | { type: "jackIn" }
   | { type: "moveTo"; key: number }
   | { type: "jackOut" }
-  /** GM revela um nó; `masked` = só no mapa, sem o conteúdo, até a Netrunner entrar. */
   | { type: "reveal"; key: number; masked?: boolean }
   | { type: "conceal"; key: number }
   | { type: "end" }
   | { type: "newTurn" }
-  /** Encerra a vez no combate (E6-08, D33): Netrunner ou GM; a do Black ICE só o GM. */
   | { type: "endTurn" }
   | { type: "clearNode"; key: number }
   | { type: "restoreNode"; key: number }
@@ -70,34 +64,23 @@ export type NetAction =
       type: "check";
       ability: AbilityCheck | "damage" | "programAttack";
       messageId: string;
-      /** Ataque com programa: item do programa (E6-05). */
       programId?: string;
     }
   | { type: "rezProgram"; programId: string; rez: boolean }
   | { type: "oppose"; messageId: string }
   | { type: "iceAttack"; messageId: string }
-  /** GM rolou o dano do acerto do Black ICE (E6-06, D31). */
   | { type: "iceDamage"; messageId: string }
-  /** GM desfaz a última ação registrada (E6-07, D32). */
   | { type: "undo" }
-  /** GM devolve (−1) ou tira (+1) uma ação NET gasta no turno. */
   | { type: "adjustActions"; delta: 1 | -1 }
   | { type: "linkIce"; key: number; actorUuid: string }
-  /** GM ataca com a Netrunner NPC do nó: Zap (sem programa) ou programa (E6-11b). */
   | { type: "npcAttack"; messageId: string; programId?: string }
-  /** Iniciativa 1d10 + REF de um lado do combate com a NPC (D37). */
   | { type: "initiative"; side: "runner" | "npc"; messageId: string }
-  /** GM vinculou uma NPC ao nó atual: revela agora (E6-11b). */
   | { type: "npcSync" }
-  /** GM arrasta a NPC de um nó a outro, com as regras de movimento da jogadora. */
   | { type: "moveNpc"; from: number; to: number }
   | { type: "resolveCheck"; outcome: "success" | "failure" }
-  /** GM rola o SPD do Black ICE à espreita (encontro ao chegar no nó). */
   | { type: "ambush"; messageId: string }
-  /** GM escolhe o programa atingido pelo Black ICE antiprograma. */
   | { type: "iceTarget"; programId: string };
 
-/** Ações só de GM: dispensam a revisão atual; todas menos `newTurn` são idempotentes. */
 const GM_ACTIONS: ReadonlySet<NetAction["type"]> = new Set([
   "reveal",
   "conceal",
@@ -118,7 +101,6 @@ const GM_ACTIONS: ReadonlySet<NetAction["type"]> = new Set([
   "iceTarget",
 ]);
 
-/** Dispensam a revisão atual: GM (D20) e rolagens já feitas (E3-02b/c). */
 const REVISION_EXEMPT: ReadonlySet<NetAction["type"]> = new Set([
   ...GM_ACTIONS,
   "check",
@@ -128,7 +110,6 @@ const REVISION_EXEMPT: ReadonlySet<NetAction["type"]> = new Set([
 
 const KEYED_ACTIONS = ["moveTo", "reveal", "conceal", "clearNode", "restoreNode"] as const;
 
-/** Conteúdos que o GM pode marcar como resolvidos (D22). */
 const CLEARABLE: ReadonlySet<NetFloorContent> = new Set([
   "password",
   "controlnode",
@@ -171,82 +152,50 @@ export type ActionResult =
 
 export interface ProcessContext {
   session: PublicSession | null;
-  /** Remetente segundo o servidor (2º argumento do socket), nunca o payload. */
   sender: ViewerIdentity;
-  /** Arquitetura completa, lida pelo GM. */
   architecture: NetArchitecture | null;
-  /** Resultados já produzidos, por `processedKey`. */
   processed: ReadonlyMap<string, ActionResult>;
-  /** Recursos atuais da ficha, lidos pelo GM (R05). */
   runner: RunnerResources;
-  /** Lê o card de rolagem no chat (documento do servidor), pelo id da mensagem. */
   readRoll(messageId: string): RollEvidence | null;
-  /** Lê um ator Black ICE do mundo; `null` se não existe ou não é Black ICE (D25). */
   readIce(actorUuid: string): IceStats | null;
-  /** HP e redução cerebral atuais da Netrunner, lidos pelo GM (E6-06). */
   readVitals(actorUuid: string): RunnerVitals | null;
-  /** Sorteio do programa atingido por Black ICE antiprograma: índice de 0 a count−1. */
   pick(count: number): number;
-  /** Recursos de uma Netrunner NPC (Interface e programas), lidos pelo GM (E6-11b). */
   readResources(actorUuid: string): RunnerResources;
-  /** REF do ator, para conferir a iniciativa 1d10 + REF; `null` = indisponível. */
   readRef(actorUuid: string): number | null;
-  /** NPC vinculada ao nó na flag do item da arquitetura (só a autoridade lê). */
   npcLinkAt(key: number): string | null;
 }
 
 export interface IceStats {
   name: string;
   rez: { value: number; max: number };
-  /** `system.class` do ator (E6-06); ausente = "other". */
   iceClass?: IceClass;
-  /** Fórmula do item de programa Black ICE de mesmo nome (D31); `null` = não encontrado. */
   damageFormula?: string | null;
-  /** O programa existe e não tem dano em dados: acerto = efeito especial do GM (E6-12). */
   specialOnly?: boolean;
-  /** Resumo do efeito (notas da ficha), mostrado ao GM. */
   effect?: string;
-  /** Antiprograma cujo dano que derrezzaria destrói o programa (D40). */
   destroysPrograms?: boolean;
 }
 
-/** Efeitos em documentos (D26); definidos em `sheet-effects.ts`. */
 export type { SheetEffect } from "./sheet-effects";
 
-/** O que a autoridade extrai de uma ChatMessage de rolagem nativa. */
 export interface RollEvidence {
-  /** Autor segundo o servidor. */
   authorId: string;
-  /** Ator do `speaker` da mensagem. */
   actorUuid: string;
   total: number;
-  /** Fórmula da rolagem, quando a mensagem traz `rolls` (dano). */
   formula?: string | null;
 }
 
 export interface ProcessOutcome {
   result: ActionResult;
-  /** Novo estado a gravar; `null` quando nada muda. */
   session: PublicSession | null;
-  /** Chave para registrar o resultado; `null` se a requisição era ilegível. */
   processedKey: string | null;
-  /** A sessão deve ser encerrada (gravar `null`). */
   ended: boolean;
-  /** Efeitos a executar antes de gravar a sessão (D26). */
   effects: SheetEffect[];
 }
-
-export const MAX_ID_LENGTH = 64;
 
 export function parseActionRequest(value: unknown): ActionRequest | null {
   if (typeof value !== "object" || value === null) return null;
   const { requestId, sessionId, expectedRevision, action } = value as Record<string, unknown>;
-  if (typeof requestId !== "string" || requestId === "" || requestId.length > MAX_ID_LENGTH) {
-    return null;
-  }
-  if (typeof sessionId !== "string" || sessionId === "" || sessionId.length > MAX_ID_LENGTH) {
-    return null;
-  }
+  if (!isId(requestId) || !isId(sessionId)) return null;
   if (typeof expectedRevision !== "number" || !Number.isInteger(expectedRevision)) return null;
   const parsed = parseAction(action);
   return parsed ? { requestId, sessionId, expectedRevision, action: parsed } : null;
@@ -361,17 +310,12 @@ export function processRequest(raw: unknown, ctx: ProcessContext): ProcessOutcom
     };
   }
   if (typeof applied === "string") return reject(requestId, applied, session.revision, key);
-  // NPC do nó chega ao estado público só agora (D37); vez no combate (D33) passa sozinha.
-  // O desfazer restaura o estado exato.
   let settled = applied;
   if (request.action.type !== "undo") {
-    // Mover a NPC já ajusta o estado público (a flag só muda ao efetivar o efeito).
     const revealed =
       request.action.type === "moveNpc" ? applied : revealNpc(applied, (key) => ctx.npcLinkAt(key));
     const npc = npcAt(revealed);
     const npcMax = npc ? netActionsPerTurn(ctx.readResources(npc.actorUuid).interfaceRank) : 0;
-    // Black ICE à espreita: o encontro dispara ao chegar no nó (antes da vez).
-    // Antiprograma só dispara se ela chegar com algum programa em execução (FAQ, D40).
     const hasTargets = (ctx.runner.programs ?? []).some((p) => p.rezzed && (p.rez ?? 0) > 0);
     const ambushed = triggerAmbush(session, revealed, (key) => {
       const link = revealed.run.ice.find((l) => l.key === key)?.actorUuid;
@@ -379,13 +323,10 @@ export function processRequest(raw: unknown, ctx: ProcessContext): ProcessOutcom
     });
     settled = settleTurn(session, ambushed, netActionsPerTurn(ctx.runner.interfaceRank), npcMax);
   }
-  // Andar mais fundo (libera o Virus): calculado aqui, onde a arquitetura completa existe.
   settled = withBottom(settled, ctx.architecture);
-  // Desfazer do GM (D32): cada mudança registrada guarda o estado anterior e os inversos.
   const recorded = isRecorded(request.action)
     ? pushHistory(session, settled, request.action, effects)
     : settled;
-  // Registro público (D34): descrito a partir da ação e dos estados públicos.
   const logged = appendLog(session, recorded, request.action);
   const next = { ...logged, revision: session.revision + 1 };
   return {
@@ -397,7 +338,6 @@ export function processRequest(raw: unknown, ctx: ProcessContext): ProcessOutcom
   };
 }
 
-/** Aplica a ação sem mexer na revisão; devolve o erro quando inválida. */
 function apply(
   session: PublicSession,
   action: NetAction,
@@ -439,8 +379,6 @@ function apply(
   const arch = session.netArch;
   if (!arch) return "no-architecture";
   const entry = architecture?.floors.find((f) => f.floor === 1 && f.branch === "a");
-  // Caminhos pela arquitetura completa (D28); sem item, só os nós revelados. Com o item, o
-  // fundo da arquitetura vem dele (não do valor guardado na sessão).
   const { atBottom: storedBottom, ...runState } = toRunState(session);
   const rules: RuleContext = {
     runner,
@@ -462,7 +400,6 @@ function apply(
       const next = action.masked
         ? mapFloor(session, floor)
         : revealFloor(session, toPublicFloor(floor));
-      // Revelar e ocultar não passam pelo resto do pipeline: recalcula a marca aqui.
       return next === session
         ? "unchanged"
         : withBottom({ ...next, revision: session.revision }, architecture);
@@ -478,7 +415,6 @@ function apply(
       const node = arch.discovered.find((f) => f.key === action.key);
       if (!node || !CLEARABLE.has(node.content)) return "invalid-target";
       if (session.run.cleared.includes(node.key)) return "unchanged";
-      // Liberar o Black ICE à mão dispensa o dano que estava por rolar.
       const awaitingDamage =
         session.run.awaitingDamage === node.key ? null : session.run.awaitingDamage;
       return withRun(session, { cleared: [...session.run.cleared, node.key], awaitingDamage });
@@ -497,7 +433,6 @@ function apply(
       const discovered = arch.discovered.some((f) => f.key === entry.key)
         ? arch.discovered
         : [...arch.discovered, toPublicFloor(entry)];
-      // Nova Netrun: cópias de uso único (Armor, Flak, Shield, Superglue) voltam a valer.
       return spend(eligibility, {
         ...session,
         runnerPosition: entry.key,
@@ -512,7 +447,6 @@ function apply(
       if (!eligibility.allowed) return eligibility.reason;
       const program = runner.programs?.find((p) => p.itemId === action.programId);
       if (!program) return "invalid-program";
-      // Rezzar volta com o REZ cheio; derrezzar (inclusive um neutralizado) desliga (D40).
       effects.push({
         type: "setProgramState",
         actorUuid: session.actorUuid,
@@ -530,7 +464,6 @@ function apply(
       const once = ONCE_PER_RUN_PROGRAMS.has(programKey(program.name));
       return withRun(session, {
         actionsUsed: session.run.actionsUsed + eligibility.cost,
-        // Rezzar é ativar: uma vez por rodada; Armor/Flak/Shield, uma vez por Netrun.
         programsUsed: action.rez ? [...programsUsed, action.programId] : programsUsed,
         netrunUsed: action.rez && once ? [...netrunUsed, action.programId] : netrunUsed,
       });
@@ -563,7 +496,6 @@ function apply(
         arch.discovered.find((f) => f.key === action.key) ??
         arch.mapped.find((m) => m.key === action.key) ??
         null;
-      // Nó só mapeado: o conteúdo aparece agora que ela entra.
       const full = architecture?.floors.find((f) => f.key === action.key);
       const mapped = arch.mapped.some((m) => m.key === action.key);
       if (mapped && !full) return "invalid-target";

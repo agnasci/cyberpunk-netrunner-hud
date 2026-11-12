@@ -1,9 +1,5 @@
 import { DEMO_FLOORS, DEMO_PROGRAMS } from "./fixture";
 
-/**
- * Estado local do protótipo visual. Não é regra de Cyberpunk RED: as ações só
- * encenam resultados pré-roteirizados para disparar animações.
- */
 export type FloorContent = "password" | "file" | "controlnode" | "blackice";
 
 export interface DemoFloor {
@@ -61,7 +57,6 @@ export interface DemoEvent {
 export interface DemoLogEntry {
   id: number;
   kind: DemoEventKind;
-  /** Chave de i18n sob CNH.Prototype.Log. */
   key: string;
   data: Record<string, string>;
 }
@@ -103,7 +98,6 @@ export function createDemoState(): DemoState {
   };
 }
 
-/** Andar atual bloqueia a descida? Senha não quebrada ou Black ICE ativo. */
 export function isFloorBlocking(state: DemoState, index: number): boolean {
   const floor = state.floors[index];
   if (!floor) return false;

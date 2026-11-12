@@ -14,11 +14,6 @@ import {
   type UserOption,
 } from "../session/start-options";
 
-/**
- * Diálogo do GM para iniciar a sessão (DialogV2, V12; E6-03): personagem (só de jogadores,
- * ou todos), controlador sugerido pelo dono, NetArch e um ator Black ICE por nó Black ICE.
- * "Iniciar" fica desabilitado até tudo estar escolhido.
- */
 export interface StartSessionChoice {
   actorUuid: string;
   controllerUserId: string | null;
@@ -85,7 +80,6 @@ export async function promptStartSession(): Promise<StartSessionChoice | null> {
     ui.notifications.warn(t("CNH.Session.NoActors"));
     return null;
   }
-  // Sem personagens de jogadores, abre já mostrando todos.
   const startShowAll = playerCandidates.length === 0;
   const players = game.users.contents.filter((u) => !u.isGM);
   const netArchs = listWorldNetArchs();
@@ -170,7 +164,6 @@ export async function promptStartSession(): Promise<StartSessionChoice | null> {
     };
     const fillIce = () => {
       const nodes = iceNodesOf(archSelect.value);
-      // Vínculo feito no editor de arquitetura (E7-01) vem antes da sugestão pelo nome.
       const preset = archSelect.value ? readLinkFlag(archSelect.value, "ice") : {};
       const used = new Set<string>(
         Object.values(preset).filter((uuid) => iceActors.some((a) => a.uuid === uuid)),

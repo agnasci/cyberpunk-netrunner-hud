@@ -1,12 +1,7 @@
 import { parseSession, type PublicSession } from "./session-state";
 
-/**
- * Várias invasões ao mesmo tempo (E6-11a, D30/D36). Puro: a lista pública de sessões
- * independentes, uma por ator Netrunner, que a autoridade grava inteira de uma vez.
- */
 export const MAX_SESSIONS = 4;
 
-/** Lê a lista armazenada; itens inválidos ou repetidos são descartados. */
 export function parseSessions(value: unknown): PublicSession[] {
   if (!Array.isArray(value)) return [];
   const list: PublicSession[] = [];
@@ -20,7 +15,6 @@ export function parseSessions(value: unknown): PublicSession[] {
   return list;
 }
 
-/** Troca a sessão `id` por `next` (ou a remove com `null`), preservando a ordem. */
 export function replaceSession(
   list: readonly PublicSession[],
   id: string,
@@ -32,10 +26,6 @@ export function replaceSession(
     : [...list, next];
 }
 
-/**
- * Lista mais recente para a autoridade: a armazenada, com o que ela mesma gravou e o
- * servidor ainda não devolveu (mais nova por revisão; `null` = encerrada aqui).
- */
 export function newestSessions(
   stored: readonly PublicSession[],
   written: ReadonlyMap<string, PublicSession | null>,
@@ -52,7 +42,6 @@ export function newestSessions(
   return list;
 }
 
-/** Pode iniciar outra invasão para este ator? */
 export function canStart(
   list: readonly PublicSession[],
   actorUuid: string,
@@ -61,10 +50,6 @@ export function canStart(
   return list.length >= MAX_SESSIONS ? "full" : "ok";
 }
 
-/**
- * Aba mostrada: mantém a atual se ainda existe; senão, a sessão que o usuário controla;
- * senão, a primeira.
- */
 export function pickSession(
   list: readonly PublicSession[],
   current: string | null,

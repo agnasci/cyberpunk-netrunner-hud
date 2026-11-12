@@ -1,10 +1,5 @@
 import type { Tone } from "./sound-cues";
 
-/**
- * Sintetiza as pistas no contexto de interface do Foundry (V12): `game.audio.interface`
- * existe após o primeiro gesto e tem `gainNode` ligado ao volume de interface do jogador.
- * Com o áudio ainda bloqueado, não toca nada. Devolve se tocou.
- */
 export function playTones(tones: readonly Tone[]): boolean {
   const audio = game.audio;
   const ctx = audio.interface;
@@ -31,7 +26,6 @@ export function playTones(tones: readonly Tone[]): boolean {
   return true;
 }
 
-/** Fonte agendável e o nó que leva o som ao envelope. */
 function voice(
   ctx: AudioContext,
   tone: Tone,
@@ -45,7 +39,6 @@ function voice(
     osc.frequency.exponentialRampToValueAtTime(tone.to, end);
     return { source: osc, out: osc };
   }
-  // Ruído branco filtrado por um passa-banda que desliza de `from` a `to`.
   const length = Math.ceil(ctx.sampleRate * (tone.duration + 0.05));
   const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
   const data = buffer.getChannelData(0);

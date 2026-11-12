@@ -10,7 +10,6 @@ export type CompatibilityResult =
   | { status: "untested-version"; tested: string; found: string }
   | { status: "wrong-system"; found: string };
 
-/** Classifica o sistema ativo do mundo; não acessa o Foundry. */
 export function checkSystemCompatibility(system: SystemInfo): CompatibilityResult {
   if (system.id !== SYSTEM_ID) return { status: "wrong-system", found: system.id };
   if (system.version !== TESTED_SYSTEM_VERSION) {

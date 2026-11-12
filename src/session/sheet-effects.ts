@@ -1,8 +1,3 @@
-/**
- * Efeitos em documentos executados pela autoridade antes de gravar a sessão (D26).
- * Valores absolutos: reaplicar não duplica. Cada um traz o valor anterior, fixado ao
- * criar o efeito, para o desfazer (E6-07, D32) não depender de reler a ficha.
- */
 export type SheetEffect =
   | {
       type: "setIceRez";
@@ -11,34 +6,26 @@ export type SheetEffect =
       before: number;
     }
   | {
-      /** Estado absoluto de rez de um programa da Netrunner (E6-05); o anterior é o oposto. */
       type: "setProgramRez";
       actorUuid: string;
       programId: string;
       rezzed: boolean;
     }
   | {
-      /** HP absoluto da Netrunner depois do dano no cérebro (E6-06). */
       type: "setRunnerHp";
       actorUuid: string;
       value: number;
       before: number;
     }
   | {
-      /** REZ absoluto de um programa atingido; 0 = destruído e derrezzado (D31). */
       type: "setProgramRezValue";
       actorUuid: string;
       programId: string;
       value: number;
       before: number;
-      /** Rez antes do efeito: REZ 0 derrezza, o desfazer rezza de novo. */
       rezzedBefore: boolean;
     }
   | {
-      /**
-       * Estado absoluto de um programa (D40): rez, REZ e marca do módulo (neutralizado ou
-       * destruído). Rezzar volta com o REZ cheio; dano a 0 neutraliza ou destrói.
-       */
       type: "setProgramState";
       actorUuid: string;
       programId: string;
@@ -46,7 +33,6 @@ export type SheetEffect =
       before: ProgramState;
     }
   | {
-      /** NPC arrastada pelo GM (E6-11b): move o vínculo na flag do item da arquitetura. */
       type: "moveNpcLink";
       itemUuid: string;
       actorUuid: string;
@@ -62,7 +48,6 @@ export interface ProgramState {
   mark: ProgramMark;
 }
 
-/** Efeitos que desfazem `effect`, na ordem em que devem ser aplicados. */
 function inverseOf(effect: SheetEffect): SheetEffect[] {
   switch (effect.type) {
     case "setIceRez":
@@ -97,12 +82,10 @@ function inverseOf(effect: SheetEffect): SheetEffect[] {
   }
 }
 
-/** Desfaz uma lista de efeitos: inversos na ordem reversa. */
 export function inverseEffects(effects: readonly SheetEffect[]): SheetEffect[] {
   return [...effects].reverse().flatMap(inverseOf);
 }
 
-/** Lê um efeito guardado no histórico; formato inesperado vira `null`. */
 export function parseSheetEffect(value: unknown): SheetEffect | null {
   if (typeof value !== "object" || value === null) return null;
   const v = value as Record<string, unknown>;
@@ -159,7 +142,6 @@ function parseProgramState(value: unknown): ProgramState | null {
   return { rezzed, rezValue, mark };
 }
 
-/** Estado atual de um programa como o motor o conhece (para o `before` do efeito). */
 export function programStateOf(p: {
   rezzed: boolean;
   rez?: number;

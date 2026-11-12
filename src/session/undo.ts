@@ -2,17 +2,8 @@ import type { NetAction, RequestError } from "./requests";
 import { type PublicSession, type UndoEntry, USED_ROLLS_LIMIT } from "./session-state";
 import { inverseEffects, type SheetEffect } from "./sheet-effects";
 
-/**
- * Desfazer do GM (E6-07, D32). Puro: o histórico vive na própria sessão (gravada de uma
- * vez, sem segunda fonte) e guarda a posição, o progresso e os efeitos inversos.
- */
 export const UNDO_LIMIT = 10;
 
-/**
- * Fora do histórico: visibilidade de nós (o GM alterna direto), encerrar, desfazer e mover a
- * NPC. O histórico é público: guardar o movimento entregaria o ator e os nós de uma NPC oculta
- * (E6-11b, D37); o GM arrasta de volta.
- */
 const UNRECORDED: ReadonlySet<NetAction["type"]> = new Set([
   "reveal",
   "conceal",
@@ -25,7 +16,6 @@ export function isRecorded(action: NetAction): boolean {
   return !UNRECORDED.has(action.type);
 }
 
-/** Acrescenta ao histórico de `next` o estado anterior (`prev`) e como desfazer os efeitos. */
 export function pushHistory(
   prev: PublicSession,
   next: PublicSession,
@@ -41,10 +31,6 @@ export function pushHistory(
   return { ...next, history: [...prev.history, entry].slice(-UNDO_LIMIT) };
 }
 
-/**
- * Volta um passo: efeitos inversos para a autoridade aplicar e o estado anterior. Nós
- * descobertos ficam como estão; rolagens já usadas continuam usadas.
- */
 export function applyUndo(
   session: PublicSession,
   effects: SheetEffect[],

@@ -59,7 +59,6 @@ function harness(): Harness {
   };
 }
 
-/** Conectada no Password (0) vencido, ao lado do Black ICE (1) vinculado. Interface 4 = 3 ações. */
 function start(run: Partial<PublicSession["run"]> = {}): PublicSession {
   return {
     ...withRun(reveal(base(), [0, 1, 2]), {
@@ -88,14 +87,12 @@ function chain(session: PublicSession) {
   };
 }
 
-/** Zap falho: gasta 1 ação e nada fica pendente. */
 function missedZap(c: ReturnType<typeof chain>, zap: string, def: string) {
   c.step({ type: "check", ability: "zap", messageId: zap });
   c.step({ type: "oppose", messageId: def }, GM);
   c.step({ type: "resolveCheck", outcome: "failure" }, GM);
 }
 
-/** Black ICE ataca e erra. */
 function missedAttack(c: ReturnType<typeof chain>) {
   c.step({ type: "iceAttack", messageId: "m-atk" }, GM);
   c.step({ type: "oppose", messageId: "m-defense" });
@@ -123,7 +120,6 @@ describe("vez no combate (E6-08, D33)", () => {
     missedZap(c, "m-zap2", "m-def3");
     expect(turnHolder(c.session)).toBe("runner");
     c.step({ type: "check", ability: "zap", messageId: "m-zap3" });
-    // Pendente: a vez espera o GM decidir.
     expect(c.session.run.iceTurn).toBe(false);
     c.step({ type: "oppose", messageId: "m-def4" }, GM);
     expect(c.session.run.iceTurn).toBe(false);

@@ -7,7 +7,6 @@ import {
   type NetFloorContent,
 } from "../../domain/net-architecture";
 
-/** Dados planos de um item `netarch` do CPR CORE v0.92.4 (ver COMPATIBILITY.md). */
 export interface CprNetArchSource {
   uuid: string;
   name: string;
@@ -20,7 +19,6 @@ export type NetArchIssue =
   | { code: "invalid-floor"; key: number | null; field: string }
   | { code: "duplicate-floor-key"; key: number };
 
-/** Valores de `floors[].content` no sistema são chaves i18n. */
 const CONTENT_BY_KEY: Record<string, NetFloorContent> = {
   "CPR.netArchitecture.floor.options.password": "password",
   "CPR.netArchitecture.floor.options.file": "file",
@@ -74,7 +72,6 @@ function readFloor(entry: unknown, issues: NetArchIssue[]): NetFloor | null {
     issues.push({ code: "invalid-floor", key, field: "floor" });
     return null;
   }
-  // O layout do sistema trata branch ausente como a primeira linha ("a").
   const rawBranch = e["branch"];
   const branch =
     rawBranch === undefined || rawBranch === null || rawBranch === "" ? "a" : rawBranch;
@@ -97,7 +94,6 @@ function readFloor(entry: unknown, issues: NetArchIssue[]): NetFloor | null {
   return { key, floor: floorNo, branch, content, blackIceKey, dv, description };
 }
 
-/** Tipos de Black ICE aceitos em `floors[].blackice` (modelo de dados do CPR v0.92.4). */
 export const BLACK_ICE_KEYS = [
   "asp",
   "giant",
@@ -117,7 +113,6 @@ const KEY_BY_CONTENT = Object.fromEntries(
   Object.entries(CONTENT_BY_KEY).map(([key, content]) => [content, key]),
 ) as Record<NetFloorContent, string>;
 
-/** Andar no formato do item do CPR v0.92.4 (campos de texto com as escolhas do modelo). */
 export interface CprFloorData {
   index: number;
   floor: string;
@@ -128,7 +123,6 @@ export interface CprFloorData {
   description: string;
 }
 
-/** Inverso de `normalizeNetArch` para os andares (editor de arquitetura, E7-01). */
 export function toCprFloors(floors: readonly NetFloor[]): CprFloorData[] {
   return [...floors]
     .sort((a, b) => a.floor - b.floor || a.branch.localeCompare(b.branch))

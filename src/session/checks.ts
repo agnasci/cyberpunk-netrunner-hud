@@ -37,26 +37,14 @@ import {
   USED_ROLLS_LIMIT,
 } from "./session-state";
 
-/**
- * Checagens com rolagem nativa (E3-02b/c): contra DV, disputas com o Black ICE,
- * dano do Zap e ataque do Black ICE. Puro: a autoridade injeta a leitura das
- * mensagens e dos atores (D23/D25); efeitos em documentos saem como `SheetEffect` (D26).
- */
-const MAX_ID_LENGTH = 64;
-/** Dano do Zap no CPR v0.92.4 (`_createInterfaceRoll`, `executionType: "damage"`). */
 export const ZAP_DAMAGE_FORMULA = "1d6";
 
 type Applied = PublicSession | RequestError;
-
-export function isId(value: unknown): value is string {
-  return typeof value === "string" && value !== "" && value.length <= MAX_ID_LENGTH;
-}
 
 export function withRun(session: PublicSession, run: Partial<PublicRun>): PublicSession {
   return { ...session, run: { ...session.run, ...run } };
 }
 
-/** Pendências que exigem a rolagem do outro lado antes da confirmação. */
 export function needsOpposed(kind: PendingKind): boolean {
   return (
     kind === "programAttack" ||
@@ -67,10 +55,6 @@ export function needsOpposed(kind: PendingKind): boolean {
   );
 }
 
-/**
- * Sugestão pela regra (D24): DV conhecido, disputa com as duas rolagens ou dano.
- * `dv` só existe na autoridade/GM (arquitetura completa); `null` = sem sugestão.
- */
 export function suggestOutcome(
   pending: PendingCheck,
   dv: number | null,
@@ -80,7 +64,6 @@ export function suggestOutcome(
   }
   if (pending.opposed)
     return winsContest(pending.total, pending.opposed.total) ? "success" : "failure";
-  // Pathfinder e Cloak não têm DV: o total é o resultado. Virus: DV do mestre (sem sugestão).
   if (pending.ability === "pathfinder" || pending.ability === "cloak") return "success";
   return pending.ability === "damage" ? "success" : null;
 }
@@ -89,12 +72,10 @@ export function iceLinkOf(session: PublicSession, key: number): string | null {
   return session.run.ice.find((l) => l.key === key)?.actorUuid ?? null;
 }
 
-/** Netrunner NPC ativa no nó `key` (E6-11b); `null` = alvo é o Black ICE do nó. */
 export function npcLinkOf(session: PublicSession, key: number): string | null {
   return session.run.npcs.find((n) => n.key === key && !n.defeated)?.actorUuid ?? null;
 }
 
-/** Ator que defende/recebe dano no nó: a NPC, se houver; senão, o Black ICE. */
 export function targetOf(
   session: PublicSession,
   key: number,
@@ -105,7 +86,6 @@ export function targetOf(
   return ice ? { kind: "ice", actorUuid: ice } : null;
 }
 
-/** Mensagem de rolagem válida: do remetente, do ator esperado e ainda não usada. */
 function acceptRoll(
   session: PublicSession,
   ctx: ProcessContext,
@@ -161,12 +141,10 @@ export function applyCheck(
   if (action.ability === "damage") {
     const key = run.awaitingDamage;
     if (key === null) return "no-damage-pending";
-    // Dano do Zap vem do Roll do core (fórmula na mensagem); o de programa, do card nativo.
     const fromProgram = run.damageProgram !== null;
     if (!roll || (!fromProgram && roll.formula !== ZAP_DAMAGE_FORMULA)) return "invalid-roll";
     const npc = npcLinkOf(session, key);
     if (npc) {
-      // Netrunner NPC (E6-11b): dano no cérebro, com a redução dela (antes/depois em HP).
       const vitals = ctx.readVitals(npc);
       if (!vitals) return "no-ice-link";
       const after = Math.max(0, vitals.hp - Math.max(0, roll.total - vitals.brainDamageReduction));
@@ -221,12 +199,10 @@ export function applyCheck(
     ),
     usedRolls: used(session, action.messageId),
     actionsUsed: run.actionsUsed + eligibility.cost,
-    // Atacante ativa uma vez por rodada (Core): conta ao rolar o ataque.
     programsUsed:
       programId !== null && !run.programsUsed.includes(programId)
         ? [...run.programsUsed, programId]
         : run.programsUsed,
-    // Superglue: uma vez por Netrun (D40).
     netrunUsed:
       programId !== null && onceProgram(ctx, programId) && !run.netrunUsed.includes(programId)
         ? [...run.netrunUsed, programId]
@@ -239,7 +215,6 @@ function onceProgram(ctx: ProcessContext, programId: string): boolean {
   return ONCE_PER_RUN_PROGRAMS.has(programKey(program?.name));
 }
 
-/** Rolagem do outro lado: DEF/PER do Black ICE (GM) ou Defense da Netrunner. */
 export function applyOppose(
   session: PublicSession,
   action: Extract<NetAction, { type: "oppose" }>,
@@ -248,8 +223,6 @@ export function applyOppose(
   const pending = session.run.pending;
   if (!pending || pending.opposed || !needsOpposed(pending.ability)) return "nothing-to-oppose";
   let actorUuid = session.actorUuid;
-  // Ataques contra a jogadora: ela rola a Defense (ou a velocidade, no encontro). Os dela: o
-  // GM rola pelo alvo do nó.
   if (
     pending.ability !== "iceAttack" &&
     pending.ability !== "npcAttack" &&
@@ -271,7 +244,6 @@ export function applyOppose(
   });
 }
 
-/** GM rola o ATK do Black ICE contra a Netrunner no nó dele. */
 export function applyIceAttack(
   session: PublicSession,
   action: Extract<NetAction, { type: "iceAttack" }>,
@@ -292,7 +264,6 @@ export function applyIceAttack(
   });
 }
 
-/** GM confirma o resultado; nada é rerrolado. Sucesso = lado que rolou primeiro vence. */
 export function applyResolve(
   session: PublicSession,
   action: Extract<NetAction, { type: "resolveCheck" }>,
@@ -303,8 +274,6 @@ export function applyResolve(
   const pending = run.pending;
   const success = action.outcome === "success";
   if (!pending) {
-    // GM dispensa um dano (Zap, programa ou acerto do Black ICE) que não será rolado, ou o
-    // encontro com o Black ICE à espreita.
     if (!success && (run.awaitingDamage !== null || run.iceHit || run.ambush !== null)) {
       return withRun(session, {
         awaitingDamage: null,
@@ -340,7 +309,6 @@ function resolvePending(
   switch (pending.ability) {
     case "cloak":
     case "virus":
-      // Efeito narrado pelo mestre; o total fica no registro (DV de quem procurar depois).
       return withRun(session, { pending: null });
     case "pathfinder":
       return success ? pathfinderFrom(session, pending, ctx) : withRun(session, { pending: null });
@@ -410,14 +378,9 @@ function resolvePending(
   }
 }
 
-/**
- * Acerto confirmado (E6-06, D31): alvo e valor base fixados agora (D26). Sem alvo
- * automático, nada fica pendente e o motivo vai para todos.
- */
 function iceHitFrom(session: PublicSession, key: number, ctx: ProcessContext): Applied {
   const link = iceLinkOf(session, key);
   const ice = link ? ctx.readIce(link) : null;
-  // Sem dano em dados (ex.: Asp, Liche): o efeito especial fica com o GM (E6-12).
   const target = chooseIceTarget(
     ice?.specialOnly ? "other" : (ice?.iceClass ?? "other"),
     ctx.readVitals(session.actorUuid),
@@ -431,10 +394,8 @@ function iceHitFrom(session: PublicSession, key: number, ctx: ProcessContext): A
       lastIceDamage: nextIceDamage(session, key, target),
     });
   }
-  // Antiprograma: o mestre escolhe o programa atingido quando há mais de um rezzado.
   const rezzed = (ctx.runner.programs ?? []).filter((p) => p.rezzed && (p.rez ?? 0) > 0);
   const pickProgram = target.kind === "program" && rezzed.length > 1;
-  // Dragon, Killer, Sabertooth: o dano que derrezzaria destrói (D40).
   const fixed =
     target.kind === "program" && ice?.destroysPrograms ? { ...target, destroys: true } : target;
   return withRun(session, {
@@ -443,7 +404,6 @@ function iceHitFrom(session: PublicSession, key: number, ctx: ProcessContext): A
   });
 }
 
-/** Pathfinder confirmado: revela os nós que a regra alcança (conteúdo geral, sem DV). */
 function pathfinderFrom(
   session: PublicSession,
   pending: PendingCheck,
@@ -467,7 +427,6 @@ function pathfinderFrom(
   };
 }
 
-/** GM rola o SPD do Black ICE à espreita; a jogadora responde com a velocidade (Core). */
 export function applyAmbush(
   session: PublicSession,
   action: Extract<NetAction, { type: "ambush" }>,
@@ -488,7 +447,6 @@ export function applyAmbush(
   });
 }
 
-/** GM escolhe o programa atingido pelo Black ICE antiprograma (antes do dano). */
 export function applyIceTarget(
   session: PublicSession,
   action: Extract<NetAction, { type: "iceTarget" }>,
@@ -524,11 +482,6 @@ function nextIceDamage(
   return byNpc ? { seq, key, result, byNpc } : { seq, key, result };
 }
 
-/**
- * Acerto da NPC (E6-11b): sempre no cérebro da jogadora, com o HP fixado agora (D26). Shield
- * rezzado absorve o primeiro acerto de programa ofensivo comum e se neutraliza (D40); não vale
- * contra Zap (habilidade de Interface, não programa).
- */
 function npcHitFrom(
   session: PublicSession,
   pending: PendingCheck,
@@ -573,7 +526,6 @@ function npcHitFrom(
   });
 }
 
-/** GM ataca com a Netrunner NPC do nó: Zap ou programa antipessoal; gasta ação dela. */
 export function applyNpcAttack(
   session: PublicSession,
   action: Extract<NetAction, { type: "npcAttack" }>,
@@ -609,7 +561,6 @@ export function applyNpcAttack(
   });
 }
 
-/** Iniciativa (1d10 + REF, como o CPR) da jogadora ou da NPC, rolada por cada lado (D37). */
 export function applyInitiative(
   session: PublicSession,
   action: Extract<NetAction, { type: "initiative" }>,
@@ -633,7 +584,6 @@ export function applyInitiative(
   });
 }
 
-/** GM rolou o dano do acerto: fórmula do programa Black ICE conferida; efeito direto (D31). */
 export function applyIceDamage(
   session: PublicSession,
   action: Extract<NetAction, { type: "iceDamage" }>,
@@ -662,8 +612,6 @@ export function applyIceDamage(
       before,
     });
   } else if (result.kind === "program") {
-    // O alvo antiprograma é sempre um programa rezzado (`chooseIceTarget`). REZ 0 neutraliza;
-    // destrói só quando o efeito do ICE manda (D40).
     const before = hit.target.kind === "program" ? hit.target.rezBase : result.after;
     effects.push({
       type: "setProgramState",
@@ -684,7 +632,6 @@ export function applyIceDamage(
   });
 }
 
-/** Dano do acerto da NPC: 1d6 do Zap (Roll do core) ou card do programa, rolado pelo GM. */
 function applyNpcDamage(
   session: PublicSession,
   hit: NonNullable<PublicRun["iceHit"]>,

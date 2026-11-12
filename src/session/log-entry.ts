@@ -1,7 +1,3 @@
-/**
- * Entrada do registro de eventos (E6-09, D34). Estruturada e sem texto: cada cliente traduz.
- * Só carrega dados já públicos (chaves de nós descobertos, totais, ids de programa).
- */
 export const LOG_EVENTS = [
   "jackIn",
   "jackOut",
@@ -29,15 +25,12 @@ export type LogEvent = (typeof LOG_EVENTS)[number];
 export type LogValue = string | number | boolean;
 
 export interface LogEntry {
-  /** Cresce a cada entrada; identifica a mais nova. */
   seq: number;
   event: LogEvent;
-  /** Turno (rodada) em que aconteceu. */
   turn: number;
   data: Record<string, LogValue>;
 }
 
-/** Entradas guardadas na sessão; as mais antigas saem primeiro. */
 export const LOG_LIMIT = 30;
 const MAX_FIELDS = 8;
 const MAX_TEXT = 64;
@@ -48,7 +41,6 @@ function isValue(value: unknown): value is LogValue {
   return typeof value === "string" && value.length <= MAX_TEXT;
 }
 
-/** Formato inesperado vira `null` (o registro é conveniência, não fonte de verdade). */
 export function parseLogEntry(value: unknown): LogEntry | null {
   if (typeof value !== "object" || value === null) return null;
   const { seq, event, turn, data } = value as Record<string, unknown>;

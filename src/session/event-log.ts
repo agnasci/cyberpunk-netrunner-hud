@@ -3,11 +3,6 @@ import { LOG_LIMIT, type LogEntry, type LogEvent, type LogValue } from "./log-en
 import type { NetAction } from "./requests";
 import type { PublicSession } from "./session-state";
 
-/**
- * Registro de eventos (E6-09, D34). Puro: a autoridade descreve a ação aplicada a partir
- * da própria ação e dos estados públicos anterior e seguinte, então nada que só o GM sabe
- * (DV, fórmula, nós ocultos) entra no registro.
- */
 type Draft = [LogEvent, Record<string, LogValue>];
 
 export function describeAction(
@@ -91,10 +86,7 @@ export function describeAction(
       break;
   }
 
-  // Consequências vistas no estado: dano do Black ICE e troca de vez. O desfazer restaura
-  // estados antigos, que não são eventos novos.
   if (action.type === "undo") return drafts;
-  // Netrunner NPC revelada ao chegar ou derrubada (E6-11b).
   for (const npc of next.run.npcs) {
     const before = prev.run.npcs.find((n) => n.key === npc.key);
     if (!before) add("npc", { key: npc.key });
@@ -104,7 +96,6 @@ export function describeAction(
     const gone = !npc.defeated && !next.run.npcs.some((n) => n.key === npc.key);
     if (gone && npc.key === prev.runnerPosition) add("npcLeft", { key: npc.key });
   }
-  // Black ICE à espreita: encontro ao chegar no nó.
   if (next.run.ambush !== null && next.run.ambush !== prev.run.ambush) {
     add("ambush", { key: next.run.ambush });
   }
@@ -134,7 +125,6 @@ export function describeAction(
   return drafts;
 }
 
-/** Acrescenta as entradas ao registro de `next`, mantendo as últimas `LOG_LIMIT`. */
 export function appendLog(
   prev: PublicSession,
   next: PublicSession,

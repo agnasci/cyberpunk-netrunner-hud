@@ -9,7 +9,6 @@ const C = {
 
 export const ICE_KEY = "CPR.netArchitecture.floor.options.blackIce.hellhound";
 
-/** NetArch sintética no formato do CPR CORE v0.92.4 (strings como no sistema). */
 export function floor(
   index: number,
   floorNo: string,
@@ -37,7 +36,6 @@ export function netarch(floors: unknown[]): CprNetArchSource {
   };
 }
 
-/** Andares 1–3 na branch a; andar 3 também na branch b (bifurcação). */
 export function sampleNetArch(): CprNetArchSource {
   return netarch([
     floor(0, "1", "a", "password", { dv: "6", description: "senha secreta: swordfish" }),

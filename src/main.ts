@@ -58,16 +58,9 @@ import { SessionHudApp } from "./ui/session-hud-app";
 import { promptStartSession } from "./ui/start-session-dialog";
 
 let prototypeApp: NetrunnerHudPrototype | null = null;
-/**
- * Uma única instância do HUD por cliente: render/close da mesma instância são
- * serializados pelo Foundry. Instâncias novas com o mesmo id de DOM disputavam o
- * registro em `foundry.applications.instances` e deixavam janelas órfãs.
- */
 let sessionHud: SessionHudApp | null = null;
-/** Sessões públicas confiáveis (E6-11a: várias invasões independentes). */
 let activeSessions: PublicSession[] = [];
 
-/** Toda mutação, inclusive do GM, passa pela autoridade (D20). */
 const channel = new RequestChannel({
   getSessions: () => activeSessions,
   write: writeSessions,
@@ -108,7 +101,6 @@ const hudHandlers = {
 
 let deckApp: DeckApp | null = null;
 
-/** Cyberdeck da jogadora (E7-02, D43); uma instância por cliente. */
 function openDeck(actorUuid: string | null): void {
   deckApp ??= new DeckApp({
     jackedIn: (uuid) =>
@@ -117,14 +109,12 @@ function openDeck(actorUuid: string | null): void {
   void deckApp.open(actorUuid);
 }
 
-/** Ficha mudou (itens, equipado, rez): a janela do deck mostra o estado novo. */
 const refreshDeck = foundry.utils.debounce(() => {
   if (deckApp?.rendered) void deckApp.render();
 }, 50);
 
 let archEditor: ArchEditorApp | null = null;
 
-/** Editor de arquitetura do mestre (E7-01); uma instância por cliente (COMPATIBILITY). */
 function openArchEditor(itemUuid: string | null): void {
   archEditor ??= new ArchEditorApp({
     inUse: (uuid) => activeSessions.some((s) => s.netArch?.itemUuid === uuid),
@@ -132,16 +122,13 @@ function openArchEditor(itemUuid: string | null): void {
   void archEditor.open(itemUuid);
 }
 
-/** Abre (ou traz à frente) o protótipo visual local (E1-00). */
 function openPrototype(): void {
   prototypeApp ??= new NetrunnerHudPrototype();
   if (prototypeApp.rendered) prototypeApp.bringToFront();
   else void prototypeApp.render(true);
 }
 
-/** Passos já tentados pelo piloto (uma vez cada; falha deixa os botões manuais). */
 const autoAttempted = new Set<string>();
-/** Estado anterior de cada sessão quando outra estava ocupando o piloto. */
 const autoSeen = new Map<string, PublicSession>();
 let autoRunning = false;
 
@@ -153,7 +140,6 @@ function autoStepFor(session: PublicSession): AutoStep | null {
   });
 }
 
-/** Executa um passo automático: rolagem sem diálogo e envio pelo canal da autoridade. */
 async function executeStep(sessionId: string, step: AutoStep): Promise<void> {
   const send = async (action: NetAction) => {
     await channel.send(sessionId, action);
@@ -205,15 +191,10 @@ async function executeStep(sessionId: string, step: AutoStep): Promise<void> {
   }
 }
 
-/**
- * Modo sem confirmação do mestre (E6-10, D35): só o cliente da autoridade age, pelo mesmo
- * canal de requisições. Reage a transições novas, nunca ao primeiro estado nem ao desfazer.
- */
 function runAutopilot(previous: PublicSession | null, session: PublicSession): void {
   if (!game.user?.isGM || authorityGmId() !== game.user.id) return;
   if (game.settings.get(MODULE_ID, AUTO_SETTING) !== true) return;
   if (autoRunning) {
-    // Ocupado com outra sessão: guarda o anterior para reagir depois.
     if (previous && !autoSeen.has(session.id)) autoSeen.set(session.id, previous);
     return;
   }
@@ -224,7 +205,6 @@ function runAutopilot(previous: PublicSession | null, session: PublicSession): v
   if (!step || autoAttempted.has(step.key)) return;
   autoAttempted.add(step.key);
   autoRunning = true;
-  // Fora da gravação atual: a autoridade termina de processar antes do próximo passo.
   setTimeout(() => {
     void (async () => {
       try {
@@ -234,7 +214,6 @@ function runAutopilot(previous: PublicSession | null, session: PublicSession): v
       } finally {
         autoRunning = false;
       }
-      // O estado pode ter mudado enquanto rolava: tenta o próximo passo de cada sessão.
       const now = activeSessions.find((s) => s.id === session.id);
       if (now) runAutopilot(session, now);
       for (const other of activeSessions) {
@@ -244,7 +223,6 @@ function runAutopilot(previous: PublicSession | null, session: PublicSession): v
   }, 0);
 }
 
-/** Espera a sessão passar da revisão `revision` (até ~4 s). */
 async function nextRevision(sessionId: string, revision: number): Promise<PublicSession | null> {
   for (let i = 0; i < 40; i += 1) {
     const now = activeSessions.find((s) => s.id === sessionId);
@@ -255,11 +233,6 @@ async function nextRevision(sessionId: string, revision: number): Promise<Public
   return activeSessions.find((s) => s.id === sessionId) ?? null;
 }
 
-/**
- * "Resolver" em um clique (pedido do usuário): o mestre faz agora, sem diálogo, os mesmos
- * passos do modo automático para a sessão, até chegar a algo que exige uma pessoa (rolagem
- * da jogadora, escolha de programa, resultado sem sugestão). Vale com o modo desligado.
- */
 async function resolveNow(sessionId: string): Promise<void> {
   if (!game.user?.isGM) return;
   let session = activeSessions.find((s) => s.id === sessionId) ?? null;
@@ -272,17 +245,14 @@ async function resolveNow(sessionId: string): Promise<void> {
   }
 }
 
-/** Reflete as sessões públicas confiáveis: abre, atualiza ou fecha o HUD local. */
 function applySessions(sessions: PublicSession[]): void {
   const previous = activeSessions;
   activeSessions = sessions;
   for (const session of sessions) {
     runAutopilot(previous.find((s) => s.id === session.id) ?? null, session);
   }
-  // Travas do editor valem só enquanto a arquitetura está numa sessão (E7-01).
   const archsOf = (list: PublicSession[]) => list.map((x) => x.netArch?.itemUuid ?? "").join("|");
   if (archEditor?.rendered && archsOf(previous) !== archsOf(sessions)) void archEditor.render();
-  // Trava do deck: conectada numa sessão (E7-02).
   if (deckApp?.rendered) refreshDeck();
   if (sessions.length === 0) {
     void sessionHud?.close();
@@ -291,11 +261,9 @@ function applySessions(sessions: PublicSession[]): void {
   const isNew = sessions.some((s) => !previous.some((p) => p.id === s.id));
   if (!sessionHud) sessionHud = new SessionHudApp(sessions, hudHandlers);
   else sessionHud.setSessions(sessions);
-  // Sessão nova (ou primeira): abre o HUD para todos, como antes.
   if (isNew) void sessionHud.render(true);
 }
 
-/** Mestre escolhe a Netrunner e inicia mais uma invasão (até o limite, uma por ator). */
 function promptAndStart(): void {
   if (!game.user?.isGM) return;
   void promptStartSession().then(async (choice) => {
@@ -305,7 +273,6 @@ function promptAndStart(): void {
       ui.notifications.warn(game.i18n.localize(`CNH.Session.StartBlocked.${check}`));
       return;
     }
-    // Black ICE básicos escolhidos no início ganham a ficha no mundo agora (E6-12).
     const ice = [];
     for (const link of choice.ice) {
       const actorUuid = await ensureIceActor(link.actorUuid);
@@ -320,7 +287,6 @@ function promptAndStart(): void {
   });
 }
 
-/** Black ICE básicos no mundo (D38): cria as fichas que faltam; só a autoridade GM. */
 async function seedBuiltinIce(): Promise<void> {
   if (BUILTIN_ICE.length === 0) return;
   if (!game.user?.isGM || authorityGmId() !== game.user.id) return;
@@ -379,7 +345,6 @@ Hooks.on("getSceneControlButtons", (controls) => {
     });
 });
 
-/** Botão "Cyberdeck" no cabeçalho da ficha (Application v1 do CPR) para a dona do ator. */
 Hooks.on("getActorSheetHeaderButtons", (app, buttons) => {
   const uuid = app.actor?.uuid;
   if (!uuid || !canOpenDeck(uuid, game.user)) return;
@@ -400,7 +365,6 @@ for (const hook of ["createItem", "updateItem", "deleteItem"] as const) {
   });
 }
 
-/** Botão do editor no rodapé da aba Items (pedido do usuário, E7-01), só para o mestre. */
 Hooks.on("renderItemDirectory", (_app, html) => {
   if (!game.user?.isGM) return;
   const root = (html as { 0?: HTMLElement })[0] ?? (html as HTMLElement);
@@ -409,7 +373,9 @@ Hooks.on("renderItemDirectory", (_app, html) => {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "cnh-open-editor";
-  button.innerHTML = `<i class="fa-solid fa-diagram-project"></i> ${game.i18n.localize("CNH.Editor.ControlTitle")}`;
+  const icon = document.createElement("i");
+  icon.className = "fa-solid fa-diagram-project";
+  button.append(icon, ` ${game.i18n.localize("CNH.Editor.ControlTitle")}`);
   button.addEventListener("click", () => openArchEditor(null));
   footer.append(button);
 });
@@ -443,7 +409,6 @@ Hooks.once("init", () => {
     name: "CNH.Settings.SeedIce.Name",
     hint: "CNH.Settings.SeedIce.Hint",
     scope: "world",
-    // Versão pública sem os dados (D41): nada a criar, o ajuste some.
     config: BUILTIN_ICE.length > 0,
     type: Boolean,
     default: true,
@@ -485,7 +450,6 @@ Hooks.once("init", () => {
     },
   });
   const module = game.modules.get(MODULE_ID);
-  // API de depuração/inspeção; não é contrato público estável.
   if (module) module.api = { openPrototype, readCharacterSnapshot, readTrustedSessions };
 });
 
@@ -514,7 +478,6 @@ Hooks.once("ready", () => {
     void seedBuiltinIce();
   }
   if (isAuthority) {
-    // Sessão única antiga (antes da E6-11a): vira a primeira da lista.
     const legacy = readLegacySession();
     if (legacy && readTrustedSessions().length === 0) {
       void writeSessions([legacy]).then(() => clearLegacySession());
@@ -526,6 +489,5 @@ Hooks.once("ready", () => {
       void writeSessions(readTrustedSessions()).then(() => clearLegacySession());
     }
   }
-  // Entrada tardia / refresh / reinício do mundo: reabre as sessões ativas, se houver.
   applySessions(readTrustedSessions());
 });

@@ -1,5 +1,3 @@
-/* Cyberpunk Netrunner HUD — protótipo visual (E1-00). Escopo: .cnh-app / .cnh-hud. */
-
 .cnh-app {
   --cnh-bg: #05080c;
   --cnh-bg-2: #0a1219;
@@ -16,7 +14,6 @@
   --cnh-font-mono: ui-monospace, "Cascadia Mono", Consolas, "Liberation Mono", monospace;
 }
 
-/* Moldura da janela (ApplicationV2 V12) */
 .application.cnh-app {
   background: var(--cnh-bg);
   border: 1px solid var(--cnh-line);
@@ -44,7 +41,6 @@
   overflow: hidden;
 }
 
-/* Raiz */
 .cnh-hud {
   position: relative;
   display: grid;
@@ -103,7 +99,6 @@
   animation: cnh-sweep 7s linear infinite;
 }
 
-/* Alerta global: vinheta vermelha ao detectar ICE ou sofrer bloqueio */
 .cnh-hud::after {
   content: "";
   position: absolute;
@@ -121,7 +116,6 @@
   animation: cnh-vignette 0.5s ease-in-out 1;
 }
 
-/* Cabeçalho */
 .cnh-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
@@ -231,7 +225,6 @@
   color: var(--cnh-amber);
 }
 
-/* Corpo */
 .cnh-body {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr) 250px;
@@ -366,7 +359,6 @@
   color: var(--cnh-red);
 }
 
-/* Arquitetura */
 .cnh-arch {
   position: relative;
   min-height: 0;
@@ -436,7 +428,6 @@
   position: relative;
   font-size: 15px;
 }
-/* Conexão de dados entre andares */
 .cnh-floor:not(:last-child) .cnh-node::after {
   content: "";
   position: absolute;
@@ -521,7 +512,6 @@
   text-shadow: 0 0 8px var(--cnh-magenta);
 }
 
-/* Registro */
 .cnh-log-list {
   display: grid;
   gap: 5px;
@@ -562,7 +552,6 @@
   animation: cnh-blink 1s steps(1) infinite;
 }
 
-/* Ações */
 .cnh-actions {
   display: flex;
   flex-wrap: wrap;
@@ -612,7 +601,6 @@
   color: var(--cnh-muted);
 }
 
-/* Faixa de evento */
 .cnh-banner {
   --tone: var(--cnh-cyan);
   position: absolute;
@@ -654,7 +642,6 @@
   --tone: var(--cnh-magenta);
 }
 
-/* Efeitos por andar (aplicados só ao evento novo) */
 .cnh-fx--scan::before {
   content: "";
   position: absolute;
@@ -696,13 +683,11 @@
   opacity: 0.5;
 }
 
-/* Entrada inicial dos andares */
 .cnh-hud.is-booting .cnh-floor {
   animation: cnh-floor-in 0.4s ease-out both;
   animation-delay: calc(var(--i) * 60ms);
 }
 
-/* Movimento reduzido: sistema operacional ou alternância do protótipo */
 .cnh-hud--reduced *,
 .cnh-hud--reduced *::before,
 .cnh-hud--reduced *::after,
@@ -866,7 +851,6 @@
   }
 }
 
-/* HUD da sessão (E1-02) */
 .cnh-body--session {
   grid-template-columns: 240px minmax(0, 1fr) auto;
 }
@@ -913,7 +897,6 @@
   color: var(--cnh-magenta);
 }
 
-/* Arquitetura NET da sessão (E2-01) */
 .cnh-netarch {
   display: grid;
   align-content: start;
@@ -956,7 +939,6 @@
 :where(.cnh-node-card) {
   --node: var(--cnh-muted);
 }
-/* Escopo alto: o reset de botões (.cnh-app .cnh-hud button) não pode apagar o cartão. */
 .cnh-app .cnh-hud .cnh-node-card {
   position: relative;
   display: grid;
@@ -990,7 +972,6 @@
 .cnh-note {
   color: var(--cnh-amber);
 }
-/* Não explorado: névoa abaixo do mapa, sem dizer se há algo adiante. */
 .cnh-unexplored {
   display: grid;
   justify-items: start;
@@ -1058,7 +1039,6 @@
   animation: none;
 }
 
-/* Posição e movimento (E2-02) */
 .cnh-app .cnh-hud .cnh-node-card.is-current {
   border-color: var(--node);
   box-shadow:
@@ -1099,7 +1079,6 @@
   background: rgba(255, 59, 78, 0.06);
 }
 
-/* Turno e bloqueios (E3-02a) */
 .cnh-readout--actions dd {
   color: var(--cnh-green);
 }
@@ -1165,7 +1144,6 @@
   margin-left: 0;
 }
 
-/* Checagem pendente (E3-02b) */
 .cnh-check {
   display: flex;
   flex-wrap: wrap;
@@ -1203,7 +1181,6 @@
   border-color: rgba(255, 59, 78, 0.4);
 }
 
-/* Encontro com Black ICE (E3-02c) */
 .cnh-ice-panel {
   display: flex;
   flex-wrap: wrap;
@@ -1247,8 +1224,6 @@
   border: 1px solid var(--cnh-line);
 }
 
-/* Movimento reduzido na sessão (E4-01): sem deslocamento, tremor ou piscar; só esmaecer.
-   Mais específico que a regra geral `animation: none` acima. */
 .cnh-hud--reduced .cnh-banner {
   animation: cnh-fade-out 2.4s ease-out forwards !important;
 }
@@ -1306,7 +1281,6 @@
   }
 }
 
-/* Renderizações durante um efeito retomam a animação do ponto atual (E4-01). */
 .cnh-hud .cnh-banner,
 .cnh-hud[data-event]::after,
 .cnh-hud [class*="cnh-fx--"],
@@ -1315,7 +1289,6 @@
   animation-delay: calc(-1 * var(--fx-elapsed, 0ms)) !important;
 }
 
-/* Espera, erro e pausa sem mestre (E4-02a) */
 .cnh-notice,
 .cnh-error {
   flex: 1 0 100%;
@@ -1330,7 +1303,6 @@
   color: var(--cnh-red);
 }
 
-/* Layout responsivo pela largura da janela (E4-02a) */
 .application.cnh-app .window-content {
   container-type: inline-size;
 }
@@ -1370,7 +1342,6 @@
   }
 }
 
-/* Caminhos entre andares (E6-01, D28): conectores no vão entre as linhas da grade. */
 .cnh-app .cnh-hud .cnh-grid .cnh-node-card {
   width: 100%;
 }
@@ -1426,7 +1397,6 @@
   right: calc(50% - 1px);
 }
 
-/* E6-02: nota do mestre visível, decisão em faixa própria e ícones centralizados. */
 .cnh-node-note {
   display: block;
   max-width: 100%;
@@ -1474,13 +1444,11 @@
   line-height: 1;
 }
 
-/* Nota revelada à Netrunner (E6-04, D29) */
 .cnh-node-note.is-revealed {
   color: var(--cnh-green);
   font-style: normal;
 }
 
-/* Ações de programa no painel da Netrunner (E6-05) */
 .cnh-app .cnh-hud .cnh-program-action {
   justify-self: start;
   margin-top: 4px;
@@ -1505,7 +1473,6 @@
   color: var(--cnh-muted);
 }
 
-/* Último dano do Black ICE na Netrunner (E6-06). */
 .cnh-ice-last {
   display: block;
   margin-top: 4px;
@@ -1513,7 +1480,6 @@
   font-size: 0.85em;
 }
 
-/* Desfazer e ajuste de ações do GM (E6-07). */
 .cnh-adjust {
   width: 18px;
   height: 18px;
@@ -1534,7 +1500,6 @@
   --tone: var(--cnh-cyan);
 }
 
-/* Vez no combate (E6-08, D33). */
 .cnh-app .cnh-hud .cnh-action--endTurn {
   margin-left: auto;
   color: var(--cnh-amber);
@@ -1553,7 +1518,6 @@
   --tone: var(--cnh-cyan);
 }
 
-/* Registro de eventos como terminal (E6-09, D34). */
 .cnh-log--terminal {
   background:
     repeating-linear-gradient(0deg, rgba(62, 240, 230, 0.03) 0 1px, transparent 1px 3px),
@@ -1635,7 +1599,6 @@
   color: var(--cnh-muted);
   font: 700 11px/1 var(--cnh-font-mono);
 }
-/* O Foundry V12 desenha a caixa com ::before; aqui o símbolo é só o ::after. */
 .cnh-app .cnh-hud .cnh-log-check::before {
   display: none;
   content: none;
@@ -1668,8 +1631,6 @@
   animation: none;
 }
 
-/* Responsivo (E6-09): com o registro, ele desce para baixo da arquitetura antes de apertar
-   os nós; os cartões empilham DV e olho quando ficam estreitos. */
 @container (min-width: 761px) and (max-width: 1100px) {
   .cnh-app .cnh-hud .cnh-body--session:has(> .cnh-log) {
     grid-template-columns: 240px minmax(0, 1fr);
@@ -1712,14 +1673,12 @@
   }
 }
 
-/* Modo sem confirmação do mestre (E6-10, D35). */
 .cnh-decision-auto {
   font-size: 11px;
   color: var(--cnh-cyan);
   opacity: 0.85;
 }
 
-/* Abas das invasões em andamento (E6-11a, D36). */
 .cnh-hud--tabs {
   grid-template-rows: auto auto minmax(0, 1fr) auto auto;
 }
@@ -1773,7 +1732,6 @@
   animation: none;
 }
 
-/* Netrunner NPC inimiga (E6-11b, D37). */
 .cnh-app .cnh-hud .cnh-node-tool--npc {
   top: auto;
   bottom: -7px;
@@ -1799,7 +1757,6 @@
   --tone: var(--cnh-cyan);
 }
 
-/* NPC no mapa: chip arrastável (GM) e marcador no nó da Netrunner (E6-11b). */
 .cnh-app .cnh-hud .cnh-node-tool--npc.is-active {
   cursor: grab;
   box-shadow: 0 0 6px rgba(255, 46, 136, 0.45);
@@ -1824,7 +1781,6 @@
   text-shadow: 0 0 8px var(--cnh-magenta);
 }
 
-/* Card de inimigo recolhível (E6-11b). */
 .cnh-enemy {
   display: grid;
   gap: 6px;
@@ -1864,7 +1820,6 @@
   margin-top: 0;
 }
 
-/* Resumo do efeito do Black ICE para o GM (E6-12). */
 .cnh-ice-effect {
   flex-basis: 100%;
   font-size: 11px;
@@ -1872,7 +1827,6 @@
   color: var(--cnh-muted);
 }
 
-/* Revelar só no mapa (GM) e nó sem conteúdo para os jogadores. */
 .cnh-app .cnh-hud .cnh-node-tool--map {
   left: auto;
   right: -7px;
@@ -1894,7 +1848,6 @@
   opacity: 0.85;
 }
 
-/* Arrasto da NPC por ponteiro (funciona também onde botões não arrastam). */
 .cnh-app .cnh-hud .cnh-node-tool--npc.is-active {
   touch-action: none;
   user-select: none;
@@ -1904,7 +1857,6 @@
   transform: scale(1.25);
 }
 
-/* Som do HUD: liga/desliga no cabeçalho. */
 .cnh-app .cnh-hud .cnh-sound-toggle {
   display: inline-grid;
   place-items: center;
@@ -1922,7 +1874,6 @@
   color: #fff;
 }
 
-/* Card de inimigo como janela flutuante sobre o HUD, minimizável. */
 .cnh-app .cnh-hud .cnh-enemy-float {
   position: absolute;
   top: 6px;
@@ -1996,12 +1947,10 @@
   overflow-x: hidden;
 }
 
-/* Ferramenta "só no mapa" dentro da borda do nó: não encosta no cadeado do nó vizinho. */
 .cnh-app .cnh-hud .cnh-node-tool--map {
   right: 18px;
 }
 
-/* Inimigo: ícone discreto no cabeçalho; a visão completa abre ao clicar. */
 .cnh-app .cnh-hud .cnh-enemy-btn {
   position: relative;
   display: inline-grid;
@@ -2042,7 +1991,6 @@
   animation: none;
 }
 
-/* Cabeçalho: leituras com ícone centralizadas, mesma altura e quadrados do mesmo tamanho. */
 .cnh-readout dt {
   white-space: nowrap;
 }
@@ -2092,8 +2040,6 @@
   flex: 0 0 22px;
 }
 
-/* Cabeçalho: os três quadrados com a mesma borda, o mesmo fundo e o mesmo tamanho de ícone;
-   o estado aparece pela cor (ligado = ciano; inimigo = vermelho; pendência = âmbar). */
 .cnh-app .cnh-hud .cnh-enemy-btn,
 .cnh-app .cnh-hud .cnh-sound-toggle,
 .cnh-app .cnh-hud .cnh-log-check {
@@ -2132,24 +2078,20 @@
   border-color: var(--cnh-cyan);
 }
 
-/* O Foundry dá margem de 16 px aos <dd> de janelas; aqui ela deslocava os quadrados. */
 .cnh-app .cnh-hud .cnh-readout dd {
   margin: 2px 0 0;
   padding: 0;
 }
-/* Títulos espaçados: o espaço extra depois da última letra é compensado para centralizar. */
 .cnh-readout--enemy dt,
 .cnh-readout--sound dt,
 .cnh-readout--log dt {
   padding-left: 0.2em;
 }
 
-/* Programa neutralizado (REZ 0 em execução, D40): sem efeito até derrezzar e rezzar de novo. */
 .cnh-program.is-neutralized .cnh-program-state {
   color: var(--cnh-amber);
 }
 
-/* Cabeçalho: todas as leituras centralizadas, menos o Controller (D40 visual). */
 .cnh-readouts .cnh-readout:not(.is-live) {
   display: flex;
   flex-direction: column;
@@ -2163,8 +2105,6 @@
   justify-content: center;
 }
 
-/* Rodapé: controles de vez à direita, com "Encerrar sessão" logo abaixo; as habilidades ficam
-   com o resto da largura. */
 .cnh-actions {
   align-items: flex-start;
 }
@@ -2185,8 +2125,6 @@
   display: none;
 }
 
-/* Conectores com mais de um papel na mesma célula (ex.: chegada de uma bifurcação e passagem de
-   outra): o traço horizontal e o vertical se completam em vez de um cortar o outro. */
 .cnh-link.is-fork-in.is-fork-pass::after,
 .cnh-link.is-fork-in.is-fork-out::after {
   left: 0;
@@ -2200,7 +2138,6 @@
   bottom: -10px;
 }
 
-/* Editor de arquitetura (E7-01): mesmo visual do HUD, com paleta, grade e painel do nó. */
 .cnh-editor {
   display: flex;
   flex-direction: column;
@@ -2469,7 +2406,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-/* No editor o Black ICE não está "adormecido": cor cheia. Rótulos da paleta sem corte. */
 .cnh-editor .cnh-floor--blackice .cnh-node {
   filter: none;
   opacity: 1;
@@ -2489,8 +2425,6 @@
   flex: 1 1 100%;
 }
 
-/* Cyberdeck da jogadora (E7-02): chassi com placa, medidor de slots, baias numeradas e programas
-   como cartuchos; a lista da ficha é um estojo de chips. */
 .cnh-deckapp {
   --dk-metal: #0d161d;
   --dk-metal-2: #131f28;
@@ -2512,7 +2446,6 @@
   margin-top: 6px;
 }
 
-/* Abas de deck: etiquetas de cartucho com LED de equipado. */
 .cnh-dk-rig {
   display: flex;
   flex-direction: column;
@@ -2546,7 +2479,6 @@
   color: var(--cnh-muted);
 }
 
-/* LEDs */
 .cnh-dk-led {
   flex: none;
   width: 7px;
@@ -2577,7 +2509,6 @@
   box-shadow: 0 0 5px var(--cnh-magenta);
 }
 
-/* Chassi do deck */
 .cnh-dk-chassis {
   position: relative;
   display: flex;
@@ -2644,7 +2575,6 @@
   right: 24px;
 }
 
-/* Placa de identificação */
 .cnh-dk-plate {
   display: flex;
   align-items: center;
@@ -2686,7 +2616,6 @@
   padding: 5px 12px;
 }
 
-/* Medidor de slots segmentado */
 .cnh-dk-meter {
   display: flex;
   align-items: center;
@@ -2727,7 +2656,6 @@
   color: var(--cnh-cyan);
 }
 
-/* Baias */
 .cnh-dk-bays {
   display: grid;
   flex: 1 1 auto;
@@ -2776,7 +2704,6 @@
   color: color-mix(in srgb, var(--cnh-red) 65%, var(--cnh-muted));
 }
 
-/* Cartucho de programa */
 .cnh-dk-chip {
   position: relative;
   display: grid;
@@ -2904,7 +2831,6 @@
   opacity: 0.25;
 }
 
-/* Botões do cartucho */
 .cnh-app .cnh-hud .cnh-dk-btn {
   display: inline-flex;
   align-items: center;
@@ -2944,7 +2870,6 @@
   opacity: 0.35;
 }
 
-/* Porta neural (rodapé do chassi) */
 .cnh-dk-port {
   display: flex;
   align-items: center;
@@ -2981,7 +2906,6 @@
   box-shadow: 0 0 8px rgba(255, 46, 136, 0.5);
 }
 
-/* Estojo de chips (programas na ficha) */
 .cnh-dk-case {
   display: flex;
   flex-direction: column;
@@ -3005,7 +2929,6 @@
   opacity: 1;
 }
 
-/* Arrastar: destino aceso */
 .cnh-deckapp.drag-loose .cnh-dk-bays,
 .cnh-deckapp.drag-installed .cnh-dk-pool {
   border-color: rgba(62, 240, 230, 0.45);

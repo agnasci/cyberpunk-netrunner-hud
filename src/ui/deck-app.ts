@@ -40,17 +40,11 @@ const CLASS_ICON: Record<string, string> = {
 };
 
 export interface DeckAppHandlers {
-  /** A Netrunner deste ator está conectada (Jack In) numa sessão ativa agora. */
   jackedIn(actorUuid: string): boolean;
 }
 
 type DragSource = { kind: "loose" | "installed"; programId: string };
 
-/**
- * Cyberdeck da jogadora (E7-02, D43): configurar o deck antes do Jack In, no visual do HUD.
- * Lê e grava a ficha nativa (funções do CPR); nada vai ao estado público. Conectada numa
- * sessão, só leitura: rezzar passa a custar ação NET pelo HUD da sessão.
- */
 export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static override DEFAULT_OPTIONS = {
     id: `${MODULE_ID}-deck`,
@@ -90,7 +84,6 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     return this.#actorUuid;
   }
 
-  /** Abre no ator pedido; sem ator, o personagem do usuário ou o primeiro com cyberdeck. */
   async open(actorUuid: string | null): Promise<void> {
     const choices = listDeckActors(game.user);
     const own = game.user?.character?.uuid;
@@ -124,7 +117,6 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     return this.#actorUuid ? readDeckLoadout(this.#actorUuid) : null;
   }
 
-  /** Deck mostrado: o escolhido, senão o equipado, senão o primeiro. */
   #deck(loadout: DeckLoadout): DeckItem | null {
     return (
       loadout.decks.find((d) => d.itemId === this.#deckId) ??
@@ -183,7 +175,6 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
         sizeLabel: t("CNH.Deck.Size", { size: String(p.size) }),
         isRezzed: p.rezzed && p.mark === "none",
         isAttacker: attacker,
-        // LED do cartucho: ligado, neutralizado, destruído, atacante (pronto) ou desligado.
         led:
           p.mark === "destroyed"
             ? "dead"
@@ -221,7 +212,6 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     };
 
     const loose = loosePrograms(loadout);
-    // Programas em outro deck aparecem só nele (um programa fica em um deck por vez).
     const elsewhere = loadout.programs.filter((p) => {
       const where = deckOf(loadout, p.itemId);
       return where !== null && where.itemId !== deck?.itemId;
@@ -234,8 +224,6 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
         p.rezzed && REZZABLE_CLASSES.has(p.programClass) && equipped?.installed.includes(p.itemId),
     ).length;
 
-    // Baias numeradas do deck: programas (um intervalo se ocupam mais de um slot), upgrades, slots
-    // presos por item apagado (o sistema conta em usedSlots) e livres.
     const pad = (n: number) => String(n).padStart(2, "0");
     const bays: Array<Record<string, unknown>> = [];
     const segments: Array<{ kind: string; on: boolean }> = [];
@@ -332,10 +320,6 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     if (!this.#locked) this.#bindDrag();
   }
 
-  /**
-   * Arrastar por ponteiro (como no editor de arquitetura): programa da ficha para o deck
-   * instala; programa do deck para a lista da ficha desinstala.
-   */
   #bindDrag(): void {
     const root = this.element;
     for (const el of root.querySelectorAll<HTMLElement>(".cnh-dk-card[data-program-id]")) {
@@ -363,7 +347,6 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
             root.querySelector(".cnh-deckapp")?.classList.add("is-dragging", `drag-${source.kind}`);
             el.classList.add("is-drag-source");
           }
-          // `.window-content` tem container query (contenção): é a referência do `fixed`.
           const frame = root.querySelector(".window-content")?.getBoundingClientRect();
           ghost.style.left = `${event.clientX - (frame?.left ?? 0) + 8}px`;
           ghost.style.top = `${event.clientY - (frame?.top ?? 0) + 8}px`;
@@ -396,7 +379,6 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /** Executa uma gravação na ficha; recusa conectada, mostra o motivo e renderiza de novo. */
   async #run(check: DeckCheck, write: () => Promise<unknown>): Promise<void> {
     if (this.#busy) return;
     if (this.#locked) {
@@ -412,7 +394,7 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     try {
       await write();
     } catch (error) {
-      console.error("cyberpunk-netrunner-hud | falha ao gravar o cyberdeck", error);
+      console.error(`${MODULE_ID} | falha ao gravar o cyberdeck`, error);
       ui.notifications.error(t("CNH.Deck.WriteFailed"));
     } finally {
       this.#busy = false;

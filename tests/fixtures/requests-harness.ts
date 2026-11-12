@@ -50,25 +50,16 @@ export function request(session: PublicSession, action: unknown, requestId = "r1
 export interface Harness {
   rolls: Record<string, RollEvidence>;
   ices: Record<string, IceStats>;
-  /** Recursos da ficha; padrão: Interface 4, deck, sem programas. */
   runner?: RunnerResources;
-  /** HP e redução cerebral da Netrunner (E6-06); padrão: indisponível. */
   vitals?: RunnerVitals | null;
-  /** Sorteio do alvo antiprograma; padrão: primeiro. */
   pick?: (count: number) => number;
-  /** HP por ator (NPC, E6-11b); sem entrada, vale `vitals`. */
   vitalsOf?: Record<string, RunnerVitals>;
-  /** Recursos por ator (NPC); sem entrada, Interface 0. */
   resources?: Record<string, RunnerResources>;
-  /** REF por ator, para a iniciativa. */
   refs?: Record<string, number>;
-  /** NPC vinculada por nó (flag do item da arquitetura). */
   npcLinks?: Record<number, string>;
-  /** Arquitetura completa lida pela autoridade; padrão: a amostra. */
   architecture?: NetArchitecture;
 }
 
-/** Processa como a autoridade, registrando o resultado pela chave devolvida. */
 export function runWith(harness: Harness) {
   const processed = new Map<string, ActionResult>();
   return (session: PublicSession | null, raw: unknown, sender = RUNNER) => {

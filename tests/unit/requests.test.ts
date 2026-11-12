@@ -10,7 +10,6 @@ const RUNNER = { id: "u-runner", isGM: false };
 const SPECTATOR = { id: "u-spect", isGM: false };
 const GM = { id: "u-gm", isGM: true };
 const DECK = { interfaceRank: 4, hasCyberdeck: true };
-/** Cards de rolagem no chat, como a autoridade os leria (E3-02b). */
 const ROLLS: Record<string, { authorId: string; actorUuid: string; total: number }> = {
   "m-run": { authorId: RUNNER.id, actorUuid: "Actor.abc", total: 13 },
   "m-run2": { authorId: RUNNER.id, actorUuid: "Actor.abc", total: 4 },
@@ -70,7 +69,6 @@ function run(
     readRef: () => null,
     npcLinkAt: () => null,
   });
-  // Contrato: o chamador (autoridade GM) registra o resultado pela chave devolvida.
   if (outcome.processedKey) processed.set(outcome.processedKey, outcome.result);
   return outcome;
 }

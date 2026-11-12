@@ -1,12 +1,5 @@
 import { areLinked, type NetFloor } from "./net-architecture";
 
-/**
- * Pathfinder (Core, pp. 195-210, conferido em fontes secundárias): a Netrunner vê os andares
- * mais fundos que o atual, até tantos andares quanto o total da rolagem, em todas as branches.
- * Uma Password cujo DV supera o total aparece, mas esconde o que fica abaixo dela. Mostra o
- * conteúdo geral dos nós, sem DV nem descrição. Puro: recebe a arquitetura completa (só a
- * autoridade).
- */
 export function pathfinderReveal(
   floors: readonly NetFloor[],
   fromKey: number,
@@ -16,8 +9,6 @@ export function pathfinderReveal(
   if (!from || !Number.isFinite(total) || total < 1) return [];
   const limit = from.floor + Math.floor(total);
   const deeper = floors.filter((f) => f.floor > from.floor && f.floor <= limit);
-  // Abaixo de uma Password que barra (DV maior que o total) fica oculto, em qualquer branch;
-  // as que estão no caminho já percorrido por ela (acima, até o nó atual) não contam.
   const hidden = new Set<number>();
   for (const pw of floors) {
     if (pw.content !== "password" || pw.key === from.key || (pw.dv ?? 0) <= total) continue;
@@ -31,7 +22,6 @@ export function pathfinderReveal(
     .map((f) => f.key);
 }
 
-/** Nós abaixo de `root` pelos caminhos da arquitetura (D28), sem incluir `root`. */
 function descendants(floors: readonly NetFloor[], root: NetFloor): number[] {
   const found: number[] = [];
   let frontier: NetFloor[] = [root];

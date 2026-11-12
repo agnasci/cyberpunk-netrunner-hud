@@ -3,11 +3,6 @@ import { inCombat } from "./combat-turn";
 import type { NetFloorContent } from "../domain/net-architecture";
 import { type PublicSession, toRunState } from "./session-state";
 
-/**
- * Efeitos visuais derivados da diferença entre dois estados públicos (E4-01, R07).
- * Puro e só de leitura: anima o que a autoridade já decidiu, sem enviar nada.
- * O vocabulário reusa as classes do protótipo (E1-00).
- */
 export type NodeFx =
   "scan" | "jack-in" | "move" | "ice-alert" | "breach" | "control" | "hit" | "derez" | "fail";
 
@@ -51,7 +46,6 @@ export interface HudFx {
   alert: AlertFx | null;
 }
 
-/** Todas as faixas, em ordem de prioridade: uma por atualização, a mais importante vence. */
 export const BANNER_FX: readonly BannerFx[] = [
   "undo",
   "npc-down",
@@ -85,7 +79,6 @@ export const BANNER_FX: readonly BannerFx[] = [
   "new-turn",
 ];
 
-/** Efeito no nó e faixa quando ele passa a resolvido. */
 const CLEARED_FX: Record<NetFloorContent, [NodeFx, BannerFx]> = {
   password: ["breach", "breach"],
   controlnode: ["control", "control"],
@@ -98,14 +91,12 @@ export function diffFx(prev: PublicSession | null, next: PublicSession): HudFx {
   const banners = new Set<BannerFx>();
   let alert: AlertFx | null = null;
   if (!prev || prev.id !== next.id) return { nodes, banner: null, alert };
-  // Desfazer (E6-07): só a faixa; o estado restaurado não é reanimado.
   if (next.run.undoSeq !== prev.run.undoSeq) return { nodes, banner: "undo", alert };
 
   const prevKeys = new Set(prev.netArch?.discovered.map((f) => f.key) ?? []);
   const discovered = next.netArch?.discovered ?? [];
   for (const floor of discovered) if (!prevKeys.has(floor.key)) nodes[floor.key] = "scan";
 
-  // Invasão e movimento.
   const from = prev.runnerPosition;
   const to = next.runnerPosition;
   if (from === null && to !== null) {
@@ -117,7 +108,6 @@ export function diffFx(prev: PublicSession | null, next: PublicSession): HudFx {
     nodes[to] = "move";
   }
 
-  // Ameaça: engajamento novo ou ataque do Black ICE iniciado.
   const engagedNow = isEngaged(toRunState(next));
   const engagedBefore = isEngaged(toRunState(prev)) && from === to;
   if (to !== null && engagedNow && !engagedBefore) {
@@ -132,7 +122,6 @@ export function diffFx(prev: PublicSession | null, next: PublicSession): HudFx {
     banners.add(attack.ability === "npcAttack" ? "npc-attack" : "ice-attack");
     alert = "ice-alert";
   }
-  // Netrunner NPC revelada ou derrubada (E6-11b).
   for (const npc of next.run.npcs) {
     const before = prev.run.npcs.find((n) => n.key === npc.key);
     if (!before) {
@@ -145,7 +134,6 @@ export function diffFx(prev: PublicSession | null, next: PublicSession): HudFx {
     }
   }
 
-  // Resultado confirmado pelo GM.
   const result = next.run.lastOutcome;
   const resultKey = result && result.seq !== prev.run.lastOutcome?.seq ? result.key : null;
   if (result && resultKey !== null) {
@@ -223,7 +211,6 @@ export function diffFx(prev: PublicSession | null, next: PublicSession): HudFx {
     }
   }
 
-  // Dano do acerto do Black ICE aplicado na Netrunner (E6-06).
   const iceDamage = next.run.lastIceDamage;
   if (iceDamage && iceDamage.seq !== prev.run.lastIceDamage?.seq) {
     const kind = iceDamage.result.kind;
@@ -234,7 +221,6 @@ export function diffFx(prev: PublicSession | null, next: PublicSession): HudFx {
     }
   }
 
-  // Nós resolvidos (pelo resultado ou à mão pelo GM); o Black ICE derrubado vira "derez".
   const prevCleared = new Set(prev.run.cleared);
   for (const key of next.run.cleared) {
     if (prevCleared.has(key)) continue;
@@ -245,7 +231,6 @@ export function diffFx(prev: PublicSession | null, next: PublicSession): HudFx {
     banners.add(banner);
   }
 
-  // Vez no combate (E6-08, D33).
   if (inCombat(next) && next.run.iceTurn !== prev.run.iceTurn) {
     const npcFight = next.run.npcs.some((n) => n.key === to && !n.defeated);
     banners.add(next.run.iceTurn ? (npcFight ? "npc-turn" : "ice-turn") : "runner-turn");

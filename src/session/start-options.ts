@@ -1,12 +1,7 @@
-/**
- * Opções do diálogo de início de sessão (E6-03). Puro: recebe atores e usuários já
- * lidos pelo adaptador e decide quem aparece, o controlador sugerido e os Black ICE.
- */
 export interface ActorOption {
   uuid: string;
   name: string;
   type: string;
-  /** Ids dos usuários com permissão OWNER. */
   ownerIds: readonly string[];
 }
 
@@ -21,17 +16,12 @@ export interface StartCandidate {
   playerOwned: boolean;
 }
 
-/** Tipos que podem ser a Netrunner da sessão. */
 const NETRUNNER_TYPES: ReadonlySet<string> = new Set(["character", "mook"]);
 
 function isPlayerOwned(actor: ActorOption, users: readonly UserOption[]): boolean {
   return actor.ownerIds.some((id) => users.some((u) => u.id === id && !u.isGM));
 }
 
-/**
- * Por padrão, só personagens (`character`) com dono jogador; com `showAll`, também NPCs e
- * mooks. Personagens de jogadores vêm primeiro, depois ordem alfabética.
- */
 export function startCandidates(
   actors: readonly ActorOption[],
   users: readonly UserOption[],
@@ -50,7 +40,6 @@ export function startCandidates(
     .map(({ uuid, name, playerOwned }) => ({ uuid, name, playerOwned }));
 }
 
-/** Primeiro jogador (não GM) dono do personagem; `null` se não há. */
 export function defaultController(
   actor: ActorOption | undefined,
   users: readonly UserOption[],
@@ -59,10 +48,6 @@ export function defaultController(
   return users.find((u) => !u.isGM && actor.ownerIds.includes(u.id))?.id ?? null;
 }
 
-/**
- * Ator Black ICE sugerido para um nó pelo nome do Black ICE: igual (sem diferenciar
- * maiúsculas) ou que começa igual, pulando atores já usados em outros nós.
- */
 export function suggestIce(
   iceName: string,
   actors: ReadonlyArray<{ uuid: string; name: string }>,
@@ -76,7 +61,6 @@ export function suggestIce(
   return (exact ?? prefix)?.uuid ?? null;
 }
 
-/** Nós Black ICE ainda sem ator escolhido. */
 export function missingIceLinks(
   iceKeys: readonly number[],
   chosen: Readonly<Record<number, string>>,

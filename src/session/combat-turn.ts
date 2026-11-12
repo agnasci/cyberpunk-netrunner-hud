@@ -9,16 +9,8 @@ import {
   toRunState,
 } from "./session-state";
 
-/**
- * Vez no combate (E6-08, D33; E6-11b, D37). Puro. Combate = Netrunner engajada por Black
- * ICE (que abre a rodada, no topo da iniciativa, como no CPR) ou diante de uma Netrunner
- * NPC com as duas iniciativas roladas (a maior começa; empate a favor da jogadora).
- * A vez passa sozinha: última ação NET gasta sem pendência; ataque do Black ICE resolvido;
- * ações NET da NPC gastas sem pendência.
- */
 export type TurnHolder = "runner" | "ice";
 
-/** Combate com a NPC do nó atual, já com as duas iniciativas. */
 function npcFight(session: PublicSession): NpcFight | null {
   const npc = npcAt(session);
   const f = session.run.fight;
@@ -30,14 +22,12 @@ export function inCombat(session: PublicSession): boolean {
   return isEngaged(toRunState(session)) || npcFight(session) !== null;
 }
 
-/** De quem é a vez; `null` fora do combate ("ice" = o inimigo do nó). */
 export function turnHolder(session: PublicSession): TurnHolder | null {
   if (!inCombat(session)) return null;
   return session.run.iceTurn ? "ice" : "runner";
 }
 
 function busy(run: PublicRun): boolean {
-  // Encontro com Black ICE à espreita sem resolver: a vez espera (o encontro é imediato).
   return (
     run.pending !== null ||
     run.awaitingDamage !== null ||
@@ -46,12 +36,10 @@ function busy(run: PublicRun): boolean {
   );
 }
 
-/** Ataque do Black ICE em andamento: rolagem pendente ou acerto aguardando dano. */
 function iceActing(run: PublicRun): boolean {
   return run.pending?.ability === "iceAttack" || (run.iceHit !== null && !run.iceHit.byNpc);
 }
 
-/** Fim da vez da Netrunner: nova rodada, que abre com o inimigo (a NPC recarrega). */
 function toIceTurn(session: PublicSession): PublicSession {
   const fight = session.run.fight;
   return {
@@ -65,7 +53,6 @@ function toIceTurn(session: PublicSession): PublicSession {
   };
 }
 
-/** Fim da vez do inimigo: a Netrunner age com as ações recarregadas. */
 function toRunnerTurn(session: PublicSession): PublicSession {
   return {
     ...session,
@@ -73,7 +60,6 @@ function toRunnerTurn(session: PublicSession): PublicSession {
   };
 }
 
-/** Abre ou fecha o combate com a NPC conforme a posição; decide quem começa. */
 function syncFight(prev: PublicSession, next: PublicSession): PublicSession {
   const npc = npcAt(next);
   const fight = next.run.fight;
@@ -82,7 +68,6 @@ function syncFight(prev: PublicSession, next: PublicSession): PublicSession {
     const fresh: NpcFight = { key: npc.key, runnerInit: null, npcInit: null, npcActionsUsed: 0 };
     return { ...next, run: { ...next.run, fight: fresh, iceTurn: false } };
   }
-  // Iniciativas completas agora: a maior começa (empate a favor da jogadora, D37).
   if (initiativePending(prev) && !initiativePending(next)) {
     const npcFirst = (fight.npcInit ?? 0) > (fight.runnerInit ?? 0);
     return {
@@ -93,10 +78,6 @@ function syncFight(prev: PublicSession, next: PublicSession): PublicSession {
   return next;
 }
 
-/**
- * Passagem automática depois de cada ação (menos o desfazer, que restaura o estado exato).
- * `maxActions` = ações NET por turno da Netrunner; `npcMaxActions` = da NPC do nó (0 = sem).
- */
 export function settleTurn(
   prev: PublicSession,
   next: PublicSession,
@@ -105,7 +86,6 @@ export function settleTurn(
 ): PublicSession {
   const synced = syncFight(prev, next);
   if (!inCombat(synced)) {
-    // Combate encerrado na vez do inimigo: a rodada já virou, a Netrunner recarrega.
     return synced.run.iceTurn ? toRunnerTurn(synced) : synced;
   }
   const fight = npcFight(synced);
@@ -120,7 +100,6 @@ export function settleTurn(
   return spent && !busy(synced.run) ? toIceTurn(synced) : synced;
 }
 
-/** "Encerrar vez" (Netrunner ou GM) e "Passar a vez" do inimigo (só GM). */
 export function applyEndTurn(session: PublicSession, isGM: boolean): PublicSession | RequestError {
   if (!inCombat(session)) return "not-engaged";
   if (busy(session.run)) return "check-pending";
@@ -128,7 +107,6 @@ export function applyEndTurn(session: PublicSession, isGM: boolean): PublicSessi
   return isGM ? toRunnerTurn(session) : "ice-turn";
 }
 
-/** "Novo turno" do GM: em combate, a rodada abre pela vez do inimigo. */
 export function newTurnRun(session: PublicSession): Partial<PublicRun> {
   const fight = session.run.fight;
   return {

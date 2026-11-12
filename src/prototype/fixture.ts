@@ -1,9 +1,5 @@
 import type { DemoFloor, DemoProgram } from "./demo-state";
 
-/**
- * Dados sintéticos do protótipo visual (E1-00). Nomes inventados; nenhum valor
- * aqui representa regra, estatística ou conteúdo do livro.
- */
 export const DEMO_ARCHITECTURE_NAME = "HALCYON MERIDIAN // NÓ 03";
 
 export const DEMO_RUNNER = {

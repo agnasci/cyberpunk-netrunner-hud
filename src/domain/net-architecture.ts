@@ -1,18 +1,12 @@
-/**
- * Arquitetura NET normalizada (E2-01). `NetFloor` é a visão completa, só do GM;
- * `PublicFloor` é o que pode ir ao estado público depois de revelado (D18).
- */
 export const FLOOR_CONTENTS = ["password", "file", "controlnode", "blackice"] as const;
 export type NetFloorContent = (typeof FLOOR_CONTENTS)[number];
 
 export const BRANCHES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
 export const MAX_FLOOR = 18;
 
-/** Prefixo das chaves i18n de tipo de Black ICE no sistema (v0.92.4). */
 export const BLACK_ICE_KEY_PREFIX = "CPR.netArchitecture.floor.options.blackIce.";
 
 export interface NetFloor {
-  /** `index` do sistema: estável e único na NetArch. */
   key: number;
   floor: number;
   branch: string;
@@ -46,7 +40,6 @@ export function toPublicFloor(floor: NetFloor): PublicFloor {
   };
 }
 
-/** Valida um nó público; campos extras (ex.: DV) são descartados. */
 export function parsePublicFloor(value: unknown): PublicFloor | null {
   if (typeof value !== "object" || value === null) return null;
   const { key, floor, branch, content, blackIceKey } = value as Record<string, unknown>;
@@ -65,18 +58,11 @@ export function parsePublicFloor(value: unknown): PublicFloor | null {
   return { key, floor, branch, content: content as NetFloorContent, blackIceKey: iceKey };
 }
 
-/** Posição de um nó na grade (andar × branch), suficiente para os caminhos. */
 export interface NodePosition {
   floor: number;
   branch: string;
 }
 
-/**
- * Caminhos entre nós (D28), como a cena gerada pelo CPR v0.92.4 desenha: andares
- * consecutivos da mesma branch se ligam; o primeiro andar F de uma branch liga-se ao
- * andar F−1 da branch anterior (letra anterior com nó nesse andar, a mais próxima).
- * `nodes` são os nós conhecidos por quem pergunta (todos para o GM; revelados para os demais).
- */
 export function areLinked(
   a: NodePosition,
   b: NodePosition,
@@ -91,7 +77,6 @@ export function areLinked(
   return branchStartsHere && forkParentBranch(lower, nodes) === upper.branch;
 }
 
-/** Branch de onde `first` (primeiro andar de sua branch) se ramifica. */
 function forkParentBranch(first: NodePosition, nodes: readonly NodePosition[]): string | null {
   const candidates = nodes
     .filter((n) => n.floor === first.floor - 1 && n.branch < first.branch)

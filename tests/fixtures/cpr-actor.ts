@@ -1,6 +1,5 @@
 import type { CprActorSource, CprItemSource } from "../../src/integrations/cpr/character-adapter";
 
-/** Fixtures sintéticas no formato de dados do CPR CORE v0.92.4; nomes inventados. */
 export function role(id: string, rank: number, mainRoleAbility = "Interface"): CprItemSource {
   return { id, name: `Role ${id}`, type: "role", system: { rank, mainRoleAbility } };
 }

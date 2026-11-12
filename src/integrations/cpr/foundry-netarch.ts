@@ -2,7 +2,6 @@ import { MODULE_ID } from "../../constants";
 import type { NetArchitecture, NetFloor } from "../../domain/net-architecture";
 import { normalizeNetArch, toCprFloors } from "./netarch-adapter";
 
-/** NetArchs do mundo disponíveis para iniciar uma sessão. */
 export function listWorldNetArchs(): Array<{ uuid: string; name: string }> {
   return game.items.contents
     .filter((item) => item.type === "netarch")
@@ -10,7 +9,6 @@ export function listWorldNetArchs(): Array<{ uuid: string; name: string }> {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/** Lê a arquitetura completa (uso do GM); `null` se o item não existir. */
 export function readNetArchitecture(itemUuid: string): NetArchitecture | null {
   const doc = fromUuidSync(itemUuid);
   if (typeof doc !== "object" || doc === null) return null;
@@ -22,7 +20,7 @@ export function readNetArchitecture(itemUuid: string): NetArchitecture | null {
     type: item.type ?? "",
     system: item.system,
   });
-  if (issues.length > 0) console.warn("cyberpunk-netrunner-hud | NetArch com problemas", issues);
+  if (issues.length > 0) console.warn(`${MODULE_ID} | NetArch com problemas`, issues);
   return architecture;
 }
 
@@ -40,10 +38,6 @@ function netArchItem(itemUuid: string): WritableItem | null {
   return doc && doc.documentName === "Item" ? doc : null;
 }
 
-/**
- * Vínculos guardados na flag do item, por chave de nó (E7-01, D42): `ice` = ator Black ICE
- * sugerido no início da sessão; `npcs` = Netrunner NPC (D37, mesma flag de `foundry-npc`).
- */
 export function readLinkFlag(itemUuid: string, flag: LinkFlag): Record<number, string> {
   const raw = netArchItem(itemUuid)?.flags?.[MODULE_ID]?.[flag];
   const links: Record<number, string> = {};
@@ -55,7 +49,6 @@ export function readLinkFlag(itemUuid: string, flag: LinkFlag): Record<number, s
   return links;
 }
 
-/** Atualização que deixa a flag igual a `next` (remove chaves que saíram). */
 function linkUpdate(
   flag: LinkFlag,
   current: Record<number, string>,
@@ -81,10 +74,6 @@ interface CreatableClass {
   create(data: Record<string, unknown>): Promise<unknown>;
 }
 
-/**
- * Grava a arquitetura do editor no item `netarch` do CPR (só o GM). Sem `itemUuid`, cria um
- * item novo e devolve o UUID dele; espera o item entrar na coleção (como os atores do CPR).
- */
 export async function saveNetArch(itemUuid: string | null, data: NetArchWrite): Promise<string> {
   const floors = toCprFloors(data.floors);
   if (itemUuid) {

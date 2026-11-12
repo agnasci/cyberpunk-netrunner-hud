@@ -16,7 +16,6 @@ function outcome(over: Partial<ProcessOutcome> = {}): ProcessOutcome {
   };
 }
 
-/** Ficha falsa: guarda o REZ; aplicar o mesmo valor absoluto é idempotente. */
 function fakeWorld() {
   const sheet = { rez: 10, applied: 0 };
   const writes: unknown[] = [];

@@ -64,37 +64,6 @@ cenários manuais e resultado, limitações e regressões. Testes com mocks não
 comprovam compatibilidade Foundry. Performance deve comparar cenário com/sem HUD,
 incluindo tamanho da arquitetura, número de clientes e máquina usada.
 
-### E5-01 — matriz multiplayer e instalação limpa (2026-11-10)
-
-Versões: Foundry 12.343 (app desktop, Windows 11), Cyberpunk RED – CORE v0.92.4, módulo
-0.0.1; mundo `cyberdeck-hud` só com este módulo ativo (nenhum outro instalado). Automatizado:
-`npm run check` exit 0, 177 testes. Clientes: abas do navegador embutido (GM, Runner,
-Espectador), mesma máquina.
-
-| Cenário | Resultado |
-|---|---|
-| Iniciar sessão pela UI (encerrar → `>_` → diálogo) | Ator, controlador (dono da ficha) e NetArch sugeridos; sessão criada, revisão 1 |
-| Visibilidade por papel | Espectador: sem controles, turno sem ações NET, programas sem detalhes (Interface visível, decisão E1-02); Netrunner: controles e ações NET |
-| Segredos (DV, descrições "SEGREDO…", "Câmeras…") | Ausentes do DOM do espectador e da Netrunner, do setting da sessão e das 29 mensagens do chat |
-| Espectador envia comandos direto (com `userId` da Netrunner no payload) | `jackOut`, `reveal`, `end` → `not-authorized` |
-| Password: Backdoor 2 vs DV 6 → GM rejeita; nova 9 → GM confirma | Rejeição sem efeito nem nova mensagem; "Vencida" para todos |
-| Black ICE: vínculo, Zap 11 × DEF 6, dano 5 → GM descarta | REZ do ator continua 8 (rejeição não altera ficha) |
-| Novo dano 6 → GM aplica | REZ 8 → 2, uma vez |
-| Ataque do Black ICE 10 × Defense 11 | Sugestão "erra"; resultado animado para todos |
-| Slide 13 × PER −5 (falha crítica, total negativo) | "Driblado"; movimento liberado |
-| Sem ações → Control desabilitado com motivo; novo turno; Control 6 vs DV 10, GM confirma sucesso | GM decide contra a sugestão (modo assistido); "Controlado" |
-| Espectador acompanha | Faixas e painéis de cada passo, sem DV |
-| Entrada tardia/refresh do espectador | HUD reabre no estado atual (posição, estados), sem animação de abertura |
-| Fechar/reabrir HUD 5× | Callbacks de hooks alternam 9 ⇄ 4, sem acumular |
-| Queda do mestre | Netrunner e espectador veem a pausa; controles da Netrunner desabilitados; GM volta → HUD do GM reabre (revisão 29), controles reativam |
-| Instalação limpa | `dist/` em zip (8 arquivos, 98 KB) extraído em `Data/modules` no lugar da junção; mundo novo `cnh-instalacao-limpa` (só CPR + módulo ativado): "pronto" no console, 3 ajustes registrados, botão `>_`, sem erros; sem personagem → aviso "No character available for Netrunning" |
-| Restauração | Junção recriada; `cyberdeck-hud` relançado com a sessão intacta |
-
-Limitações: clientes no mesmo navegador (cookie e ajustes de cliente compartilhados); sem
-rede real nem máquinas distintas; navegação só por teclado e leitor de tela não exercitados;
-animações e sons não observados por uma pessoa. O mundo `cnh-instalacao-limpa` ficou no
-Foundry para inspeção (pode ser apagado).
-
 ## Custo do HUD (E4-02b)
 
 Procedimento (console do GM, mundo de teste): fechar o HUD e anotar

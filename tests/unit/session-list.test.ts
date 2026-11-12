@@ -63,7 +63,6 @@ describe("lista de sessões (E6-11a, D36)", () => {
       ["s1", 3],
       ["s3", 1],
     ]);
-    // Servidor já à frente: vale a armazenada.
     expect(newestSessions([{ ...s1, revision: 4 }], written)[0]?.revision).toBe(4);
   });
 

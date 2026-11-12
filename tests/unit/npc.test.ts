@@ -74,7 +74,6 @@ function harness(): Harness {
   };
 }
 
-/** No Black ICE (1) já derrotado; a NPC espera no File (2). */
 function start(): PublicSession {
   return {
     ...withRun(reveal(base(), [0, 1, 2, 3]), { cleared: [0, 1] }),
@@ -99,7 +98,6 @@ function chain(session: PublicSession = start(), h: Harness = harness()) {
   };
 }
 
-/** Chega ao File e rola as iniciativas (jogadora 12 × NPC 10: ela começa). */
 function engaged(npcRoll = "m-npc-init") {
   const c = chain();
   c.step({ type: "moveTo", key: 2 });
@@ -219,7 +217,6 @@ describe("Netrunner NPC inimiga (E6-11b, D37)", () => {
       { type: "setRunnerHp", actorUuid: "Actor.abc", value: 25, before: 30 },
     ]);
     expect(c.session.run.lastIceDamage).toMatchObject({ byNpc: true, result: { kind: "brain" } });
-    // Interface 2 = 2 ações: ainda tem uma.
     expect(turnHolder(c.session)).toBe("ice");
     c.step({ type: "npcAttack", messageId: "m-npc-zap2" }, GM);
     c.step({ type: "oppose", messageId: "m-defense2" });
@@ -332,7 +329,6 @@ describe("faixas do combate com a NPC (E6-11b)", () => {
 });
 
 describe("GM arrasta a Netrunner NPC (E6-11b)", () => {
-  /** Amostra + 4a (File) abaixo do 3a: a NPC anda entre 3a (2) e 4a (4). */
   const deeper = (): NetArchitecture => {
     const a = arch();
     return {
@@ -363,7 +359,6 @@ describe("GM arrasta a Netrunner NPC (E6-11b)", () => {
     architecture: deeper(),
     npcLinks: links,
   });
-  /** Simula a autoridade efetivando o efeito na flag do item. */
   function applyMoves(h: Harness, effects: unknown[]) {
     for (const e of effects as Array<{
       type: string;
@@ -400,7 +395,6 @@ describe("GM arrasta a Netrunner NPC (E6-11b)", () => {
     expect(c.step({ type: "moveNpc", from: 2, to: 0 }).result).toMatchObject({
       error: "not-authorized",
     });
-    // Sem caminho entre 3a e 1a, nem Password vencida: o mestre põe onde quiser.
     expect(c.step({ type: "moveNpc", from: 2, to: 0 }, GM).result).toMatchObject({ ok: true });
   });
 

@@ -24,10 +24,6 @@ export interface SessionHudView {
   canEndSession: boolean;
 }
 
-/**
- * Visão do HUD por papel. Espectadores não recebem detalhes de programas nem
- * diagnóstico da ficha; campos omitidos não chegam ao template.
- */
 export function buildSessionHudView(
   snapshot: CharacterSnapshot | null,
   role: ViewerRole,

@@ -59,7 +59,6 @@ const input = {
   readIce: (uuid: string) => (uuid === "Actor.ice1" ? ICE : null),
 };
 
-/** Conectada; Password (0, DV 6) aberta; Black ICE (1) vinculado. */
 function start(position: number, cleared: number[] = []): PublicSession {
   return {
     ...withRun(reveal(base(), [0, 1, 2]), { cleared, ice: [{ key: 1, actorUuid: "Actor.ice1" }] }),

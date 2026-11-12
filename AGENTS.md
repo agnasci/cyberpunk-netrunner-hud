@@ -4,7 +4,7 @@
 
 1. Leia este arquivo e [STATUS.md](STATUS.md) em toda sessão.
 2. Leia [SPEC.md](SPEC.md) antes de alterar comportamento.
-3. Escolha a próxima tarefa disponível em [docs/ROADMAP.md](docs/ROADMAP.md).
+3. Escolha a próxima tarefa disponível em "Próximas tarefas" do [STATUS.md](STATUS.md).
 4. Abra somente os documentos e arquivos necessários à tarefa. Consulte o mapa abaixo.
 5. Verifique o estado do diretório/Git antes de editar; preserve alterações alheias.
 
@@ -30,6 +30,7 @@ sessão. A ficha e o cyberdeck nativos são a fonte de verdade do personagem.
   livros, compêndios comerciais, credenciais ou dados pessoais da mesa.
 - Use português nos documentos e comunicação; identificadores de código em inglês.
 - Evite dependências, abstrações genéricas, arquivos enormes e duplicação de estado.
+- Não escreva comentários no código (D44); explique nos documentos.
 - Não exija um plugin de IA específico: estes documentos devem bastar a qualquer IA.
 - Registre decisões duráveis em `docs/DECISIONS.md`; progresso somente em `STATUS.md`.
 - Só marque concluído com evidência. Diferencie testes automatizados, inspeção
@@ -40,13 +41,13 @@ sessão. A ficha e o cyberdeck nativos são a fonte de verdade do personagem.
 | Necessidade | Fonte canônica |
 |---|---|
 | Objetivo e comportamento | [SPEC.md](SPEC.md) |
-| Tarefa, dependências e aceite | [docs/ROADMAP.md](docs/ROADMAP.md) |
+| Tarefas abertas e pendências | [STATUS.md](STATUS.md) |
 | Camadas, contratos e fluxo de dados | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | Ambiente e comandos | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) |
 | Compatibilidade e APIs reais | [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) |
 | Permissões, reconexão e validação | [docs/TESTING.md](docs/TESTING.md) |
 | Decisões e propostas | [docs/DECISIONS.md](docs/DECISIONS.md) |
-| Origem e discussão anterior | [docs/context/CONVERSATION.md](docs/context/CONVERSATION.md) |
+| Regras de Netrunning cobertas | [docs/RULES.md](docs/RULES.md) |
 
 ## Economia de contexto
 
@@ -59,6 +60,6 @@ locais apenas quando uma pasta realmente exigir regras diferentes.
 ## Encerramento de sessão
 
 Atualize `STATUS.md` com tarefa, arquivos relevantes, validação executada, pendências
-e próximo passo concreto. Atualize o estado da tarefa no roadmap. Se houver código,
+e próximo passo concreto; tire do STATUS o que foi concluído (o histórico fica no git). Se houver código,
 execute os checks disponíveis pertinentes e registre falhas sem mascará-las.
 Não faça push, publicação ou alteração na mesa real sem solicitação correspondente.

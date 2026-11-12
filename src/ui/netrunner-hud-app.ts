@@ -30,7 +30,6 @@ const ACTION_ICON: Record<DemoAction, string> = {
   jackOut: "fa-plug-circle-xmark",
 };
 
-/** Eventos que exibem a faixa de destaque central. */
 const BANNER_EVENTS: ReadonlySet<DemoEventKind> = new Set([
   "jack-in",
   "ice-alert",
@@ -44,10 +43,6 @@ const BANNER_EVENTS: ReadonlySet<DemoEventKind> = new Set([
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-/**
- * Protótipo visual do HUD (E1-00): estado local e sintético, sem rede, regras
- * nem ficha. Cada cliente que abrir vê apenas a própria demonstração.
- */
 export class NetrunnerHudPrototype extends HandlebarsApplicationMixin(ApplicationV2) {
   static override DEFAULT_OPTIONS = {
     id: `${MODULE_ID}-prototype`,
@@ -72,9 +67,7 @@ export class NetrunnerHudPrototype extends HandlebarsApplicationMixin(Applicatio
   #state: DemoState = createDemoState();
   #role: ViewerRole = "netrunner";
   #reducedMotion = false;
-  /** Último evento já animado; evita repetir efeitos ao trocar de papel. */
   #animatedEventId = 0;
-  /** Animação de entrada só na primeira renderização após abrir. */
   #booting = true;
 
   protected override async _prepareContext(): Promise<Record<string, unknown>> {

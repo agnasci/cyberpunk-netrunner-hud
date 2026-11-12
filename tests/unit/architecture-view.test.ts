@@ -150,7 +150,6 @@ describe("buildArchitectureView — posição e movimento", () => {
       0,
       progress(0, { cleared: [0], actionsUsed: 3 }),
     );
-    // Mover é livre (D27): ações esgotadas não tiram a dica.
     expect(
       cells(spent)
         .filter((n) => n.movable)
@@ -167,7 +166,6 @@ describe("buildArchitectureView — posição e movimento", () => {
       expect(byKey.get(1)?.state).toBe("evaded");
       expect(byKey.get(2)?.state).toBeNull();
       expect(byKey.get(0)?.clearable).toBe(role === "gm");
-      // Arquivo também pode ser liberado pelo GM (Eye-Dee, E6-04).
       expect(byKey.get(2)?.clearable).toBe(role === "gm");
     }
     const gm = buildArchitectureView(arch(), revealed([0]), "gm", null, p);
@@ -183,7 +181,6 @@ describe("buildArchitectureView — posição e movimento", () => {
 describe("buildArchitectureView — conectores entre andares (D28)", () => {
   it("liga a mesma branch na vertical e marca a bifurcação para a branch B", () => {
     const view = buildArchitectureView(arch(), revealed([0, 1, 2, 3]), "gm");
-    // Linhas: andares 1, 2 e 3; colunas a e b. Conectores ficam acima de cada linha.
     expect(view.rows.map((r) => r.floor)).toEqual([1, 2, 3]);
     expect(view.rows[0]?.linksAbove).toEqual([]);
     expect(view.rows[1]?.linksAbove).toEqual([

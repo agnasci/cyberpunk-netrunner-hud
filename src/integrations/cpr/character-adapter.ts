@@ -6,17 +6,11 @@ import type {
   SnapshotIssue,
 } from "../../domain/character";
 
-/**
- * Dados planos de um ator do Cyberpunk RED – CORE v0.92.4. `system` fica como
- * `unknown`: cada campo lido é validado aqui, o único lugar que conhece os
- * caminhos internos do sistema (ver docs/COMPATIBILITY.md).
- */
 export interface CprItemSource {
   id: string;
   name: string;
   type: string;
   system: unknown;
-  /** Marca do módulo no programa (D40): neutralizado ou destruído. */
   programState?: unknown;
 }
 
@@ -48,7 +42,6 @@ export function normalizeCharacter(source: CprActorSource): CharacterSnapshot {
   };
 }
 
-/** `system.roleInfo.activeNetRole` aponta para o item `role` usado no Netrunning. */
 function readNetRole(source: CprActorSource, issues: SnapshotIssue[]): NetRoleSnapshot | null {
   const roleId = readString(source.system, ["roleInfo", "activeNetRole"]);
   const item = roleId ? source.items.find((i) => i.type === "role" && i.id === roleId) : undefined;
@@ -64,7 +57,6 @@ function readNetRole(source: CprActorSource, issues: SnapshotIssue[]): NetRoleSn
   return { itemId: item.id, abilityName: readString(item.system, ["mainRoleAbility"]) ?? "", rank };
 }
 
-/** Igual a `CPRActor#getEquippedCyberdeck`: o primeiro cyberdeck equipado. */
 function readEquippedCyberdeck(
   source: CprActorSource,
   issues: SnapshotIssue[],
@@ -82,7 +74,6 @@ function readEquippedCyberdeck(
   return equipped[0] ?? null;
 }
 
-/** Igual a `getInstalledItems("program")`: ids da lista resolvidos em itens do ator. */
 function readInstalledPrograms(
   source: CprActorSource,
   deck: CprItemSource,
@@ -141,7 +132,7 @@ function readProgram(item: CprItemSource, issues: SnapshotIssue[]): ProgramSnaps
   };
 }
 
-function readPath(value: unknown, path: readonly string[]): unknown {
+export function readPath(value: unknown, path: readonly string[]): unknown {
   let current = value;
   for (const key of path) {
     if (typeof current !== "object" || current === null) return undefined;
@@ -150,13 +141,12 @@ function readPath(value: unknown, path: readonly string[]): unknown {
   return current;
 }
 
-function readString(value: unknown, path: readonly string[]): string | null {
+export function readString(value: unknown, path: readonly string[]): string | null {
   const found = readPath(value, path);
   return typeof found === "string" && found !== "" ? found : null;
 }
 
-/** Inteiro ou texto inteiro (o sistema usa `parseInt` em `rank`). */
-function readInt(value: unknown, path: readonly string[]): number | null {
+export function readInt(value: unknown, path: readonly string[]): number | null {
   const found = readPath(value, path);
   if (typeof found === "number") return Number.isInteger(found) ? found : null;
   if (typeof found === "string" && /^-?\d+$/.test(found.trim())) return Number(found.trim());

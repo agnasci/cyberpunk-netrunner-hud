@@ -8,7 +8,6 @@ import {
 import { checkMove, type RuleContext } from "../domain/net-rules";
 import type { MappedFloor, PublicRun, ViewerRole } from "./session-state";
 
-/** Conteúdos que o GM pode marcar como resolvidos (D22). */
 const CLEARABLE: ReadonlySet<NetFloorContent> = new Set([
   "password",
   "controlnode",
@@ -18,7 +17,6 @@ const CLEARABLE: ReadonlySet<NetFloorContent> = new Set([
 
 export interface ArchitectureProgress {
   run: PublicRun;
-  /** Contexto do motor visto por este cliente; `null` = sem dica de movimento. */
   rules: RuleContext | null;
 }
 
@@ -26,18 +24,12 @@ interface NodeBase {
   key: number;
   floor: number;
   branch: string;
-  /** `unknown` = nó só no mapa para este cliente (conteúdo oculto). */
   content: NetFloorContent | "unknown";
-  /** Revelado só no mapa, sem conteúdo para os jogadores. */
   masked: boolean;
   blackIceKey: string | null;
-  /** Nó onde a Netrunner está (posição é pública). */
   isCurrent: boolean;
-  /** Dica de UI para a Netrunner; a autoridade GM revalida. */
   movable: boolean;
-  /** Progresso público: resolvido (vencido/controlado/derrotado) ou driblado. */
   state: "cleared" | "evaded" | null;
-  /** GM pode liberar/restaurar este nó. */
   clearable: boolean;
 }
 
@@ -45,11 +37,6 @@ export type ArchitectureNodeView =
   | (NodeBase & { revealed: true })
   | (NodeBase & { revealed: boolean; dv: number | null; description: string });
 
-/**
- * Conector acima de uma célula (D28): `down` liga ao nó de cima na mesma branch;
- * `forkIn` é a chegada de uma bifurcação vinda da esquerda; `forkOut` é a saída dela na
- * branch de origem; `forkPass` atravessa colunas entre as duas.
- */
 export interface LinkCell {
   down: boolean;
   forkIn: boolean;
@@ -60,23 +47,17 @@ export interface LinkCell {
 export interface ArchitectureRow {
   floor: number;
   cells: Array<ArchitectureNodeView | null>;
-  /** Conectores com a linha anterior, por coluna; vazio na primeira linha. */
   linksAbove: LinkCell[];
 }
 
 export interface ArchitectureView {
   columns: string[];
   rows: ArchitectureRow[];
-  /** Marcador genérico para jogadores; não depende do que existe além do revelado. */
   showUnexplored: boolean;
   canReveal: boolean;
   itemMissing: boolean;
 }
 
-/**
- * Grade da arquitetura (andar = linha, branch = coluna). O GM usa o item completo;
- * os demais usam apenas os nós públicos revelados (D18).
- */
 export function buildArchitectureView(
   full: NetArchitecture | null,
   discovered: readonly PublicFloor[],
@@ -161,10 +142,6 @@ export function buildArchitectureView(
   };
 }
 
-/**
- * Conectores entre duas linhas, pelos caminhos entre os nós que este cliente vê
- * (também usado pela grade do editor de arquitetura, E7-01).
- */
 export function linksBetween(
   upper: ReadonlyArray<NodePosition | null>,
   lower: ReadonlyArray<NodePosition | null>,

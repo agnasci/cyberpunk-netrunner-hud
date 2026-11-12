@@ -1,13 +1,8 @@
 import { MODULE_ID } from "../../constants";
+import { readLinkFlag } from "./foundry-netarch";
 
-/**
- * Netrunner NPC inimiga (E6-11b, D37). O vínculo nó↔NPC fica na flag do item de NET
- * Architecture (`flags.<módulo>.npcs.<chave>` = uuid do ator): só o GM lê e grava, e a
- * autoridade só o publica quando a jogadora chega ao nó.
- */
 interface FlaggedItem {
   documentName?: string;
-  flags?: Record<string, { npcs?: Record<string, unknown> } | undefined>;
   update(data: Record<string, unknown>): Promise<unknown>;
 }
 
@@ -16,22 +11,14 @@ function netArchItem(itemUuid: string): FlaggedItem | null {
   return doc && doc.documentName === "Item" ? doc : null;
 }
 
-/** Vínculos do item, por chave de nó. */
 export function listNpcLinks(itemUuid: string): Record<number, string> {
-  const raw = netArchItem(itemUuid)?.flags?.[MODULE_ID]?.npcs ?? {};
-  const links: Record<number, string> = {};
-  for (const [key, uuid] of Object.entries(raw)) {
-    const k = Number(key);
-    if (Number.isInteger(k) && k >= 0 && typeof uuid === "string" && uuid !== "") links[k] = uuid;
-  }
-  return links;
+  return readLinkFlag(itemUuid, "npcs");
 }
 
 export function readNpcLink(itemUuid: string, key: number): string | null {
   return listNpcLinks(itemUuid)[key] ?? null;
 }
 
-/** Só o GM: vincula (ou remove, com `null`) a NPC do nó. */
 export async function setNpcLink(
   itemUuid: string,
   key: number,
@@ -51,10 +38,6 @@ interface ActorLike {
   items: Iterable<{ type: string; system?: { equipped?: unknown } }>;
 }
 
-/**
- * Atores que podem ser Netrunner NPC: personagem ou mook sem dono jogador (nenhum usuário não-GM
- * com permissão de dono, como no diálogo de início) e com cyberdeck equipado.
- */
 export function listWorldNetrunners(excludeUuid: string): Array<{ uuid: string; name: string }> {
   const players = game.users.contents.filter((u) => !u.isGM);
   return game.actors.contents
@@ -68,14 +51,12 @@ export function listWorldNetrunners(excludeUuid: string): Array<{ uuid: string; 
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/** REF do ator (iniciativa do CPR: `1d10 + @stats.ref.value`). */
 export function readActorRef(actorUuid: string): number | null {
   const actor = fromUuidSync(actorUuid) as ActorLike | null;
   const ref = Number(actor?.system?.stats?.ref?.value);
   return Number.isInteger(ref) ? ref : null;
 }
 
-/** Iniciativa 1d10 + REF pelo Roll do core, com o ator no speaker (fórmula na mensagem). */
 export async function rollInitiative(actorUuid: string, flavor: string): Promise<string | null> {
   const actor = fromUuidSync(actorUuid);
   const ref = readActorRef(actorUuid);
@@ -87,7 +68,6 @@ export async function rollInitiative(actorUuid: string, flavor: string): Promise
   return message.id;
 }
 
-/** HP atual e máximo (`system.derivedStats.hp`, CPR v0.92.4) para o painel do encontro. */
 export function readActorHp(actorUuid: string): { value: number; max: number } | null {
   const actor = fromUuidSync(actorUuid) as {
     system?: { derivedStats?: { hp?: { value?: unknown; max?: unknown } } };
@@ -98,7 +78,6 @@ export function readActorHp(actorUuid: string): { value: number; max: number } |
   return Number.isInteger(value) && Number.isInteger(max) ? { value, max } : null;
 }
 
-/** Move o vínculo (efeito `moveNpcLink`, D26): absoluto, reaplicar não duplica. */
 export async function applyNpcMoveEffect(effect: {
   itemUuid: string;
   actorUuid: string;
@@ -116,7 +95,6 @@ export async function applyNpcMoveEffect(effect: {
   });
 }
 
-/** Nome do ator vinculado (mesmo que ele não entre mais na lista de escolhas). */
 export function readActorName(actorUuid: string): string | null {
   const doc = fromUuidSync(actorUuid) as { documentName?: string; name?: unknown } | null;
   return doc?.documentName === "Actor" && typeof doc.name === "string" ? doc.name : null;

@@ -93,7 +93,6 @@ describe("rascunho do editor (E7-01)", () => {
     expect(draftIssues({ name: " ", nodes: [] })[0]).toEqual({ code: "no-name" });
     const noRoot = build([["file", 2, "a"]]);
     expect(draftIssues(noRoot)).toEqual([{ code: "no-root" }]);
-    // 1a─2a, 2b liga ao 1a; 4a sem 3a fica sem caminho; Black ICE sem tipo.
     const d = build([
       ["password", 1, "a"],
       ["file", 2, "a"],

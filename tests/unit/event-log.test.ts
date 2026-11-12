@@ -51,7 +51,6 @@ function harness(): Harness {
   };
 }
 
-/** Desconectada; Password (0) vencida; Black ICE (1) vinculado. */
 function start(): PublicSession {
   return withRun(reveal(base(), [0, 1, 2]), {
     cleared: [0],
@@ -87,7 +86,6 @@ describe("registro de eventos (E6-09, D34)", () => {
     expect(c.session.log).toEqual([
       { seq: 1, event: "jackIn", turn: 1, data: { key: 0 } },
       { seq: 2, event: "move", turn: 1, data: { key: 1 } },
-      // Nó 1 tem Black ICE: o encontro à espreita dispara ao chegar.
       { seq: 3, event: "ambush", turn: 1, data: { key: 1 } },
     ]);
   });

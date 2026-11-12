@@ -2,11 +2,6 @@ import type { CharacterSnapshot } from "../domain/character";
 import type { LogEntry } from "../session/log-entry";
 import type { PublicSession } from "../session/session-state";
 
-/**
- * Texto do registro de eventos (E6-09, D34), no estilo de um terminal do cyberdeck: um
- * "comando" fixo (sabor, sem tradução) e uma mensagem em linguagem simples, traduzida.
- * Cada cliente monta as linhas com o que já vê: nós descobertos e programas da ficha.
- */
 type Translate = (key: string, data?: Record<string, string>) => string;
 
 export type LogTone = "ok" | "fail" | "dmg" | "warn" | "info";
@@ -15,11 +10,8 @@ export interface LogLine {
   seq: number;
   turn: number;
   tone: LogTone;
-  /** Comando simulado, ex.: `zap.exe --target 2a`. */
   cmd: string;
-  /** Mensagem legível para quem não é técnico. */
   msg: string;
-  /** Selo de status, ex.: `OK`; vazio quando é só informação. */
   status: string;
 }
 
@@ -44,7 +36,6 @@ const EXE: Record<string, string> = {
   ambush: "ice.ambush",
 };
 
-/** Nome curto para o comando: minúsculas, sem espaços. */
 function slug(text: string): string {
   return (
     text
@@ -57,7 +48,6 @@ function slug(text: string): string {
   );
 }
 
-/** Linhas em ordem de terminal: a mais antiga em cima, a mais nova embaixo. */
 export function logLines(
   session: PublicSession,
   snapshot: CharacterSnapshot | null,
@@ -86,9 +76,7 @@ export function logLines(
 
 interface LineContext {
   t: Translate;
-  /** Código do nó para o comando, ex.: `2a`. */
   code(key: unknown): string;
-  /** Nó por extenso para a mensagem. */
   node(key: unknown): string;
   program(id: unknown): string;
 }
@@ -156,7 +144,6 @@ function line(entry: LogEntry, c: LineContext): LogLine {
         tone = ok ? "ok" : "info";
         break;
       }
-      // Acerto do Black ICE é ruim para a Netrunner; erro dele, bom.
       const againstRunner =
         ability === "iceAttack" || ability === "npcAttack" || ability === "ambush";
       tone = againstRunner ? (ok ? "warn" : "ok") : ok ? "ok" : "fail";

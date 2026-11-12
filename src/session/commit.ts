@@ -8,17 +8,10 @@ export interface CommitDeps {
 
 export interface CommitResult {
   result: ActionResult;
-  /** Registrar no mapa de processados? Falhas ficam de fora para permitir reenvio. */
   remember: boolean;
-  /** Sessão gravada (`undefined` = nada gravado). */
   written: PublicSession | null | undefined;
 }
 
-/**
- * Efetiva o resultado do processador na autoridade (D20/D26): efeitos em documentos
- * primeiro, depois a sessão. Efeitos usam valores absolutos fixados na pendência,
- * então um reenvio após falha da gravação reaplica o mesmo valor sem duplicar.
- */
 export async function commitOutcome(
   outcome: ProcessOutcome,
   deps: CommitDeps,

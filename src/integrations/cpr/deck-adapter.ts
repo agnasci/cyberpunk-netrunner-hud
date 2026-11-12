@@ -5,14 +5,8 @@ import type {
   DeckProgramMark,
   DeckUpgrade,
 } from "../../domain/deck-config";
-import type { CprActorSource } from "./character-adapter";
+import { type CprActorSource, readInt, readPath, readString } from "./character-adapter";
 
-/**
- * Lê a carga de cyberdecks de um ator do CPR v0.92.4 (E7-02). Campos verificados em
- * `cyberdeck-datamodel.js`/`container-schema.js`: `system.equipped`, `system.installedItems`
- * (`list`, `slots`, `usedSlots`); programa: `class`, `size`, `isRezzed`, `rez`, `atk`, `def`.
- * `totalSlots` vem do método nativo (`availableInstallSlots` + `usedSlots`), que soma upgrades.
- */
 export function normalizeLoadout(
   source: CprActorSource,
   totalSlots: (deckId: string) => number | null,
@@ -33,7 +27,6 @@ export function normalizeLoadout(
         equipped: readPath(item.system, ["equipped"]) === "equipped",
         slots,
         usedSlots,
-        // Programa apagado deixa o id na lista (COMPATIBILITY): só ids que existem.
         installed: Array.isArray(list)
           ? list.filter((id): id is string => typeof id === "string" && ids.has(id))
           : [],
@@ -68,25 +61,4 @@ export function normalizeLoadout(
     }
   }
   return { decks, programs, upgrades };
-}
-
-function readPath(value: unknown, path: readonly string[]): unknown {
-  let current = value;
-  for (const key of path) {
-    if (typeof current !== "object" || current === null) return undefined;
-    current = (current as Record<string, unknown>)[key];
-  }
-  return current;
-}
-
-function readString(value: unknown, path: readonly string[]): string | null {
-  const found = readPath(value, path);
-  return typeof found === "string" && found !== "" ? found : null;
-}
-
-function readInt(value: unknown, path: readonly string[]): number | null {
-  const found = readPath(value, path);
-  if (typeof found === "number") return Number.isInteger(found) ? found : null;
-  if (typeof found === "string" && /^-?\d+$/.test(found.trim())) return Number(found.trim());
-  return null;
 }

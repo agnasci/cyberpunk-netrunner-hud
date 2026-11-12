@@ -97,7 +97,6 @@ function chain(run: ReturnType<typeof runWith>, start: PublicSession) {
   };
 }
 
-/** Black ICE ataca e acerta (ATK 16 × Defense 10), confirmado pelo GM. */
 function hit(c: ReturnType<typeof chain>, atk = "m-atk") {
   c.step({ type: "iceAttack", messageId: atk }, GM);
   c.step({ type: "oppose", messageId: "m-defense" });
@@ -149,7 +148,6 @@ describe("motor do acerto do Black ICE (D31)", () => {
     expect(iceDamageResult({ kind: "brain", hpBase: 3, reduction: 0 }, 9)).toMatchObject({
       after: 0,
     });
-    // REZ 0 neutraliza; só destrói quando o efeito do ICE manda (D40).
     expect(iceDamageResult({ kind: "program", programId: "p", rezBase: 7 }, 14)).toEqual({
       kind: "program",
       programId: "p",
@@ -227,7 +225,6 @@ describe("acerto do Black ICE na sessão (D31, D26)", () => {
   it("antiprograma: o mestre escolhe o programa (mais de um rezzado); REZ 0 destrói", () => {
     const c = chain(runWith(harness({ runner: PROGRAMS })), atIce("Actor.killer"));
     expect(hit(c, "m-atk-killer").session?.run.iceHit?.pickProgram).toBe(true);
-    // Sem a escolha, o dano espera.
     expect(c.step({ type: "iceDamage", messageId: "m-killer-dmg" }, GM).result).toMatchObject({
       error: "check-pending",
     });
@@ -242,7 +239,6 @@ describe("acerto do Black ICE na sessão (D31, D26)", () => {
       target: { kind: "program", programId: "p-shield", rezBase: 3 },
     });
     const out = c.step({ type: "iceDamage", messageId: "m-killer-dmg" }, GM);
-    // Ator de teste sem o efeito de destruir: REZ 0 neutraliza (D40).
     expect(out.effects).toEqual([
       {
         type: "setProgramState",
@@ -299,7 +295,6 @@ describe("acerto do Black ICE na sessão (D31, D26)", () => {
     const c = chain(runWith(h), atIce("Actor.hound"));
     hit(c);
     const before = c.session;
-    // Primeira tentativa: efeito aplicado, gravação falhou (sessão não muda).
     const first = runWith(h)(
       before,
       request(before, { type: "iceDamage", messageId: "m-hound-dmg" }, "x1"),

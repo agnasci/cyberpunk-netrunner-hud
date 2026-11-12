@@ -13,10 +13,6 @@ const node = (
   dv: number | null = 6,
 ): NetFloor => ({ key, floor, branch, content, blackIceKey: null, dv, description: "" });
 
-/**
- * 1a → 2a → 3a → 4a; branch b nasce no 2 (bifurca do 1a) com Password DV 15; branch c nasce no
- * 3 (bifurca do 2b, abaixo da Password); branch d nasce no 4 (bifurca do 3c).
- */
 const FLOORS: NetFloor[] = [
   node(0, 1, "a"),
   node(1, 2, "a"),
@@ -30,7 +26,6 @@ const FLOORS: NetFloor[] = [
 
 describe("Pathfinder em todas as branches (revisão do usuário)", () => {
   it("revela os andares abaixo de outras branches, não só os da própria", () => {
-    // Total alto: nada barra (DV 15 < 16).
     expect(pathfinderReveal(FLOORS, 1, 16)).toEqual([3, 4, 5, 6, 7]);
   });
 
@@ -39,7 +34,6 @@ describe("Pathfinder em todas as branches (revisão do usuário)", () => {
   });
 
   it("Password já percorrida (acima dela) não barra", () => {
-    // Netrunner no 3b, abaixo da Password 2b.
     expect(pathfinderReveal(FLOORS, 4, 10)).toEqual([6, 7]);
   });
 });

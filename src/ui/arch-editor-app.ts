@@ -45,14 +45,9 @@ const where = (n: { floor: number; branch: string }) =>
   t("CNH.Editor.Where", { floor: String(n.floor), branch: n.branch.toUpperCase() });
 
 export interface ArchEditorHandlers {
-  /** A arquitetura está numa sessão ativa (posições já são públicas). */
   inUse(itemUuid: string): boolean;
 }
 
-/**
- * Rascunhos não salvos, guardados no navegador do mestre (conveniência local, não estado do
- * mundo): um por arquitetura ("new" = ainda não criada). Sobrevivem a fechar a janela/recarregar.
- */
 const DRAFTS_KEY = `${MODULE_ID}.archDrafts`;
 type StoredDrafts = Record<string, { draft: unknown; at: number }>;
 
@@ -71,7 +66,7 @@ function writeStored(slot: string, draft: ArchDraft | null): void {
     const all: StoredDrafts = draft ? { ...rest, [slot]: { draft, at: Date.now() } } : rest;
     localStorage.setItem(DRAFTS_KEY, JSON.stringify(all));
   } catch (error) {
-    console.warn("cyberpunk-netrunner-hud | rascunho não guardado", error);
+    console.warn(`${MODULE_ID} | rascunho não guardado`, error);
   }
 }
 
@@ -81,14 +76,8 @@ function loadStored(slot: string): { draft: ArchDraft; at: number } | null {
   return draft && entry ? { draft, at: Number(entry.at) || 0 } : null;
 }
 
-/** O que está sendo arrastado: um tipo da paleta ou um nó da grade. */
 type DragSource = { kind: "tile"; content: NetFloorContent } | { kind: "node"; key: number };
 
-/**
- * Editor de arquitetura do mestre (E7-01, D42): grade no visual do HUD, paleta de tipos de nó
- * arrastável e painel de configuração. O rascunho fica neste cliente até salvar no item
- * `netarch` do CPR; nada vai ao estado público da sessão.
- */
 export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static override DEFAULT_OPTIONS = {
     id: `${MODULE_ID}-arch-editor`,
@@ -117,18 +106,12 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
   readonly #handlers: ArchEditorHandlers;
   #itemUuid: string | null = null;
   #draft: ArchDraft = { name: "", nodes: [] };
-  /**
-   * Nós gravados de uma arquitetura em uso numa sessão ativa agora: não mudam de lugar nem de
-   * tipo. Recalculado a cada renderização (o editor renderiza de novo quando sessões mudam).
-   */
   #locked = new Set<number>();
-  /** Hora do rascunho restaurado do navegador, para o aviso. */
   #restoredAt: number | null = null;
   #selected: number | null = null;
   #armed: NetFloorContent | null = null;
   #dirty = false;
   #saving = false;
-  /** Clique logo após um arrasto não deve selecionar/colocar. */
   #dragEndedAt = 0;
   #scroll = { top: 0, left: 0 };
 
@@ -137,7 +120,6 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#handlers = handlers;
   }
 
-  /** Abre o editor numa arquitetura (ou numa nova); o rascunho da anterior fica guardado. */
   async open(itemUuid: string | null): Promise<void> {
     if (!game.user?.isGM) {
       ui.notifications.warn(t("CNH.Editor.GmOnly"));
@@ -178,7 +160,6 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
     return this.#itemUuid ?? "new";
   }
 
-  /** Rascunho igual ao item gravado (ou vazio, para uma arquitetura nova). */
   #savedDraft(): ArchDraft {
     const itemUuid = this.#itemUuid;
     const arch = itemUuid ? readNetArchitecture(itemUuid) : null;
@@ -195,7 +176,6 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
     };
   }
 
-  /** Travas valem só enquanto a arquitetura está numa sessão ativa. */
   #refreshLocks(): void {
     const uuid = this.#itemUuid;
     this.#locked =
@@ -209,7 +189,6 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
     writeStored(this.#slot, this.#draft);
   }
 
-  /** Aplica uma operação do domínio; erros só deixam o rascunho como estava. */
   #apply(result: DraftResult, select: boolean): boolean {
     if (!result.ok) {
       if (result.error === "locked") ui.notifications.warn(t("CNH.Editor.Locked"));
@@ -321,7 +300,6 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
     iceChoices: ReadonlyArray<{ uuid: string; name: string; builtin?: boolean }>,
     npcChoices: ReadonlyArray<{ uuid: string; name: string }>,
   ): Record<string, unknown> {
-    // Um ator por nó: os já usados em outros nós saem da lista.
     const usedIce = new Set(
       this.#draft.nodes.filter((n) => n.key !== node.key).map((n) => n.iceActor),
     );
@@ -350,7 +328,6 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
           label: c.builtin ? `${c.name} ${t("CNH.Ice.BuiltinTag")}` : c.name,
           selected: c.uuid === node.iceActor,
         })),
-      // O vínculo atual aparece mesmo fora da lista (ex.: a ficha ganhou dono jogador depois).
       npcs: [
         ...(node.npcActor && !npcChoices.some((c) => c.uuid === node.npcActor)
           ? [{ uuid: node.npcActor, name: readActorName(node.npcActor) ?? "?" }]
@@ -395,7 +372,6 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
         const select = event.currentTarget as HTMLSelectElement;
         const value = select.value || null;
         void this.open(value).then(() => {
-          // Cancelou o descarte: o seletor volta para a arquitetura aberta.
           select.value = this.#itemUuid ?? "";
         });
       });
@@ -423,7 +399,6 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
       case "blackIceKey": {
         const iceKey = BLACK_ICE_KEYS.includes(value) ? value : null;
         patch = { blackIceKey: iceKey };
-        // Sem ficha escolhida, sugere a de mesmo nome (como o diálogo de início).
         if (iceKey && node.iceActor === null) {
           const used = new Set(
             this.#draft.nodes.map((n) => n.iceActor).filter((u): u is string => u !== null),
@@ -447,11 +422,6 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#apply(patchNode(this.#draft, key, patch, this.#locked), false);
   }
 
-  /**
-   * Arrastar por ponteiro (como a NPC no HUD: o arrastar do HTML falha em botões no Firefox):
-   * tipos da paleta vão para células da grade; nós da grade mudam de célula (soltar sobre outro
-   * troca os dois) ou vão para a lixeira.
-   */
   #bindDrag(): void {
     const root = this.element;
     const sources: Array<[HTMLElement, DragSource]> = [];
@@ -485,7 +455,6 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
             root.querySelector(".cnh-editor")?.classList.add("is-dragging");
             el.classList.add("is-drag-source");
           }
-          // `.window-content` tem container query (contenção): é a referência do `fixed`.
           const frame = root.querySelector(".window-content")?.getBoundingClientRect();
           ghost.style.left = `${event.clientX - (frame?.left ?? 0) + 8}px`;
           ghost.style.top = `${event.clientY - (frame?.top ?? 0) + 8}px`;
@@ -535,7 +504,6 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
     return Date.now() - this.#dragEndedAt < 250;
   }
 
-  /** Clique na paleta: escolhe o tipo para colocar com outro clique (teclado/sem arrastar). */
   static #onArmTile(this: ArchEditorApp, _event: Event, target: HTMLElement): void {
     if (this.#justDragged()) return;
     const content = target.dataset["content"] as NetFloorContent;
@@ -583,7 +551,6 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static async #onSave(this: ArchEditorApp): Promise<void> {
     if (this.#saving || !game.user?.isGM) return;
-    // A arquitetura pode ter entrado numa sessão depois da edição: nós em uso não mudam.
     this.#refreshLocks();
     const saved = this.#itemUuid ? (readNetArchitecture(this.#itemUuid)?.floors ?? []) : [];
     const conflicts = lockConflicts(this.#draft, saved, this.#locked);
@@ -599,13 +566,10 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
     try {
       const ice: Record<number, string> = {};
       const npcs: Record<number, string> = {};
-      // Em sessão ativa, a NPC dos nós em uso muda só pelo HUD (movimento e sigilo, D37):
-      // vale o vínculo gravado agora, não o lido ao abrir o editor.
       const live =
         this.#itemUuid && this.#locked.size > 0 ? readLinkFlag(this.#itemUuid, "npcs") : {};
       const nodes: DraftNode[] = [];
       for (const node of this.#draft.nodes) {
-        // Básico escolhido (D38): cria a ficha agora, para o vínculo apontar para um ator real.
         const iceActor = node.iceActor ? await ensureIceActor(node.iceActor) : null;
         const npcActor = this.#locked.has(node.key) ? (live[node.key] ?? null) : node.npcActor;
         if (iceActor) ice[node.key] = iceActor;
@@ -622,7 +586,7 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
       writeStored(this.#slot, null);
       ui.notifications.info(t("CNH.Editor.Saved", { name }));
     } catch (error) {
-      console.error("cyberpunk-netrunner-hud | falha ao salvar a arquitetura", error);
+      console.error(`${MODULE_ID} | falha ao salvar a arquitetura`, error);
       ui.notifications.error(t("CNH.Editor.SaveFailed"));
     } finally {
       this.#saving = false;
@@ -630,7 +594,6 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
-  /** Volta ao que está gravado (ou ao vazio) e apaga o rascunho guardado. */
   static #onDiscardDraft(this: ArchEditorApp): void {
     writeStored(this.#slot, null);
     this.#draft = this.#savedDraft();

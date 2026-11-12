@@ -64,7 +64,6 @@ function harness(extra: Partial<Harness> = {}): Harness {
   };
 }
 
-/** Desconectada, Password (0) vencida, Black ICE (1) vinculado. */
 function start(link = "Actor.ice1"): PublicSession {
   return withRun(reveal(base(), [0, 1, 2]), { cleared: [0], ice: [{ key: 1, actorUuid: link }] });
 }
@@ -112,7 +111,6 @@ describe("desfazer (E6-07, D32)", () => {
     c.step({ type: "reveal", key: 3 }, GM);
     expect(c.session.history.map((h) => h.label)).toEqual(["jackIn"]);
     c.step(UNDO, GM);
-    // Nós descobertos ficam como estão.
     expect(c.session.netArch?.discovered.map((f) => f.key)).toContain(3);
   });
 
@@ -206,7 +204,6 @@ describe("desfazer (E6-07, D32)", () => {
     c.step({ type: "check", ability: "zap", messageId: "m-zap" });
     c.step({ type: "oppose", messageId: "m-def" }, GM);
     c.step({ type: "resolveCheck", outcome: "success" }, GM);
-    // GM dispensa o dano.
     c.step({ type: "resolveCheck", outcome: "failure" }, GM);
     const before = c.session;
     c.step(UNDO, GM);
@@ -217,7 +214,6 @@ describe("desfazer (E6-07, D32)", () => {
   });
 
   it("recusa voltar para um nó que foi ocultado", () => {
-    // Black ICE já derrotado: a Netrunner pode subir de volta.
     const c = chain(harness(), withRun(start(), { cleared: [0, 1] }));
     c.step({ type: "jackIn" });
     c.step({ type: "moveTo", key: 1 });
@@ -238,7 +234,6 @@ describe("devolver/tirar ação NET (E6-07)", () => {
     expect(c.step({ type: "adjustActions", delta: -1 }, GM).result).toMatchObject({ ok: true });
     expect(c.session.run.actionsUsed).toBe(0);
     for (let i = 0; i < 5; i += 1) c.step({ type: "adjustActions", delta: 1 }, GM);
-    // Interface 4 → 3 ações por turno.
     expect(c.session.run.actionsUsed).toBe(3);
     expect(c.step({ type: "adjustActions", delta: 1 }).result).toMatchObject({
       error: "not-authorized",

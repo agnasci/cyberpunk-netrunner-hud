@@ -1,12 +1,7 @@
 import type { BannerFx } from "../session/hud-fx";
 
-/**
- * Pistas sonoras do HUD (E4-02b): dados puros para o sintetizador. Sem arquivos de
- * áudio, portanto sem licenças de terceiros. Tempos em segundos, frequência em Hz.
- */
 export interface Tone {
   wave: "sine" | "square" | "sawtooth" | "triangle" | "noise";
-  /** Frequência inicial e final (glissando); ruído usa como filtro passa-banda. */
   from: number;
   to: number;
   start: number;

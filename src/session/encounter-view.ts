@@ -11,19 +11,13 @@ import {
   type ViewerRole,
 } from "./session-state";
 
-/**
- * Visão do encontro e da checagem pendente (E3-02b/c). Pura: o HUD injeta a leitura
- * dos atores Black ICE e o DV (só o GM tem a arquitetura completa).
- */
 export type OpposedRollKind = "def" | "per" | "defense" | "npcDefense" | "speed";
 
 export interface EncounterIceView {
   key: number;
   link: { uuid: string; stats: IceStats | null } | null;
   defeated: boolean;
-  /** GM pode vincular/trocar o ator (sem pendência). */
   canLink: boolean;
-  /** GM pode iniciar o ataque do Black ICE. */
   canAttack: boolean;
 }
 
@@ -31,53 +25,39 @@ export interface PendingView {
   kind: PendingKind;
   total: number;
   opposed: number | null;
-  /** Quem deve rolar o lado oposto e o quê; `null` se não há o que rolar. */
   opposedRoll: OpposedRollKind | null;
-  /** Este cliente pode fazer a rolagem oposta. */
   canRollOpposed: boolean;
-  /** GM: DV do nó em checagens contra DV. */
   dv: number | null;
-  /** GM: sugestão pela regra (D24); `null` sem dados para comparar. */
   suggestion: "success" | "failure" | null;
   canConfirm: boolean;
   rez: { before: number; after: number } | null;
-  /** Dano numa Netrunner NPC: `rez` é HP (E6-11b). */
   hp: boolean;
 }
 
-/** Netrunner NPC do nó atual (E6-11b, D37). */
 export interface EncounterNpcView {
   key: number;
   actorUuid: string;
   runnerInit: number | null;
   npcInit: number | null;
-  /** Este cliente rola a iniciativa da jogadora (ela ou o GM). */
   canRollRunner: boolean;
   canRollNpc: boolean;
   initiativePending: boolean;
-  /** GM pode atacar com a NPC (combate aberto, nada pendente). */
   canAttack: boolean;
   actionsUsed: number;
 }
 
-/** Acerto do Black ICE aguardando o dano do GM (E6-06). */
 export interface IceHitView {
   target: IceHitTarget;
-  /** Só para o GM: fórmula do programa Black ICE; `null` = item não encontrado. */
   formula: string | null;
-  /** Acerto de uma NPC: ator e programa (`null` = Zap). */
   npc: { actorUuid: string; programId: string | null } | null;
   iceName: string;
   canRoll: boolean;
   canSkip: boolean;
-  /** GM precisa escolher o programa atingido antes do dano (antiprograma). */
   pickProgram: boolean;
 }
 
-/** Black ICE à espreita aguardando a rolagem de SPD (encontro ao chegar no nó). */
 export interface AmbushView {
   key: number;
-  /** GM rola o SPD (ator vinculado). */
   canRoll: boolean;
   linked: boolean;
   canSkip: boolean;
@@ -86,13 +66,10 @@ export interface AmbushView {
 export interface EncounterView {
   ice: EncounterIceView | null;
   pending: PendingView | null;
-  /** Zap vencido aguardando a rolagem de dano. */
   awaitingDamage: boolean;
   canRollDamage: boolean;
-  /** GM pode dispensar o dano pendente. */
   canSkipDamage: boolean;
   iceHit: IceHitView | null;
-  /** Último dano do Black ICE do nó atual (E6-06). */
   lastIceDamage: IceDamageResult | null;
   npc: EncounterNpcView | null;
   ambush: AmbushView | null;
@@ -103,7 +80,6 @@ export interface EncounterInput {
   role: ViewerRole;
   rules: RuleContext;
   readIce(actorUuid: string): IceStats | null;
-  /** DV do nó, para o GM; `null` para os demais ou nó sem DV. */
   dvOf(key: number): number | null;
 }
 
@@ -141,7 +117,6 @@ export function buildEncounterView(input: EncounterInput): EncounterView {
   let pending: PendingView | null = null;
   if (p) {
     let opposedRoll = needsOpposed(p.ability) && !p.opposed ? (OPPOSED[p.ability] ?? null) : null;
-    // Contra a Netrunner NPC, o GM rola a Defense dela (Interface + 1d10).
     const npcTarget = npcLinkOf(session, p.key);
     if (npcTarget && (opposedRoll === "def" || opposedRoll === "per")) opposedRoll = "npcDefense";
     const rollerIsGm =
@@ -179,7 +154,6 @@ export function buildEncounterView(input: EncounterInput): EncounterView {
   let iceHit: IceHitView | null = null;
   const byNpc = run.iceHit?.byNpc ?? null;
   if (run.iceHit && byNpc) {
-    // Zap da NPC: 1d6; programa: card do próprio programa (sem fórmula a conferir).
     iceHit = {
       target: run.iceHit.target,
       formula: isGm && byNpc.programId === null ? "1d6" : null,

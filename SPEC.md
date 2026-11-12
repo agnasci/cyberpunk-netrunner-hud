@@ -6,9 +6,6 @@ Tornar o Netrunning um acontecimento visual para a mesa inteira, preservando
 as escolhas da Netrunner e o controle do mestre. Complementar Cyberpunk RED – CORE
 no Foundry; não substituir fichas nem criar outro sistema de RPG.
 
-Origem e distinção entre pedidos e sugestões:
-[docs/context/CONVERSATION.md](docs/context/CONVERSATION.md).
-
 ## Requisitos derivados do pedido do usuário
 
 | ID | Requisito | Resultado observável |
@@ -76,5 +73,3 @@ Esses limites são propostas de escopo, não cancelamento da visão de longo pra
 - Não manter renderização contínua quando o HUD estiver fechado/inativo.
 - Primeira demonstração: três clientes reais completam a arquitetura pequena,
   com ficha integrada, ação/oposição assistida, segredo preservado e retomada.
-
-Critérios por etapa: [docs/ROADMAP.md](docs/ROADMAP.md).
