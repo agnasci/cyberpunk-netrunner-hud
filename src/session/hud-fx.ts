@@ -18,6 +18,9 @@ export type BannerFx =
   | "ice-attack"
   | "breach"
   | "identify"
+  | "mapped"
+  | "cloaked"
+  | "virus"
   | "control"
   | "zap-hit"
   | "program-hit"
@@ -60,6 +63,9 @@ export const BANNER_FX: readonly BannerFx[] = [
   "fail",
   "breach",
   "identify",
+  "mapped",
+  "cloaked",
+  "virus",
   "control",
   "damage",
   "zap-hit",
@@ -201,8 +207,15 @@ export function diffFx(prev: PublicSession | null, next: PublicSession): HudFx {
       case "pathfinder":
       case "cloak":
       case "virus":
-        if (ok) banners.add("identify");
-        else {
+        if (ok) {
+          banners.add(
+            result.ability === "pathfinder"
+              ? "mapped"
+              : result.ability === "cloak"
+                ? "cloaked"
+                : "virus",
+          );
+        } else {
           banners.add("fail");
           alert = "fail";
         }

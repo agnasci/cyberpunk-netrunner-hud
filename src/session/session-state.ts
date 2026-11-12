@@ -183,6 +183,11 @@ export interface PublicRun {
    * Público de propósito: ela sabe que chegou ao fundo, como na ficção; libera o Virus.
    */
   atBottom: boolean;
+  /**
+   * Todos os nós da arquitetura já estão revelados (ou mapeados). A autoridade calcula; o HUD
+   * esconde o "sinal não mapeado" e, sem nós só no mapa, o Pathfinder.
+   */
+  allKnown: boolean;
 }
 
 /** Um passo do desfazer do GM (E6-07, D32): estado anterior e efeitos inversos. */
@@ -306,6 +311,7 @@ function newRun(): PublicRun {
     programsUsed: [],
     netrunUsed: [],
     atBottom: false,
+    allKnown: false,
   };
 }
 
@@ -365,6 +371,7 @@ function parseRun(value: unknown): PublicRun | null {
       ? [...new Set(usedRaw.filter((id): id is string => isId(id)))].slice(0, 32)
       : [],
     atBottom: (value as Record<string, unknown>)["atBottom"] === true,
+    allKnown: (value as Record<string, unknown>)["allKnown"] === true,
     netrunUsed: ids((value as Record<string, unknown>)["netrunUsed"]),
   };
 }

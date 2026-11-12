@@ -410,7 +410,10 @@
       "npc-down": "Enemy Netrunner down",
       "npc-turn": "Enemy Netrunner's turn",
       "npc-hit": "Enemy Netrunner hit",
-      "npc-miss": "Enemy Netrunner missed"
+      "npc-miss": "Enemy Netrunner missed",
+      "mapped": "Architecture mapped",
+      "cloaked": "Traces hidden",
+      "virus": "Virus planted"
     },
     "Settings": {
       "Motion": {

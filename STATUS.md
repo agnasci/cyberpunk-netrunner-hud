@@ -9,6 +9,24 @@ Atualizado em: 2026-11-10.
 - E5-02 (licença/pacote final) adiada pelo usuário; pasta `pacote-teste/` serve para testes.
 - Alvo: Foundry V12 (12.343) + Cyberpunk RED – CORE v0.92.4 (D09).
 
+## Ajustes pós-beta (2026-11-11, revisão do usuário)
+
+- Faixas próprias para Pathfinder ("Arquitetura mapeada"), Cloak ("Rastros escondidos") e Virus
+  ("Vírus instalado"); antes reaproveitavam "Arquivo identificado".
+- `run.allKnown` (autoridade, também ao revelar/ocultar): com todos os nós revelados ou mapeados, o
+  "sinal não mapeado" e seus traços somem; sem nós só no mapa, o Pathfinder some.
+- Conectores entre branches: célula que recebe uma bifurcação e é atravessada por outra (ou que
+  recebe e origina) tinha a linha cortada pelo CSS; agora completa.
+- Pathfinder revela os andares mais fundos de todas as branches (antes só a subárvore do nó atual);
+  Password de DV maior que o total esconde só o que está abaixo dela, em qualquer branch, menos as
+  já percorridas.
+- Automatizado: `npm run check` exit 0; 330 testes (5 novos em `review-pathfinder.test.ts`; o de
+  outras branches falha com o algoritmo antigo).
+- Manual real: CSS conferido no Foundry (células combinadas com traço completo); com tudo revelado,
+  a Netrunner não vê o sinal nem o Pathfinder; ocultar um nó traz os dois de volta. Não conferido na
+  tela: uma arquitetura com o mesmo desenho do print do usuário.
+- Publicado como v0.1.1 (2026-11-11).
+
 ## Última entrega: E5-02 (publicação beta 0.1.0, D41)
 
 - Repositório público `agnasci/cyberpunk-netrunner-hud`, licença MIT (LICENSE), README de usuário
@@ -27,6 +45,9 @@ Atualizado em: 2026-11-10.
   `module.json` na raiz; build feito num worktree do branch `public`, sem os arquivos locais (322
   testes). Não conferido: instalar pelo manifesto num Foundry (a pasta do módulo aqui é um link para
   `dist/` do desenvolvimento).
+- README e notas da release v0.1.0 em inglês (pedido do usuário), enviados como novo instantâneo
+  (8aa0f87). Lista oficial do Foundry: submissão manual pelo usuário em foundryvtt.com; a política
+  de IA da Foundry exige textos de interface e descrição escritos por pessoas (ver conversa).
 - Rodapé do HUD: "Encerrar sessão" abaixo dos controles de vez, à direita (conferido no Foundry).
 
 ## Última entrega: E6-14 (ajustes do teste da mesa, D39)

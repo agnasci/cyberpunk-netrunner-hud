@@ -55,6 +55,7 @@ const valid = {
     programsUsed: [],
     netrunUsed: [],
     atBottom: false,
+    allKnown: false,
   },
   history: [],
   log: [],

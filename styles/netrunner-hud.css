@@ -2184,3 +2184,18 @@
 .cnh-actions-row:empty {
   display: none;
 }
+
+/* Conectores com mais de um papel na mesma célula (ex.: chegada de uma bifurcação e passagem de
+   outra): o traço horizontal e o vertical se completam em vez de um cortar o outro. */
+.cnh-link.is-fork-in.is-fork-pass::after,
+.cnh-link.is-fork-in.is-fork-out::after {
+  left: 0;
+  right: -10px;
+}
+.cnh-link.is-fork-out.is-fork-pass::after {
+  left: 0;
+}
+.cnh-link.is-fork-in.is-fork-out:not(.is-down)::before {
+  top: -10px;
+  bottom: -10px;
+}

@@ -462,12 +462,17 @@ function apply(
       const next = action.masked
         ? mapFloor(session, floor)
         : revealFloor(session, toPublicFloor(floor));
-      return next === session ? "unchanged" : { ...next, revision: session.revision };
+      // Revelar e ocultar não passam pelo resto do pipeline: recalcula a marca aqui.
+      return next === session
+        ? "unchanged"
+        : withBottom({ ...next, revision: session.revision }, architecture);
     }
     case "conceal": {
       if (action.key === session.runnerPosition) return "invalid-target";
       const next = concealFloor(session, action.key);
-      return next === session ? "unchanged" : { ...next, revision: session.revision };
+      return next === session
+        ? "unchanged"
+        : withBottom({ ...next, revision: session.revision }, architecture);
     }
     case "clearNode": {
       const node = arch.discovered.find((f) => f.key === action.key);
@@ -578,9 +583,14 @@ function withBottom(session: PublicSession, architecture: NetArchitecture | null
   const pos = session.runnerPosition;
   const node = architecture.floors.find((f) => f.key === pos);
   const atBottom = node !== undefined && node.floor >= lowestFloor(architecture.floors);
-  return atBottom === session.run.atBottom
+  const known = new Set([
+    ...(session.netArch?.discovered ?? []).map((f) => f.key),
+    ...(session.netArch?.mapped ?? []).map((m) => m.key),
+  ]);
+  const allKnown = architecture.floors.every((f) => known.has(f.key));
+  return atBottom === session.run.atBottom && allKnown === session.run.allKnown
     ? session
-    : { ...session, run: { ...session.run, atBottom } };
+    : { ...session, run: { ...session.run, atBottom, allKnown } };
 }
 
 function reject(

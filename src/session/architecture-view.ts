@@ -154,7 +154,7 @@ export function buildArchitectureView(
   return {
     columns,
     rows,
-    showUnexplored: !isGm,
+    showUnexplored: !isGm && progress?.run.allKnown !== true,
     canReveal: isGm && full !== null,
     itemMissing: isGm && full === null,
   };

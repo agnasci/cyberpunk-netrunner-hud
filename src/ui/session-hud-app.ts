@@ -345,6 +345,12 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       .filter(({ eligibility }) => eligibility.allowed || eligibility.reason !== "wrong-node")
       .filter(({ eligibility }) => eligibility.allowed || eligibility.reason !== "not-jacked-in")
       .filter(({ eligibility }) => eligibility.allowed || eligibility.reason !== "not-lowest")
+      // Arquitetura toda revelada (sem nós só no mapa): nada a mapear.
+      .filter(
+        ({ ability }) =>
+          ability !== "pathfinder" ||
+          !(this.#session.run.allKnown && (arch?.mapped.length ?? 0) === 0),
+      )
       .map(({ ability, eligibility }) => ({
         ability,
         label: t(`CNH.Action.${ability}`),

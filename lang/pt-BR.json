@@ -410,7 +410,10 @@
       "npc-down": "Netrunner inimiga derrubada",
       "npc-turn": "Vez da Netrunner inimiga",
       "npc-hit": "Netrunner inimiga acertou",
-      "npc-miss": "Netrunner inimiga errou"
+      "npc-miss": "Netrunner inimiga errou",
+      "mapped": "Arquitetura mapeada",
+      "cloaked": "Rastros escondidos",
+      "virus": "Vírus instalado"
     },
     "Settings": {
       "Motion": {
