@@ -312,20 +312,71 @@
   list-style: none;
 }
 .cnh-program {
+  --tone: var(--cnh-muted);
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 2px 6px;
   padding: 6px 8px;
-  border-left: 2px solid var(--cnh-muted);
-  background: rgba(255, 255, 255, 0.02);
-  opacity: 0.65;
+  border-left: 3px solid var(--tone);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--tone) 12%, transparent),
+    transparent 70%
+  );
 }
-.cnh-program.is-rezzed {
-  border-left-color: var(--cnh-cyan);
-  opacity: 1;
+.cnh-program--on {
+  --tone: var(--cnh-cyan);
+}
+.cnh-program--ready {
+  --tone: var(--cnh-magenta);
+}
+.cnh-program--used,
+.cnh-program--warn {
+  --tone: var(--cnh-amber);
+}
+.cnh-program--dead {
+  --tone: var(--cnh-red);
+  opacity: 0.6;
+}
+.cnh-program--used {
+  opacity: 0.8;
 }
 .cnh-program-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-weight: 600;
+}
+.cnh-program-name::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid var(--tone);
+}
+.cnh-program--on .cnh-program-name::before,
+.cnh-program--ready .cnh-program-name::before,
+.cnh-program--warn .cnh-program-name::before,
+.cnh-program--used .cnh-program-name::before {
+  background: var(--tone);
+  box-shadow: 0 0 6px var(--tone);
+}
+.cnh-program--dead .cnh-program-name {
+  text-decoration: line-through;
+}
+.cnh-program .cnh-program-state {
+  color: var(--tone);
+}
+.cnh-program--off .cnh-program-state {
+  color: var(--cnh-text);
+  opacity: 0.7;
+}
+.cnh-program-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 .cnh-program-state,
 .cnh-program-kind {
@@ -333,19 +384,6 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--cnh-muted);
-}
-.cnh-program.is-rezzed .cnh-program-state {
-  color: var(--cnh-green);
-}
-.cnh-program.is-ready {
-  border-left-color: var(--cnh-magenta);
-  opacity: 1;
-}
-.cnh-program.is-ready .cnh-program-state {
-  color: var(--cnh-magenta);
-}
-.cnh-program.is-used .cnh-program-state {
-  color: var(--cnh-amber);
 }
 .cnh-program .cnh-bar {
   grid-column: 1 / -1;
@@ -890,12 +928,6 @@
   font-size: 12px;
   letter-spacing: 0.06em;
   color: var(--cnh-muted);
-}
-.cnh-program.is-depleted {
-  border-left-color: var(--cnh-red);
-}
-.cnh-program.is-depleted .cnh-program-state {
-  color: var(--cnh-red);
 }
 .cnh-role-badge {
   color: var(--cnh-muted);
@@ -1500,6 +1532,10 @@
 }
 
 .cnh-app .cnh-hud .cnh-program-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
   justify-self: start;
   margin-top: 4px;
   padding: 2px 8px;
@@ -2138,10 +2174,6 @@
   padding-left: 0.2em;
 }
 
-.cnh-program.is-neutralized .cnh-program-state {
-  color: var(--cnh-amber);
-}
-
 .cnh-readouts .cnh-readout:not(.is-live) {
   display: flex;
   flex-direction: column;
@@ -2451,11 +2483,18 @@
 .cnh-app .cnh-hud .cnh-ed-open {
   display: grid;
   place-items: center;
+  place-content: center;
+  padding: 0;
+  letter-spacing: 0;
+  line-height: 1;
   width: 22px;
   height: 22px;
   border: 1px solid var(--cnh-line);
   font-size: 11px;
   color: var(--cnh-amber);
+}
+.cnh-app .cnh-hud .cnh-ed-open i {
+  margin: 0;
 }
 .cnh-app .cnh-hud .cnh-ed-open:hover {
   border-color: var(--cnh-amber);

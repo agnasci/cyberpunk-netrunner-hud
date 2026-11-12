@@ -4,7 +4,7 @@ Atualizado em: 2026-11-11.
 
 ## Situação
 
-- Módulo funcional e publicado: v0.4.0 no repositório público (D41), com HUD de sessão, várias
+- Módulo funcional e publicado: v0.4.1 no repositório público (D41), com HUD de sessão, várias
   invasões ao mesmo tempo, Netrunner NPC, Black ICE básicos (só na cópia local), editor de
   arquitetura (D42) e janela do cyberdeck (D43). Publicar versões: docs/DEVELOPMENT.md.
 - Alvo: Foundry V12 (12.343) + Cyberpunk RED – CORE v0.92.4 (D09).
@@ -14,7 +14,19 @@ Atualizado em: 2026-11-11.
 - Histórico de entregas concluídas: `git log` e as decisões em docs/DECISIONS.md. Roadmap e
   registros de tarefas concluídas foram apagados a pedido do usuário (2026-11-11).
 
-## Última entrega: pedido de 9 itens (2026-11-12, D45, D46), publicada como v0.4.0
+## Última entrega: UI dos programas (2026-11-12), publicada como v0.4.1
+
+- Cartões de programa com LED e borda por estado (ligado, desligado, atacante pronto, usado,
+  neutralizado, destruído), nenhum apagado por opacidade; espectadores recebem a classe do programa
+  (sem atributos); ações com ícone na mesma linha. Ícone de editar arquitetura centralizado (margem
+  do Foundry no `<i>`); Descartar com lixeira. Varredura de comentários: nenhum restante.
+
+## Entrega anterior: pedido de 9 itens (2026-11-12, D45, D46), publicada como v0.4.0
+
+- Publicado como v0.4.0 (2026-11-12, pedido do usuário): commit abb886b no `main`; instantâneo
+  4ec4337 (autor noreply) em `origin/main`; release v0.4.0 (não pre-release). Build limpo no
+  worktree de `public`: 359 testes, sem dados dos básicos. Conferido: manifesto `releases/latest` e
+  zip respondem 200, versão 0.4.0, `download` certo, 16 entradas no zip.
 
 - Programas: Armor −4 no cérebro, Flak zera ATK de atacantes inimigos, atacantes "pronto"/"usado",
   programa repetido na lista do deck conta uma vez (`net-rules.ts`, `checks.ts`,

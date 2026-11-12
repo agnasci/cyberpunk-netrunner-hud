@@ -7,7 +7,7 @@ import type {
 import type { ViewerRole } from "./session-state";
 
 export type SessionProgramView =
-  | { itemId: string; name: string; status: ProgramStatus }
+  | { itemId: string; name: string; status: ProgramStatus; programClass: string }
   | (Pick<ProgramSnapshot, "itemId" | "name" | "status" | "programClass" | "rez" | "stats"> & {
       detailed: true;
     });
@@ -40,7 +40,7 @@ export function buildSessionHudView(
           stats: p.stats,
           detailed: true,
         }
-      : { itemId: p.itemId, name: p.name, status: p.status },
+      : { itemId: p.itemId, name: p.name, status: p.status, programClass: p.programClass },
   );
   return {
     role,

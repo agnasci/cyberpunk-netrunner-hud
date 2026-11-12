@@ -145,7 +145,7 @@
       <h4 class="cnh-subtitle">{{localize "CNH.Hud.Programs"}}</h4>
       <ul class="cnh-programs">
         {{#each programs}}
-        <li class="cnh-program {{#if isRezzed}}is-rezzed{{/if}} {{#if isReady}}is-ready{{/if}} {{#if isUsed}}is-used{{/if}} {{#if isDepleted}}is-depleted{{/if}} {{#if isNeutralized}}is-neutralized{{/if}}">
+        <li class="cnh-program cnh-program--{{tone}}">
           <span class="cnh-program-name">{{name}}</span>
           <span class="cnh-program-state">{{stateLabel}}</span>
           {{#if kindLabel}}<span class="cnh-program-kind">{{kindLabel}}</span>{{/if}}
@@ -153,8 +153,10 @@
           {{#if rezLabel}}<span class="cnh-program-kind">REZ {{rezLabel}}</span>
           <span class="cnh-bar" role="img" aria-label="REZ {{rezLabel}}"><span style="--fill: {{percent}}%"></span></span>{{/if}}
           {{#if attackHint}}<span class="cnh-program-hint">{{attackHint}}</span>{{/if}}
+          {{#if rezAction}}<span class="cnh-program-actions">{{else if attackAction}}<span class="cnh-program-actions">{{/if}}
           {{#if rezAction}}<button type="button" class="cnh-program-action" data-action="programRez" data-program-id="{{itemId}}" data-rez="{{rezAction.rez}}" data-tooltip="{{rezAction.tip}}" {{#if @root.pending}}disabled{{else if rezAction.disabled}}disabled{{/if}}><i class="fa-solid {{#if rezAction.rez}}fa-circle-up{{else}}fa-circle-down{{/if}}" aria-hidden="true"></i> {{rezAction.label}}</button>{{/if}}
           {{#if attackAction}}<button type="button" class="cnh-program-action is-attack" data-action="programAttack" data-program-id="{{itemId}}" data-tooltip="{{attackAction.tip}}" {{#if @root.pending}}disabled{{else if attackAction.disabled}}disabled{{/if}}><i class="fa-solid fa-hand-fist" aria-hidden="true"></i> {{attackAction.label}}</button>{{/if}}
+          {{#if rezAction}}</span>{{else if attackAction}}</span>{{/if}}
         </li>
         {{else}}
         <li class="cnh-empty">{{localize "CNH.Session.NoPrograms"}}</li>

@@ -717,7 +717,7 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       controllerName: controller?.name ?? t("CNH.Session.NoController"),
       canOpenDeck: canOpenDeck(this.#session.actorUuid, user ?? null),
       programs: view.programs.map((p) => {
-        const programClass = "detailed" in p ? p.programClass : "";
+        const programClass = p.programClass;
         const attacker = programClass.endsWith("attacker");
         const rezzable = REZZABLE_CLASSES.has(programClass);
         const running = p.status === "rezzed" || p.status === "neutralized";
@@ -741,11 +741,18 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
         return {
           ...p,
           stateLabel: attacker ? attackerLabel : t(STATUS_KEY[p.status]),
-          isReady: attacker && p.status !== "destroyed" && !usedRun && !usedNow,
-          isUsed: usedRun || usedNow,
-          isRezzed: !attacker && p.status === "rezzed",
-          isDepleted: p.status === "destroyed",
-          isNeutralized: p.status === "neutralized",
+          tone:
+            p.status === "destroyed"
+              ? "dead"
+              : p.status === "neutralized"
+                ? "warn"
+                : attacker
+                  ? usedRun || usedNow
+                    ? "used"
+                    : "ready"
+                  : p.status === "rezzed"
+                    ? "on"
+                    : "off",
           kindLabel: programClass ? t(`CNH.ProgramClass.${programClass}`) : "",
           rezLabel: "detailed" in p && p.rez.max > 0 ? `${p.rez.value}/${p.rez.max}` : "",
           percent:

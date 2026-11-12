@@ -14,7 +14,7 @@
         </select>
       </label>
       {{#if dirty}}<span class="cnh-ed-dirty"><i class="fa-solid fa-circle" aria-hidden="true"></i> {{localize "CNH.Editor.Unsaved"}}</span>
-      <button type="button" class="cnh-action" data-action="discardDraft" data-tooltip="{{localize "CNH.Editor.DiscardHint"}}" {{#if saving}}disabled{{/if}}><i class="fa-solid fa-rotate-left" aria-hidden="true"></i><span>{{localize "CNH.Editor.Discard"}}</span></button>{{/if}}
+      <button type="button" class="cnh-action" data-action="discardDraft" data-tooltip="{{localize "CNH.Editor.DiscardHint"}}" {{#if saving}}disabled{{/if}}><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span>{{localize "CNH.Editor.Discard"}}</span></button>{{/if}}
       <button type="button" class="cnh-action cnh-action--success" data-action="saveArch" {{#if saving}}disabled{{/if}}>
         <i class="fa-solid {{#if saving}}fa-spinner fa-spin{{else}}fa-floppy-disk{{/if}}" aria-hidden="true"></i><span>{{#if saving}}{{localize "CNH.Editor.Saving"}}{{else}}{{localize "CNH.Editor.Save"}}{{/if}}</span>
       </button>

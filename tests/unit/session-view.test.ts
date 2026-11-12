@@ -24,7 +24,9 @@ const snapshot: CharacterSnapshot = {
 describe("buildSessionHudView", () => {
   it("espectador vê nomes e estados dos programas, sem detalhes nem diagnóstico", () => {
     const view = buildSessionHudView(snapshot, "spectator");
-    expect(view.programs).toEqual([{ itemId: "p1", name: "Programa", status: "rezzed" }]);
+    expect(view.programs).toEqual([
+      { itemId: "p1", name: "Programa", status: "rezzed", programClass: "defender" },
+    ]);
     expect(view.issues).toEqual([]);
     expect(view.canEndSession).toBe(false);
     expect(view.isController).toBe(false);
