@@ -85,7 +85,7 @@ function readInstalledPrograms(
     return [];
   }
   const programs: ProgramSnapshot[] = [];
-  for (const id of list) {
+  for (const id of new Set(list)) {
     if (typeof id !== "string") continue;
     const item = source.items.find((i) => i.id === id);
     if (!item) {

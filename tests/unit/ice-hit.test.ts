@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { chooseIceTarget, iceDamageResult, sameFormula } from "../../src/domain/ice-hit";
-import { checkProgramRez, type RunnerResources } from "../../src/domain/net-rules";
+import {
+  checkProgramRez,
+  type RunnerProgram,
+  type RunnerResources,
+} from "../../src/domain/net-rules";
 import { parseSession, type PublicSession } from "../../src/session/session-state";
 import {
   base,
@@ -381,5 +385,39 @@ describe("visão e efeitos do acerto (E6-06)", () => {
       },
     };
     expect(view("gm", noItem).iceHit).toMatchObject({ canRoll: false, canSkip: true });
+  });
+});
+
+describe("Armor contra o Black ICE (D45)", () => {
+  const withArmor = (armor: Partial<RunnerProgram>): RunnerResources => ({
+    ...DECK,
+    programs: [
+      {
+        itemId: "p-armor",
+        name: "Armor",
+        programClass: "defender",
+        rezzed: true,
+        rez: 7,
+        ...armor,
+      },
+    ],
+  });
+
+  it("ligado soma 4 à redução cerebral do acerto", () => {
+    const c = chain(runWith(harness({ runner: withArmor({}) })), atIce("Actor.hound"));
+    hit(c);
+    expect(c.session.run.iceHit?.target).toEqual({ kind: "brain", hpBase: 30, reduction: 6 });
+    const dmg = c.step({ type: "iceDamage", messageId: "m-hound-dmg" }, GM);
+    expect(dmg.effects).toEqual([
+      { type: "setRunnerHp", actorUuid: "Actor.abc", value: 27, before: 30 },
+    ]);
+  });
+
+  it("neutralizado ou desligado não reduz", () => {
+    for (const armor of [{ rezzed: false }, { rezzed: false, rez: 0, neutralized: true }]) {
+      const c = chain(runWith(harness({ runner: withArmor(armor) })), atIce("Actor.hound"));
+      hit(c);
+      expect(c.session.run.iceHit?.target).toMatchObject({ reduction: 2 });
+    }
   });
 });

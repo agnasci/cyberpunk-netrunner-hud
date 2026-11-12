@@ -3,7 +3,7 @@ import type { RunnerVitals } from "../domain/ice-hit";
 import type { NetArchitecture } from "../domain/net-architecture";
 import type { RunnerResources } from "../domain/net-rules";
 import { commitOutcome } from "../session/commit";
-import { revealedNotes } from "../session/notes";
+import { type RevealedNotes, revealedNotes, sanitizeNotes } from "../session/notes";
 import {
   type ActionResult,
   type IceStats,
@@ -19,13 +19,14 @@ const CHANNEL = `module.${MODULE_ID}`;
 const TIMEOUT_MS = 8000;
 const PROCESSED_LIMIT = 200;
 
-type Notes = Record<number, string>;
+type Notes = RevealedNotes;
 
 type Message =
   | { kind: "request"; request: unknown }
   | { kind: "result"; result: ActionResult }
   | { kind: "notesQuery"; requestId: string; sessionId: string }
-  | { kind: "notes"; requestId: string; notes: Notes };
+  | { kind: "notes"; requestId: string; notes: Notes }
+  | { kind: "showJournal"; sessionId: string; key: number };
 
 export interface RequestChannelDeps {
   getSessions(): PublicSession[];
@@ -38,6 +39,7 @@ export interface RequestChannelDeps {
   applyEffect(effect: SheetEffect): Promise<void>;
   readRef(actorUuid: string): number | null;
   readNpcLink(itemUuid: string, key: number): string | null;
+  showJournal(journalUuid: string, userId: string): void;
 }
 
 export function authorityGmId(): string | null {
@@ -119,6 +121,24 @@ export class RequestChannel {
     });
   }
 
+  requestJournal(sessionId: string, key: number): void {
+    const me = game.user;
+    if (!me) return;
+    if (authorityGmId() === me.id) {
+      this.#showJournalTo(sessionId, key, me.id);
+      return;
+    }
+    const gmId = authorityGmId();
+    if (!gmId) return;
+    const message: Message = { kind: "showJournal", sessionId, key };
+    game.socket.emit(CHANNEL, message, { recipients: [gmId] });
+  }
+
+  #showJournalTo(sessionId: string, key: number, userId: string): void {
+    const journal = this.#notesFor(sessionId, userId)?.[key]?.journal;
+    if (journal) this.#deps.showJournal(journal, userId);
+  }
+
   #notesFor(sessionId: string, senderId: string): Notes | null {
     const session = this.#current(sessionId);
     if (!session?.netArch) return null;
@@ -142,6 +162,15 @@ export class RequestChannel {
       if (typeof requestId === "string" && typeof notes === "object" && notes !== null) {
         this.#pendingNotes.get(requestId)?.(sanitizeNotes(notes));
       }
+      return;
+    }
+    if (message.kind === "showJournal") {
+      if (!game.user || authorityGmId() !== game.user.id) return;
+      const { sessionId, key } = message as { sessionId?: unknown; key?: unknown };
+      if (typeof sessionId !== "string" || typeof key !== "number" || !Number.isInteger(key)) {
+        return;
+      }
+      this.#showJournalTo(sessionId, key, senderId);
       return;
     }
     if (message.kind === "notesQuery") {
@@ -235,13 +264,4 @@ export class RequestChannel {
       if (oldest !== undefined) this.#processed.delete(oldest);
     }
   }
-}
-
-function sanitizeNotes(value: object): Notes {
-  const notes: Notes = {};
-  for (const [key, text] of Object.entries(value)) {
-    const k = Number(key);
-    if (Number.isInteger(k) && k >= 0 && typeof text === "string") notes[k] = text;
-  }
-  return notes;
 }

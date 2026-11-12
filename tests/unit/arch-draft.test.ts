@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   type ArchDraft,
   draftIssues,
+  forkChoice,
+  reachableKeys,
+  savedForks,
+  setFork,
   editorGrid,
   lockConflicts,
   moveNode,
@@ -14,7 +18,7 @@ import {
 import type { NetFloorContent } from "../../src/domain/net-architecture";
 import { normalizeNetArch, toCprFloors } from "../../src/integrations/cpr/netarch-adapter";
 
-const empty: ArchDraft = { name: "Test", nodes: [] };
+const empty: ArchDraft = { name: "Test", nodes: [], forks: {} };
 
 function build(cells: Array<[NetFloorContent, number, string]>): ArchDraft {
   return cells.reduce((d, [content, floor, branch]) => {
@@ -90,13 +94,13 @@ describe("rascunho do editor (E7-01)", () => {
 
   it("avisa sem 1A, nó sem caminho (D28) e Black ICE sem tipo", () => {
     expect(draftIssues(empty)).toEqual([{ code: "empty" }]);
-    expect(draftIssues({ name: " ", nodes: [] })[0]).toEqual({ code: "no-name" });
+    expect(draftIssues({ name: " ", nodes: [], forks: {} })[0]).toEqual({ code: "no-name" });
     const noRoot = build([["file", 2, "a"]]);
     expect(draftIssues(noRoot)).toEqual([{ code: "no-root" }]);
     const d = build([
       ["password", 1, "a"],
       ["file", 2, "a"],
-      ["blackice", 2, "b"],
+      ["blackice", 3, "b"],
       ["controlnode", 4, "a"],
     ]);
     expect(draftIssues(d)).toEqual([
@@ -122,7 +126,7 @@ describe("conversão para o item do CPR (E7-01)", () => {
     let d = build([
       ["password", 1, "a"],
       ["blackice", 2, "a"],
-      ["file", 2, "b"],
+      ["file", 3, "b"],
     ]);
     const ice = "CPR.netArchitecture.floor.options.blackIce.hellhound";
     for (const [key, patch] of [
@@ -206,5 +210,32 @@ describe("travas na hora de salvar e rascunho guardado (E7-01)", () => {
     expect(parseDraft({ name: "x", nodes: [{ ...r.draft.nodes[0], floor: 19 }] })).toBeNull();
     const dup = r.draft.nodes[0];
     expect(parseDraft({ name: "x", nodes: [dup, { ...dup, key: 5 }] })).toBeNull();
+  });
+});
+
+describe("Lobby e bifurcações (D45)", () => {
+  const empty = { name: "x", nodes: [], forks: {} };
+  const place = (d: ArchDraft, floor: number, branch: string) => {
+    const r = placeNode(d, "file", floor, branch);
+    if (!r.ok) throw new Error(r.error);
+    return r.draft;
+  };
+
+  it("andares 1 e 2 só aceitam a branch A", () => {
+    expect(placeNode(empty, "file", 2, "b")).toEqual({ ok: false, error: "lobby" });
+    expect(placeNode(empty, "file", 3, "b").ok).toBe(true);
+  });
+
+  it("a branch escolhe de qual branch do andar de cima sai", () => {
+    let d = place(place(place(place(empty, 1, "a"), 2, "a"), 3, "a"), 3, "b");
+    d = place(place(d, 4, "b"), 4, "c");
+    const c = d.nodes.find((n) => n.branch === "c");
+    if (!c) throw new Error("c");
+    expect(forkChoice(d, c.key)).toEqual({ branch: "c", parent: "b", options: ["a", "b"] });
+    const r = setFork(d, c.key, "a");
+    if (!r.ok) throw new Error(r.error);
+    expect(reachableKeys(r.draft.nodes, r.draft.forks).has(c.key)).toBe(true);
+    expect(savedForks(r.draft)).toEqual({ c: "a" });
+    expect(setFork(d, c.key, "d")).toEqual({ ok: false, error: "invalid" });
   });
 });

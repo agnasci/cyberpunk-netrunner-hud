@@ -119,6 +119,14 @@ function line(entry: LogEntry, c: LineContext): LogLine {
       cmd = `ice.target --prog ${slug(c.program(d["programId"]))}`;
       msg = t("CNH.Log.IceTarget", { program: c.program(d["programId"]) });
       break;
+    case "controlOption":
+      cmd = `ctrl.exec --node ${c.code(d["key"])} "${String(d["label"] ?? "")}"`;
+      msg = t("CNH.Log.ControlOption", {
+        node: c.node(d["key"]),
+        option: String(d["label"] ?? ""),
+      });
+      tone = "ok";
+      break;
     case "cleared":
       cmd = `sudo override --node ${c.code(d["key"])}`;
       msg = t("CNH.Log.Cleared", { node: c.node(d["key"]) });

@@ -28,7 +28,7 @@ export function normalizeLoadout(
         slots,
         usedSlots,
         installed: Array.isArray(list)
-          ? list.filter((id): id is string => typeof id === "string" && ids.has(id))
+          ? [...new Set(list)].filter((id): id is string => typeof id === "string" && ids.has(id))
           : [],
       });
     } else if (item.type === "program") {

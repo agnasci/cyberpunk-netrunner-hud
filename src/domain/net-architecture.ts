@@ -1,8 +1,13 @@
+import type { NodeSecret } from "./node-secrets";
+
 export const FLOOR_CONTENTS = ["password", "file", "controlnode", "blackice"] as const;
 export type NetFloorContent = (typeof FLOOR_CONTENTS)[number];
 
 export const BRANCHES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
 export const MAX_FLOOR = 18;
+export const LOBBY_FLOORS = 2;
+
+export type ForkMap = Readonly<Record<string, string>>;
 
 export const BLACK_ICE_KEY_PREFIX = "CPR.netArchitecture.floor.options.blackIce.";
 
@@ -20,6 +25,8 @@ export interface NetArchitecture {
   itemUuid: string;
   name: string;
   floors: NetFloor[];
+  forks?: ForkMap;
+  secrets?: Readonly<Record<number, NodeSecret>>;
 }
 
 export interface PublicFloor {
@@ -67,20 +74,54 @@ export function areLinked(
   a: NodePosition,
   b: NodePosition,
   nodes: readonly NodePosition[],
+  forks: ForkMap = {},
 ): boolean {
   if (Math.abs(a.floor - b.floor) !== 1) return false;
   if (a.branch === b.branch) return true;
   const [upper, lower] = a.floor < b.floor ? [a, b] : [b, a];
-  const branchStartsHere = !nodes.some(
-    (n) => n.branch === lower.branch && n.floor === lower.floor - 1,
-  );
-  return branchStartsHere && forkParentBranch(lower, nodes) === upper.branch;
+  return startsBranch(lower, nodes) && forkParent(lower, nodes, forks) === upper.branch;
 }
 
-function forkParentBranch(first: NodePosition, nodes: readonly NodePosition[]): string | null {
-  const candidates = nodes
-    .filter((n) => n.floor === first.floor - 1 && n.branch < first.branch)
-    .map((n) => n.branch)
-    .sort();
-  return candidates.at(-1) ?? null;
+export function startsBranch(node: NodePosition, nodes: readonly NodePosition[]): boolean {
+  return (
+    node.branch !== "a" &&
+    !nodes.some((n) => n.branch === node.branch && n.floor === node.floor - 1)
+  );
+}
+
+export function forkOptions(first: NodePosition, nodes: readonly NodePosition[]): string[] {
+  return [
+    ...new Set(
+      nodes
+        .filter((n) => n.floor === first.floor - 1 && n.branch < first.branch)
+        .map((n) => n.branch),
+    ),
+  ].sort();
+}
+
+export function forkParent(
+  first: NodePosition,
+  nodes: readonly NodePosition[],
+  forks: ForkMap = {},
+): string | null {
+  const options = forkOptions(first, nodes);
+  const chosen = forks[first.branch];
+  if (chosen !== undefined && options.includes(chosen)) return chosen;
+  return options.at(-1) ?? null;
+}
+
+export function inLobby(floor: number, branch: string): boolean {
+  return branch !== "a" && floor <= LOBBY_FLOORS;
+}
+
+export function parseForks(value: unknown): Record<string, string> {
+  const forks: Record<string, string> = {};
+  if (typeof value !== "object" || value === null) return forks;
+  const letters = BRANCHES as readonly string[];
+  for (const [branch, parent] of Object.entries(value)) {
+    if (letters.includes(branch) && typeof parent === "string" && letters.includes(parent)) {
+      if (parent < branch) forks[branch] = parent;
+    }
+  }
+  return forks;
 }

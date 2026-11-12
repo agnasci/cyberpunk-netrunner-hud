@@ -2,13 +2,16 @@ import {
   chooseIceTarget,
   type IceDamageResult,
   iceDamageResult,
+  type RunnerVitals,
   sameFormula,
 } from "../domain/ice-hit";
 import { toPublicFloor } from "../domain/net-architecture";
 import { pathfinderReveal } from "../domain/pathfinder";
 import { programStateOf } from "./sheet-effects";
 import {
+  armorReduction,
   beatsDv,
+  flakAtk,
   checkAction,
   checkProgramAttack,
   ONCE_PER_RUN_PROGRAMS,
@@ -145,7 +148,7 @@ export function applyCheck(
     if (!roll || (!fromProgram && roll.formula !== ZAP_DAMAGE_FORMULA)) return "invalid-roll";
     const npc = npcLinkOf(session, key);
     if (npc) {
-      const vitals = ctx.readVitals(npc);
+      const vitals = withArmor(ctx.readVitals(npc), ctx.readResources(npc).programs);
       if (!vitals) return "no-ice-link";
       const after = Math.max(0, vitals.hp - Math.max(0, roll.total - vitals.brainDamageReduction));
       return withRun(session, {
@@ -187,11 +190,18 @@ export function applyCheck(
   if (!eligibility.allowed) return eligibility.reason;
   const at = rules.run.position;
   if (!roll || !at) return "invalid-roll";
+  const npcTarget = programId !== null ? npcLinkOf(session, at.key) : null;
+  const flak = npcTarget
+    ? flakAtk(
+        ctx.readResources(npcTarget).programs,
+        ctx.runner.programs?.find((p) => p.itemId === programId),
+      )
+    : 0;
   return withRun(session, {
     pending: pendingFrom(
       action.ability,
       at.key,
-      roll,
+      { ...roll, total: roll.total - flak },
       action.messageId,
       ctx.sender.id,
       null,
@@ -208,6 +218,17 @@ export function applyCheck(
         ? [...run.netrunUsed, programId]
         : run.netrunUsed,
   });
+}
+
+function withArmor(
+  vitals: RunnerVitals | null,
+  programs: ProcessContext["runner"]["programs"],
+): RunnerVitals | null {
+  if (!vitals) return null;
+  return {
+    ...vitals,
+    brainDamageReduction: vitals.brainDamageReduction + armorReduction(programs),
+  };
 }
 
 function onceProgram(ctx: ProcessContext, programId: string): boolean {
@@ -383,7 +404,7 @@ function iceHitFrom(session: PublicSession, key: number, ctx: ProcessContext): A
   const ice = link ? ctx.readIce(link) : null;
   const target = chooseIceTarget(
     ice?.specialOnly ? "other" : (ice?.iceClass ?? "other"),
-    ctx.readVitals(session.actorUuid),
+    withArmor(ctx.readVitals(session.actorUuid), ctx.runner.programs),
     ctx.runner.programs ?? [],
     (count) => ctx.pick(count),
   );
@@ -412,7 +433,7 @@ function pathfinderFrom(
   const arch = session.netArch;
   const floors = ctx.architecture?.floors ?? [];
   if (!arch) return withRun(session, { pending: null });
-  const keys = pathfinderReveal(floors, pending.key, pending.total);
+  const keys = pathfinderReveal(floors, pending.key, pending.total, ctx.architecture?.forks);
   const known = new Set(arch.discovered.map((f) => f.key));
   const added = floors.filter((f) => keys.includes(f.key) && !known.has(f.key)).map(toPublicFloor);
   const revealed = new Set(added.map((f) => f.key));
@@ -509,7 +530,7 @@ function npcHitFrom(
       lastIceDamage: nextIceDamage(session, pending.key, { kind: "none", reason: "shield" }, true),
     });
   }
-  const vitals = ctx.readVitals(session.actorUuid);
+  const vitals = withArmor(ctx.readVitals(session.actorUuid), ctx.runner.programs);
   if (!vitals) {
     return withRun(session, {
       pending: null,
@@ -540,9 +561,10 @@ export function applyNpcAttack(
   const resources = ctx.readResources(npc.actorUuid);
   if (fight.npcActionsUsed >= netActionsPerTurn(resources.interfaceRank)) return "no-actions-left";
   const programId = action.programId ?? null;
-  if (programId !== null) {
-    const program = resources.programs?.find((p) => p.itemId === programId);
-    if (!program || !NETRUNNER_ATTACKER_CLASSES.has(program.programClass)) return "invalid-program";
+  const program =
+    programId === null ? undefined : resources.programs?.find((p) => p.itemId === programId);
+  if (programId !== null && (!program || !NETRUNNER_ATTACKER_CLASSES.has(program.programClass))) {
+    return "invalid-program";
   }
   const roll = acceptRoll(session, ctx, action.messageId, npc.actorUuid);
   if (!roll) return "invalid-roll";
@@ -550,7 +572,7 @@ export function applyNpcAttack(
     pending: pendingFrom(
       "npcAttack",
       npc.key,
-      roll,
+      { ...roll, total: roll.total - flakAtk(ctx.runner.programs, program) },
       action.messageId,
       ctx.sender.id,
       null,

@@ -98,6 +98,7 @@ describe("buildArchitectureView — posição e movimento", () => {
       programsUsed: [],
       atBottom: false,
       allKnown: false,
+      controlChoices: [],
       netrunUsed: [],
       ...run,
     };

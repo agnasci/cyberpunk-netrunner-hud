@@ -76,6 +76,8 @@
             {{#if node.linkIcon}}<span class="cnh-npc-marker cnh-ed-link" data-tooltip="{{node.linkName}}"><i class="fa-solid {{node.linkIcon}}" aria-hidden="true"></i></span>{{/if}}
           </button>
         </div>
+        {{else if blocked}}
+        <span class="cnh-ed-blocked" aria-hidden="true"></span>
         {{else}}
         <button type="button" class="cnh-ed-cell cnh-ed-empty {{#if @root.armedLabel}}is-armed{{/if}}" data-action="placeArmed" data-floor="{{floor}}" data-branch="{{branch}}" aria-label="{{label}}"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>
         {{/if}}
@@ -111,6 +113,15 @@
         <small class="cnh-ed-hint">{{localize "CNH.Editor.IceActorHint"}}</small>
       </label>
       {{/if}}
+      {{#if selected.fork}}
+      <label class="cnh-ed-field">
+        <span>{{localize "CNH.Editor.Fork"}}</span>
+        <select data-field="fork" {{#if selected.locked}}disabled{{/if}}>
+          {{#each selected.fork.options}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+        </select>
+        <small class="cnh-ed-hint">{{localize "CNH.Editor.ForkHint"}}</small>
+      </label>
+      {{/if}}
       <div class="cnh-ed-field">
         <span>{{localize "CNH.Editor.Dv"}}</span>
         <div class="cnh-ed-dvs" role="group" aria-label="{{localize "CNH.Editor.Dv"}}">
@@ -127,6 +138,36 @@
         <small class="cnh-ed-hint">{{#if selected.locked}}{{localize "CNH.Editor.NpcLocked"}}{{else}}{{localize "CNH.Editor.NpcHint"}}{{/if}}</small>
       </label>
       {{/unless}}
+      {{#if selected.isPassword}}
+      <label class="cnh-ed-field">
+        <span>{{localize "CNH.Editor.Password"}}</span>
+        <input type="text" data-field="password" value="{{selected.password}}" maxlength="64" autocomplete="off">
+        <small class="cnh-ed-hint">{{localize "CNH.Editor.PasswordHint"}}</small>
+      </label>
+      {{/if}}
+      {{#if selected.isFile}}
+      <div class="cnh-ed-field">
+        <span>{{localize "CNH.Editor.Image"}}</span>
+        <div class="cnh-ed-row">
+          <input type="text" data-field="image" value="{{selected.image}}" maxlength="256">
+          <button type="button" class="cnh-ed-dv" data-action="pickImage" data-tooltip="{{localize "CNH.Editor.PickImage"}}" aria-label="{{localize "CNH.Editor.PickImage"}}"><i class="fa-solid fa-file-image" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <label class="cnh-ed-field">
+        <span>{{localize "CNH.Editor.Journal"}}</span>
+        <select data-field="journal">
+          {{#each selected.journals}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+        </select>
+        <small class="cnh-ed-hint">{{localize "CNH.Editor.FileHint"}}</small>
+      </label>
+      {{/if}}
+      {{#if selected.isControl}}
+      <label class="cnh-ed-field">
+        <span>{{localize "CNH.Editor.Options"}}</span>
+        <textarea data-field="options" rows="4">{{selected.options}}</textarea>
+        <small class="cnh-ed-hint">{{localize "CNH.Editor.OptionsHint"}}</small>
+      </label>
+      {{/if}}
       <label class="cnh-ed-field">
         <span>{{localize "CNH.Editor.Note"}}</span>
         <textarea data-field="description" rows="3">{{selected.description}}</textarea>

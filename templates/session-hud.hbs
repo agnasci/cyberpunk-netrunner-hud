@@ -145,7 +145,7 @@
       <h4 class="cnh-subtitle">{{localize "CNH.Hud.Programs"}}</h4>
       <ul class="cnh-programs">
         {{#each programs}}
-        <li class="cnh-program {{#if isRezzed}}is-rezzed{{/if}} {{#if isDepleted}}is-depleted{{/if}} {{#if isNeutralized}}is-neutralized{{/if}}">
+        <li class="cnh-program {{#if isRezzed}}is-rezzed{{/if}} {{#if isReady}}is-ready{{/if}} {{#if isUsed}}is-used{{/if}} {{#if isDepleted}}is-depleted{{/if}} {{#if isNeutralized}}is-neutralized{{/if}}">
           <span class="cnh-program-name">{{name}}</span>
           <span class="cnh-program-state">{{stateLabel}}</span>
           {{#if kindLabel}}<span class="cnh-program-kind">{{kindLabel}}</span>{{/if}}
@@ -235,6 +235,30 @@
           </span>
         </div>
       </div>
+      {{/if}}
+      {{#if released.length}}
+      <section class="cnh-released" aria-label="{{localize "CNH.Released.Title"}}">
+        <h3 class="cnh-eyebrow">{{localize "CNH.Released.Title"}}</h3>
+        {{#each released}}
+        <div class="cnh-released-item">
+          <span class="cnh-released-where">{{where}}</span>
+          {{#if password}}<span class="cnh-released-password"><i class="fa-solid fa-key" aria-hidden="true"></i> {{localize "CNH.Released.Password"}}: <code>{{password}}</code></span>{{/if}}
+          {{#if image}}<button type="button" class="cnh-program-action" data-action="showImage" data-src="{{image}}"><i class="fa-solid fa-image" aria-hidden="true"></i> {{localize "CNH.Released.Image"}}</button>{{/if}}
+          {{#if journal}}<button type="button" class="cnh-program-action" data-action="showJournal" data-key="{{key}}"><i class="fa-solid fa-book-open" aria-hidden="true"></i> {{localize "CNH.Released.Journal"}}</button>{{/if}}
+          {{#if options.length}}
+          <ul class="cnh-released-options">
+            {{#each options}}
+            <li>
+              {{#if button}}<button type="button" class="cnh-program-action is-attack" data-action="controlOption" data-index="{{index}}" data-tooltip="{{button.tip}}" {{#if @root.pending}}disabled{{else if button.disabled}}disabled{{/if}}><i class="fa-solid fa-sliders" aria-hidden="true"></i> {{label}}</button>
+              {{else}}<span class="cnh-released-option"><i class="fa-solid fa-sliders" aria-hidden="true"></i> {{label}}</span>{{/if}}
+              {{#if used}}<span class="cnh-program-kind">×{{used}}</span>{{/if}}
+            </li>
+            {{/each}}
+          </ul>
+          {{/if}}
+        </div>
+        {{/each}}
+      </section>
       {{/if}}
       {{#if run.hints.length}}
       <ul class="cnh-run-hints">

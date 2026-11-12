@@ -28,6 +28,11 @@ export function describeAction(
     case "iceTarget":
       add("iceTarget", { programId: action.programId });
       break;
+    case "controlOption": {
+      const choice = next.run.controlChoices.at(-1);
+      if (choice) add("controlOption", { key: choice.key, label: choice.label });
+      break;
+    }
     case "clearNode":
       add("cleared", { key: action.key });
       break;

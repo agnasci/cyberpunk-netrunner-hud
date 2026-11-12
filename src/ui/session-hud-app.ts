@@ -7,10 +7,13 @@ import {
   SOUND_SETTING,
 } from "../constants";
 import type { CharacterSnapshot, SnapshotIssue } from "../domain/character";
-import type { NetFloorContent } from "../domain/net-architecture";
+import type { NetArchitecture, NetFloorContent } from "../domain/net-architecture";
+import { secretFor } from "../domain/node-secrets";
+import type { RevealedNotes } from "../session/notes";
 import {
   actionsLeft,
   checkAction,
+  checkControlOption,
   checkProgramAttack,
   checkProgramRez,
   ICE_ATTACKER_CLASSES,
@@ -57,6 +60,7 @@ import {
   type PublicSession,
   resolveViewerRole,
   toRunState,
+  type ViewerRole,
 } from "../session/session-state";
 import { buildSessionHudView } from "../session/session-view";
 
@@ -75,7 +79,8 @@ const SCROLLERS = [".cnh-arch", ".cnh-runner", ".cnh-body--session", ".cnh-enemy
 export interface SessionHudHandlers {
   request(sessionId: string, action: NetAction): Promise<ActionResult>;
   hasAuthority(): boolean;
-  requestNotes(sessionId: string): Promise<Record<number, string>>;
+  requestNotes(sessionId: string): Promise<RevealedNotes>;
+  requestJournal(sessionId: string, key: number): void;
   startSession(): void;
   resolveNow(sessionId: string): Promise<void>;
   editArchitecture(itemUuid: string | null): void;
@@ -103,6 +108,9 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       endSession: SessionHudApp.#onEndSession,
       toggleFloor: SessionHudApp.#onToggleFloor,
       netAction: SessionHudApp.#onNetAction,
+      controlOption: SessionHudApp.#onControlOption,
+      showImage: SessionHudApp.#onShowImage,
+      showJournal: SessionHudApp.#onShowJournal,
       toggleClear: SessionHudApp.#onToggleClear,
       newTurn: SessionHudApp.#onNewTurn,
       endTurn: SessionHudApp.#onEndTurn,
@@ -152,7 +160,7 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
   #logAtEnd = true;
   #logTop = 0;
   #focus: string | null = null;
-  #notes: Record<number, string> = {};
+  #notes: RevealedNotes = {};
   #notesKey = "";
   #scroll: Record<string, number> = {};
   #dragEndedAt = 0;
@@ -205,6 +213,78 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       this.#notes = notes;
       this.#rerender();
     });
+  }
+
+  #releasedView(
+    role: ViewerRole,
+    full: NetArchitecture | null,
+    rules: RuleContext,
+    busy: boolean,
+    reason: (e: Eligibility) => string,
+    tip: (key: string, why?: string) => string,
+  ): Array<Record<string, unknown>> {
+    const t = (key: string, data?: Record<string, string>) =>
+      data ? game.i18n.format(key, data) : game.i18n.localize(key);
+    const arch = this.#session.netArch;
+    if (!arch || role === "spectator") return [];
+    const notes: RevealedNotes = {};
+    if (role === "gm" && full) {
+      for (const floor of full.floors) {
+        if (!this.#session.run.cleared.includes(floor.key)) continue;
+        const secret = secretFor(floor.content, full.secrets?.[floor.key]);
+        if (Object.keys(secret).length > 0) notes[floor.key] = secret;
+      }
+    } else {
+      Object.assign(notes, this.#notes);
+    }
+    const optionCheck = checkControlOption(rules);
+    const chosen = this.#session.run.controlChoices;
+    return Object.entries(notes)
+      .map(([k, note]) => {
+        const key = Number(k);
+        const floor = arch.discovered.find((f) => f.key === key);
+        if (!floor || (!note.password && !note.image && !note.journal && !note.options))
+          return null;
+        const here = this.#session.runnerPosition === key;
+        const canChoose = role === "netrunner" && here;
+        return {
+          key,
+          where: `${floor.floor}${floor.branch.toUpperCase()} · ${t(`CNH.Content.${floor.content}`)}`,
+          password: note.password ?? "",
+          image: note.image ?? "",
+          journal: note.journal ? true : false,
+          options: (note.options ?? []).map((label, index) => ({
+            index,
+            label,
+            used: chosen.filter((c) => c.key === key && c.index === index).length,
+            button: canChoose && {
+              disabled: busy || !optionCheck.allowed,
+              tip: tip("CNH.Help.controlOption", reason(optionCheck)),
+            },
+          })),
+        };
+      })
+      .filter((v): v is NonNullable<typeof v> => v !== null);
+  }
+
+  static async #onControlOption(
+    this: SessionHudApp,
+    _event: Event,
+    target: HTMLElement,
+  ): Promise<void> {
+    const index = Number(target.dataset["index"]);
+    if (!Number.isInteger(index)) return;
+    await this.#send({ type: "controlOption", index });
+  }
+
+  static #onShowImage(this: SessionHudApp, _event: Event, target: HTMLElement): void {
+    const src = target.dataset["src"];
+    if (src) new ImagePopout(src, { title: this.#session.netArch?.name ?? "" }).render(true);
+  }
+
+  static #onShowJournal(this: SessionHudApp, _event: Event, target: HTMLElement): void {
+    const key = Number(target.dataset["key"]);
+    if (Number.isInteger(key)) this.#handlers.requestJournal(this.#session.id, key);
   }
 
   get session(): PublicSession {
@@ -261,6 +341,7 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
       run: toRunState(this.#session),
       hasEntry: true,
       nodes: full?.floors ?? [...(arch?.discovered ?? []), ...(arch?.mapped ?? [])],
+      forks: full?.forks ?? arch?.forks ?? {},
     };
     if (role === "netrunner") this.#syncNotes();
     const pendingCheck = this.#session.run.pending;
@@ -279,6 +360,7 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
             rules: busy ? null : rules,
           },
           arch.mapped,
+          arch.forks,
         )
       : null;
     const jackedIn = this.#session.runnerPosition !== null;
@@ -561,6 +643,7 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
         successLabel: t(`CNH.Check.Confirm.${ep.kind}.success`),
         failureLabel: t(`CNH.Check.Confirm.${ep.kind}.failure`),
       },
+      released: this.#releasedView(role, full, rules, busy, reason, tip),
       run: {
         turn: this.#session.run.turn,
         holder: holder && {
@@ -645,10 +728,22 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
           : null;
         const showAttack =
           atkCheck !== null && (atkCheck.allowed || atkCheck.reason !== "wrong-node");
+        const usedRun = attacker && rules.run.netrunUsed?.has(p.itemId) === true;
+        const usedNow = attacker && rules.run.programsUsed?.has(p.itemId) === true;
+        const attackerLabel =
+          p.status === "destroyed"
+            ? t(STATUS_KEY[p.status])
+            : usedRun
+              ? t("CNH.Program.UsedRun")
+              : usedNow
+                ? t("CNH.Program.UsedRound")
+                : t("CNH.Program.Attacker");
         return {
           ...p,
-          stateLabel: attacker ? t("CNH.Program.Attacker") : t(STATUS_KEY[p.status]),
-          isRezzed: p.status === "rezzed",
+          stateLabel: attacker ? attackerLabel : t(STATUS_KEY[p.status]),
+          isReady: attacker && p.status !== "destroyed" && !usedRun && !usedNow,
+          isUsed: usedRun || usedNow,
+          isRezzed: !attacker && p.status === "rezzed",
           isDepleted: p.status === "destroyed",
           isNeutralized: p.status === "neutralized",
           kindLabel: programClass ? t(`CNH.ProgramClass.${programClass}`) : "",
@@ -721,7 +816,7 @@ export class SessionHudApp extends HandlebarsApplicationMixin(ApplicationV2) {
                 iceLabel: node.blackIceKey ? t(node.blackIceKey) : "",
                 dvLabel: "dv" in node && node.dv !== null ? `DV ${node.dv}` : "",
                 description: "description" in node ? node.description : "",
-                runnerNote: role === "netrunner" ? (this.#notes[node.key] ?? "") : "",
+                runnerNote: role === "netrunner" ? (this.#notes[node.key]?.text ?? "") : "",
                 npcLinkable: role === "gm" && node.content !== "blackice",
 
                 npcHere:

@@ -5,6 +5,7 @@ import {
 } from "../domain/net-architecture";
 import {
   checkAction,
+  checkControlOption,
   checkMove,
   lowestFloor,
   ONCE_PER_RUN_PROGRAMS,
@@ -33,6 +34,7 @@ import {
   ABILITY_CHECKS,
   type AbilityCheck,
   concealFloor,
+  CONTROL_CHOICES_LIMIT,
   isId,
   mapFloor,
   MAX_ID_LENGTH,
@@ -79,7 +81,8 @@ export type NetAction =
   | { type: "moveNpc"; from: number; to: number }
   | { type: "resolveCheck"; outcome: "success" | "failure" }
   | { type: "ambush"; messageId: string }
-  | { type: "iceTarget"; programId: string };
+  | { type: "iceTarget"; programId: string }
+  | { type: "controlOption"; index: number };
 
 const GM_ACTIONS: ReadonlySet<NetAction["type"]> = new Set([
   "reveal",
@@ -219,6 +222,12 @@ function parseAction(value: unknown): NetAction | null {
     return isId(programId) && typeof rez === "boolean" ? { type, programId, rez } : null;
   }
   if (type === "iceTarget") return isId(programId) ? { type, programId } : null;
+  if (type === "controlOption") {
+    const { index } = value as Record<string, unknown>;
+    return typeof index === "number" && Number.isInteger(index) && index >= 0 && index < 64
+      ? { type, index }
+      : null;
+  }
   if (type === "reveal") {
     const { masked } = value as Record<string, unknown>;
     const validKey = typeof key === "number" && Number.isInteger(key) && key >= 0;
@@ -388,6 +397,7 @@ function apply(
         : { ...runState, atBottom: storedBottom },
     hasEntry: entry !== undefined,
     nodes: architecture?.floors ?? [...arch.discovered, ...arch.mapped],
+    forks: architecture?.forks ?? arch.forks,
   };
   const spend = (eligibility: Eligibility, next: PublicSession): PublicSession | RuleBlock =>
     eligibility.allowed
@@ -507,6 +517,22 @@ function apply(
     }
     case "jackOut":
       return spend(checkAction(rules, "jackOut"), { ...session, runnerPosition: null });
+    case "controlOption": {
+      const eligibility = checkControlOption(rules);
+      if (!eligibility.allowed) return eligibility.reason;
+      const key = session.runnerPosition;
+      const label =
+        key === null ? undefined : architecture?.secrets?.[key]?.options?.[action.index];
+      if (key === null || label === undefined) return "invalid-option";
+      const choice = { key, index: action.index, label };
+      return spend(eligibility, {
+        ...session,
+        run: {
+          ...session.run,
+          controlChoices: [...session.run.controlChoices, choice].slice(-CONTROL_CHOICES_LIMIT),
+        },
+      });
+    }
   }
 }
 
@@ -520,9 +546,27 @@ function withBottom(session: PublicSession, architecture: NetArchitecture | null
     ...(session.netArch?.mapped ?? []).map((m) => m.key),
   ]);
   const allKnown = architecture.floors.every((f) => known.has(f.key));
-  return atBottom === session.run.atBottom && allKnown === session.run.allKnown
-    ? session
-    : { ...session, run: { ...session.run, atBottom, allKnown } };
+  const knownBranches = new Set(
+    architecture.floors.filter((f) => known.has(f.key)).map((f) => f.branch),
+  );
+  const forks = Object.fromEntries(
+    Object.entries(architecture.forks ?? {}).filter(([branch]) => knownBranches.has(branch)),
+  );
+  const arch = session.netArch;
+  const sameForks = arch !== null && sameMap(arch.forks, forks);
+  if (atBottom === session.run.atBottom && allKnown === session.run.allKnown && sameForks) {
+    return session;
+  }
+  return {
+    ...session,
+    netArch: arch && !sameForks ? { ...arch, forks } : arch,
+    run: { ...session.run, atBottom, allKnown },
+  };
+}
+
+function sameMap(a: Readonly<Record<string, string>>, b: Readonly<Record<string, string>>) {
+  const keys = Object.keys(a);
+  return keys.length === Object.keys(b).length && keys.every((k) => a[k] === b[k]);
 }
 
 function reject(

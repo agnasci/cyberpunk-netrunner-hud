@@ -1,6 +1,6 @@
 {
   "name": "cyberpunk-netrunner-hud",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "private": true,
   "description": "HUD compartilhado de Netrunning para Cyberpunk RED – CORE no Foundry VTT.",
   "type": "module",

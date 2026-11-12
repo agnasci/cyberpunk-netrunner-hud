@@ -417,3 +417,59 @@ describe("GM arrasta a Netrunner NPC (E6-11b)", () => {
     expect(c.step({ type: "undo" }, GM).result).toMatchObject({ error: "nothing-to-undo" });
   });
 });
+
+describe("Armor e Flak contra a NPC (D45)", () => {
+  function engagedWith(h: Harness) {
+    const c = chain(start(), h);
+    c.step({ type: "moveTo", key: 2 });
+    c.step({ type: "initiative", side: "runner", messageId: "m-init" });
+    c.step({ type: "initiative", side: "npc", messageId: "m-npc-init" }, GM);
+    c.step({ type: "endTurn" });
+    return c;
+  }
+
+  it("Flak ligado zera o ATK do programa atacante da NPC; o Zap não muda", () => {
+    const h = harness();
+    h.runner = {
+      ...DECK,
+      programs: [
+        { itemId: "p-flak", name: "Flak", programClass: "defender", rezzed: true, rez: 7 },
+      ],
+    };
+    h.resources = {
+      [NPC]: {
+        interfaceRank: 4,
+        hasCyberdeck: true,
+        programs: [
+          { itemId: "n-bolt", programClass: "antipersonnelattacker", rezzed: false, atk: 3 },
+        ],
+      },
+    };
+    const c = engagedWith(h);
+    c.step({ type: "npcAttack", messageId: "m-npc-prog", programId: "n-bolt" }, GM);
+    expect(c.session.run.pending).toMatchObject({ ability: "npcAttack", total: 13 });
+    c.step({ type: "oppose", messageId: "m-defense" });
+    c.step({ type: "resolveCheck", outcome: "failure" }, GM);
+    c.step({ type: "npcAttack", messageId: "m-npc-zap" }, GM);
+    expect(c.session.run.pending).toMatchObject({ total: 13, programId: null });
+  });
+
+  it("Armor ligado reduz em 4 o dano no cérebro vindo da NPC", () => {
+    const h = harness();
+    h.runner = {
+      ...DECK,
+      programs: [
+        { itemId: "p-armor", name: "Armor", programClass: "defender", rezzed: true, rez: 7 },
+      ],
+    };
+    const c = engagedWith(h);
+    c.step({ type: "npcAttack", messageId: "m-npc-zap" }, GM);
+    c.step({ type: "oppose", messageId: "m-defense" });
+    c.step({ type: "resolveCheck", outcome: "success" }, GM);
+    expect(c.session.run.iceHit).toMatchObject({ target: { kind: "brain", reduction: 4 } });
+    const dmg = c.step({ type: "iceDamage", messageId: "m-npc-dmg" }, GM);
+    expect(dmg.effects).toEqual([
+      { type: "setRunnerHp", actorUuid: "Actor.abc", value: 29, before: 30 },
+    ]);
+  });
+});

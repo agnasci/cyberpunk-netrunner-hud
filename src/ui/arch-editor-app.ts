@@ -4,6 +4,10 @@ import {
   type DraftNode,
   type DraftResult,
   draftIssues,
+  draftSecrets,
+  forkChoice,
+  savedForks,
+  setFork,
   DV_CHOICES,
   editorGrid,
   lockConflicts,
@@ -17,6 +21,7 @@ import {
   toFloor,
 } from "../domain/arch-draft";
 import { FLOOR_CONTENTS, type NetFloorContent } from "../domain/net-architecture";
+import { secretFor } from "../domain/node-secrets";
 import { ensureIceActor, listWorldIce } from "../integrations/cpr/foundry-ice";
 import {
   listWorldNetArchs,
@@ -78,6 +83,28 @@ function loadStored(slot: string): { draft: ArchDraft; at: number } | null {
 
 type DragSource = { kind: "tile"; content: NetFloorContent } | { kind: "node"; key: number };
 
+async function askName(current: string): Promise<string | null> {
+  const value = current.trim() === t("CNH.Editor.DefaultName") ? "" : current.trim();
+  const escaped = value.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+  const result = await foundry.applications.api.DialogV2.prompt({
+    window: { title: "CNH.Editor.NameTitle", icon: "fa-solid fa-diagram-project" },
+    content: `<div class="form-group"><label>${t("CNH.Editor.NameLabel")}</label><input type="text" name="archName" value="${escaped}" maxlength="80" required autofocus></div>`,
+    rejectClose: false,
+    ok: {
+      label: "CNH.Editor.Save",
+      icon: "fa-solid fa-floppy-disk",
+      callback: (_event: Event, button: HTMLButtonElement) =>
+        button.form?.querySelector<HTMLInputElement>("input[name='archName']")?.value.trim() ?? "",
+    },
+  });
+  if (typeof result !== "string") return null;
+  if (result === "") {
+    ui.notifications.warn(t("CNH.Editor.NameRequired"));
+    return null;
+  }
+  return result;
+}
+
 export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static override DEFAULT_OPTIONS = {
     id: `${MODULE_ID}-arch-editor`,
@@ -93,6 +120,7 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
       placeArmed: ArchEditorApp.#onPlaceArmed,
       selectNode: ArchEditorApp.#onSelectNode,
       removeNode: ArchEditorApp.#onRemoveNode,
+      pickImage: ArchEditorApp.#onPickImage,
       setDv: ArchEditorApp.#onSetDv,
       saveArch: ArchEditorApp.#onSave,
       discardDraft: ArchEditorApp.#onDiscardDraft,
@@ -105,7 +133,7 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   readonly #handlers: ArchEditorHandlers;
   #itemUuid: string | null = null;
-  #draft: ArchDraft = { name: "", nodes: [] };
+  #draft: ArchDraft = { name: "", nodes: [], forks: {} };
   #locked = new Set<number>();
   #restoredAt: number | null = null;
   #selected: number | null = null;
@@ -163,15 +191,17 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
   #savedDraft(): ArchDraft {
     const itemUuid = this.#itemUuid;
     const arch = itemUuid ? readNetArchitecture(itemUuid) : null;
-    if (!arch || !itemUuid) return { name: t("CNH.Editor.DefaultName"), nodes: [] };
+    if (!arch || !itemUuid) return { name: t("CNH.Editor.DefaultName"), nodes: [], forks: {} };
     const ice = readLinkFlag(itemUuid, "ice");
     const npcs = readLinkFlag(itemUuid, "npcs");
     return {
       name: arch.name,
+      forks: { ...(arch.forks ?? {}) },
       nodes: arch.floors.map((f) => ({
         ...f,
         iceActor: f.content === "blackice" ? (ice[f.key] ?? null) : null,
         npcActor: f.content !== "blackice" ? (npcs[f.key] ?? null) : null,
+        secret: secretFor(f.content, arch.secrets?.[f.key]),
       })),
     };
   }
@@ -192,6 +222,7 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
   #apply(result: DraftResult, select: boolean): boolean {
     if (!result.ok) {
       if (result.error === "locked") ui.notifications.warn(t("CNH.Editor.Locked"));
+      if (result.error === "lobby") ui.notifications.warn(t("CNH.Editor.Lobby"));
       return false;
     }
     this.#draft = result.draft;
@@ -205,7 +236,7 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.#refreshLocks();
     const draft = this.#draft;
     const grid = editorGrid(draft);
-    const reachable = reachableKeys(draft.nodes);
+    const reachable = reachableKeys(draft.nodes, draft.forks);
     const hasRoot = draft.nodes.some((n) => n.floor === 1 && n.branch === "a");
     const iceChoices = listWorldIce();
     const npcChoices = listWorldNetrunners("");
@@ -222,10 +253,12 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
               grid.rows[i - 1]?.cells.map((c) => c.node) ?? [],
               row.cells.map((c) => c.node),
               known,
+              draft.forks,
             ),
       cells: row.cells.map((cell) => ({
         floor: cell.floor,
         branch: cell.branch,
+        blocked: cell.blocked,
         label: t("CNH.Editor.Place", {
           floor: String(cell.floor),
           branch: cell.branch.toUpperCase(),
@@ -306,8 +339,31 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const usedNpc = new Set(
       this.#draft.nodes.filter((n) => n.key !== node.key).map((n) => n.npcActor),
     );
+    const fork = forkChoice(this.#draft, node.key);
+    const secret = node.secret;
     return {
+      isPassword: node.content === "password",
+      isFile: node.content === "file",
+      isControl: node.content === "controlnode",
+      password: secret.password ?? "",
+      image: secret.image ?? "",
+      journals: [
+        { value: "", label: t("CNH.Editor.JournalNone"), selected: !secret.journal },
+        ...game.journal.contents.map((j) => ({
+          value: j.uuid,
+          label: j.name,
+          selected: j.uuid === secret.journal,
+        })),
+      ],
+      options: (secret.options ?? []).join("\n"),
       where: where(node),
+      fork: fork && {
+        options: fork.options.map((b) => ({
+          value: b,
+          label: `${t("CNH.Session.Branch")} ${b.toUpperCase()}`,
+          selected: b === fork.parent,
+        })),
+      },
       content: node.content,
       isIce: node.content === "blackice",
       locked: this.#locked.has(node.key),
@@ -416,6 +472,21 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
       case "description":
         patch = { description: value };
         break;
+      case "password":
+        patch = { secret: { ...node.secret, password: value } };
+        break;
+      case "image":
+        patch = { secret: { ...node.secret, image: value } };
+        break;
+      case "journal":
+        patch = { secret: { ...node.secret, journal: value } };
+        break;
+      case "options":
+        patch = { secret: { ...node.secret, options: value.split("\n") } };
+        break;
+      case "fork":
+        this.#apply(setFork(this.#draft, key, value, this.#locked), false);
+        return;
       default:
         return;
     }
@@ -533,6 +604,16 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
     void this.render();
   }
 
+  static #onPickImage(this: ArchEditorApp): void {
+    const node = this.#draft.nodes.find((n) => n.key === this.#selected);
+    if (!node) return;
+    void new FilePicker({
+      type: "image",
+      current: node.secret.image ?? "",
+      callback: (path: string) => this.#onField("image", path),
+    }).browse(node.secret.image ?? "");
+  }
+
   static #onRemoveNode(this: ArchEditorApp): void {
     const key = this.#selected;
     if (key === null) return;
@@ -560,6 +641,11 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
       void this.render();
       return;
     }
+    if (!this.#itemUuid) {
+      const name = await askName(this.#draft.name);
+      if (name === null) return;
+      this.#draft = { ...this.#draft, name };
+    }
     const slot = this.#slot;
     this.#saving = true;
     await this.render();
@@ -578,8 +664,15 @@ export class ArchEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
       }
       const name = this.#draft.name.trim() || t("CNH.Editor.DefaultName");
       const floors = nodes.map(toFloor);
-      this.#itemUuid = await saveNetArch(this.#itemUuid, { name, floors, ice, npcs });
-      this.#draft = { name, nodes };
+      this.#itemUuid = await saveNetArch(this.#itemUuid, {
+        name,
+        floors,
+        ice,
+        npcs,
+        forks: savedForks(this.#draft),
+        secrets: draftSecrets(this.#draft),
+      });
+      this.#draft = { name, nodes, forks: savedForks(this.#draft) };
       this.#dirty = false;
       this.#restoredAt = null;
       writeStored(slot, null);

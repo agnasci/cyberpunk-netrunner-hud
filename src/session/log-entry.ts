@@ -19,6 +19,7 @@ export const LOG_EVENTS = [
   "npcLeft",
   "ambush",
   "iceTarget",
+  "controlOption",
 ] as const;
 export type LogEvent = (typeof LOG_EVENTS)[number];
 

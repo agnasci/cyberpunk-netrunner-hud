@@ -31,7 +31,11 @@ their deck before a run with the **Cyberdeck** button in their character sheet's
   onto a grid with the HUD's look, then set each node's DV, Black ICE type, GM note, Black ICE
   actor and enemy NPC Netrunner in a small side panel. It saves to the system's own NET
   Architecture item, warns about nodes with no path to the entry floor, keeps unsaved drafts in
-  your browser, and locks nodes that are in use while a run is active.
+  your browser, and locks nodes that are in use while a run is active. Floors 1 and 2 (the
+  Lobby) only take branch A, and each new branch can pick which branch above it splits from.
+- Released data per node: a Password's actual password, a File's image and handout journal
+  (shown to the Netrunner when she identifies it, even without journal permission), and a
+  Control Node's options, which she triggers for 1 NET Action once the node is controlled.
 - NET Architecture shown as a grid, with branches (a–h) and the paths between them. The GM
   reveals nodes fully or on the map only (contents hidden until the Netrunner enters).
 - NET Actions limited by Interface rank: Jack In/Out, Backdoor, Control, Eye-Dee, Zap, Slide,
@@ -42,7 +46,8 @@ their deck before a run with the **Cyberdeck** button in their character sheet's
   damage to the Netrunner's brain or to her programs' REZ (the GM picks the program hit).
 - Enemy NPC Netrunners on any node, with initiative and attacks.
 - Program rules: one activation per copy per round, neutralized at 0 REZ, Armor/Flak/Shield/
-  Superglue once per Netrun.
+  Superglue once per Netrun. Armor lowers brain damage by 4 while rezzed; Flak drops enemy
+  attacker programs' ATK to 0.
 - Several runs at once (tabs), event log, GM undo and optional sound.
 
 The module **does not include Black ICE stats from the rulebook**: create the Black ICE actors

@@ -31,7 +31,13 @@ const valid = {
   actorUuid: "Actor.abc",
   controllerUserId: "u-runner",
   startedAt: 1000,
-  netArch: { itemUuid: "Item.arch01", name: "Arquitetura Sintética", discovered: [], mapped: [] },
+  netArch: {
+    itemUuid: "Item.arch01",
+    name: "Arquitetura Sintética",
+    discovered: [],
+    mapped: [],
+    forks: {},
+  },
   runnerPosition: null,
   run: {
     turn: 1,
@@ -56,6 +62,7 @@ const valid = {
     netrunUsed: [],
     atBottom: false,
     allKnown: false,
+    controlChoices: [],
   },
   history: [],
   log: [],

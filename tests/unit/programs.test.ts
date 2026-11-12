@@ -64,6 +64,7 @@ describe("runnerResources com programas", () => {
           programClass: "defender",
           status: "rezzed",
           rez: { value: 7, max: 7 },
+          stats: { atk: 0, def: 0, per: 0, spd: 0 },
         },
         {
           itemId: "s",
@@ -71,6 +72,7 @@ describe("runnerResources com programas", () => {
           programClass: "antiprogramattacker",
           status: "stored",
           rez: { value: 0, max: 0 },
+          stats: { atk: 1, def: 0, per: 0, spd: 0 },
         },
         {
           itemId: "f",
@@ -78,12 +80,13 @@ describe("runnerResources com programas", () => {
           programClass: "defender",
           status: "destroyed",
           rez: { value: 0, max: 7 },
+          stats: { atk: 0, def: 0, per: 0, spd: 0 },
         },
       ],
     } as unknown as CharacterSnapshot;
     expect(runnerResources(snapshot).programs).toMatchObject([
       { itemId: "a", programClass: "defender", rezzed: true, rez: 7, rezMax: 7, name: "Armor" },
-      { itemId: "s", programClass: "antiprogramattacker", rezzed: false, destroyed: false },
+      { itemId: "s", programClass: "antiprogramattacker", rezzed: false, destroyed: false, atk: 1 },
       { itemId: "f", programClass: "defender", rezzed: false, rez: 0, destroyed: true },
     ]);
   });

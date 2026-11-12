@@ -1,6 +1,7 @@
 import type { CharacterSnapshot } from "./character";
 import {
   areLinked,
+  type ForkMap,
   type NetFloorContent,
   type NodePosition,
   type PublicFloor,
@@ -43,7 +44,9 @@ export type RuleBlock =
   | "not-lowest"
   | "once-per-run"
   | "one-copy"
-  | "program-neutralized";
+  | "program-neutralized"
+  | "not-controlled"
+  | "invalid-option";
 
 export type Eligibility = { allowed: true; cost: number } | { allowed: false; reason: RuleBlock };
 
@@ -53,6 +56,7 @@ export interface RunnerProgram {
   rezzed: boolean;
   rez?: number;
   rezMax?: number;
+  atk?: number;
   name?: string;
   neutralized?: boolean;
   destroyed?: boolean;
@@ -68,6 +72,25 @@ export const ONCE_PER_RUN_PROGRAMS: ReadonlySet<string> = new Set([
 
 export function programKey(name: string | undefined): string {
   return (name ?? "").trim().toLowerCase();
+}
+
+export const ARMOR_BRAIN_REDUCTION = 4;
+
+export function isRunning(programs: readonly RunnerProgram[] | undefined, key: string): boolean {
+  return (programs ?? []).some(
+    (p) => p.rezzed && !p.neutralized && !p.destroyed && programKey(p.name) === key,
+  );
+}
+
+export function armorReduction(programs: readonly RunnerProgram[] | undefined): number {
+  return isRunning(programs, "armor") ? ARMOR_BRAIN_REDUCTION : 0;
+}
+
+export function flakAtk(
+  defender: readonly RunnerProgram[] | undefined,
+  attacker: RunnerProgram | undefined,
+): number {
+  return attacker && isRunning(defender, "flak") ? Math.max(0, attacker.atk ?? 0) : 0;
 }
 
 export interface RunnerResources {
@@ -98,6 +121,7 @@ export interface RuleContext {
   runner: RunnerResources;
   run: RunState;
   hasEntry: boolean;
+  forks?: ForkMap;
   nodes: readonly NodePosition[];
 }
 
@@ -148,6 +172,7 @@ export function runnerResources(snapshot: CharacterSnapshot | null): RunnerResou
       rezzed: p.status === "rezzed",
       rez: p.rez.value,
       rezMax: p.rez.max,
+      atk: p.stats.atk,
       name: p.name,
       neutralized: p.status === "neutralized",
       destroyed: p.status === "destroyed",
@@ -204,7 +229,7 @@ export function checkMove(ctx: RuleContext, target: NodePosition | null): Eligib
   const at = ctx.run.position;
   if (at === null) return deny("not-jacked-in");
   if (target === null) return deny("not-revealed");
-  if (!areLinked(at, target, ctx.nodes)) return deny("not-adjacent");
+  if (!areLinked(at, target, ctx.nodes, ctx.forks)) return deny("not-adjacent");
   if (ctx.run.iceTurn) return deny("ice-turn");
   if (ctx.run.ambushPending) return deny("ambush");
   if (isEngaged(ctx.run)) return deny("engaged");
@@ -241,6 +266,19 @@ export function checkProgramRez(ctx: RuleContext, programId: string, rez: boolea
   if (ctx.run.initiativePending) return deny("initiative");
   if (ctx.run.iceTurn) return deny("ice-turn");
   return withCost(ctx, "rez");
+}
+
+export function checkControlOption(ctx: RuleContext): Eligibility {
+  const missing = missingResource(ctx.runner);
+  if (missing) return deny(missing);
+  const at = ctx.run.position;
+  if (at === null) return deny("not-jacked-in");
+  if (at.content !== "controlnode") return deny("wrong-node");
+  if (!ctx.run.cleared.has(at.key)) return deny("not-controlled");
+  if (ctx.run.ambushPending) return deny("ambush");
+  if (ctx.run.initiativePending) return deny("initiative");
+  if (ctx.run.iceTurn) return deny("ice-turn");
+  return withCost(ctx, "control");
 }
 
 export function checkProgramAttack(ctx: RuleContext, programId: string): Eligibility {

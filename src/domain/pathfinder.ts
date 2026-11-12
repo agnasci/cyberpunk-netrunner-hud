@@ -1,9 +1,10 @@
-import { areLinked, type NetFloor } from "./net-architecture";
+import { areLinked, type ForkMap, type NetFloor } from "./net-architecture";
 
 export function pathfinderReveal(
   floors: readonly NetFloor[],
   fromKey: number,
   total: number,
+  forks: ForkMap = {},
 ): number[] {
   const from = floors.find((f) => f.key === fromKey);
   if (!from || !Number.isFinite(total) || total < 1) return [];
@@ -12,7 +13,7 @@ export function pathfinderReveal(
   const hidden = new Set<number>();
   for (const pw of floors) {
     if (pw.content !== "password" || pw.key === from.key || (pw.dv ?? 0) <= total) continue;
-    const below = descendants(floors, pw);
+    const below = descendants(floors, pw, forks);
     if (below.includes(from.key)) continue;
     for (const key of below) hidden.add(key);
   }
@@ -22,7 +23,7 @@ export function pathfinderReveal(
     .map((f) => f.key);
 }
 
-function descendants(floors: readonly NetFloor[], root: NetFloor): number[] {
+function descendants(floors: readonly NetFloor[], root: NetFloor, forks: ForkMap): number[] {
   const found: number[] = [];
   let frontier: NetFloor[] = [root];
   while (frontier.length > 0) {
@@ -30,7 +31,7 @@ function descendants(floors: readonly NetFloor[], root: NetFloor): number[] {
     for (const node of frontier) {
       for (const child of floors) {
         if (child.floor !== node.floor + 1 || found.includes(child.key)) continue;
-        if (!areLinked(node, child, floors)) continue;
+        if (!areLinked(node, child, floors, forks)) continue;
         found.push(child.key);
         next.push(child);
       }

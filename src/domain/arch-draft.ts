@@ -2,30 +2,41 @@ import {
   areLinked,
   BRANCHES,
   FLOOR_CONTENTS,
+  forkOptions,
+  forkParent,
+  inLobby,
   MAX_FLOOR,
+  parseForks,
+  startsBranch,
   type NetFloor,
   type NetFloorContent,
 } from "./net-architecture";
+import { type NodeSecret, parseNodeSecret, secretFor } from "./node-secrets";
 
 export interface DraftNode extends NetFloor {
   iceActor: string | null;
   npcActor: string | null;
+  secret: NodeSecret;
 }
 
 export interface ArchDraft {
   name: string;
   nodes: DraftNode[];
+  forks: Record<string, string>;
 }
 
 export const DV_CHOICES: readonly number[] = Array.from({ length: 17 }, (_, i) => i + 4);
 
-export type DraftError = "out-of-grid" | "missing" | "locked" | "invalid";
+export type DraftError = "out-of-grid" | "missing" | "locked" | "invalid" | "lobby";
 
 export type DraftResult =
   { ok: true; draft: ArchDraft; key: number } | { ok: false; error: DraftError };
 
 export type NodePatch = Partial<
-  Pick<DraftNode, "content" | "blackIceKey" | "dv" | "description" | "iceActor" | "npcActor">
+  Pick<
+    DraftNode,
+    "content" | "blackIceKey" | "dv" | "description" | "iceActor" | "npcActor" | "secret"
+  >
 >;
 
 export function nodeAt(draft: ArchDraft, floor: number, branch: string): DraftNode | undefined {
@@ -52,6 +63,7 @@ export function placeNode(
   branch: string,
 ): DraftResult {
   if (!inGrid(floor, branch)) return { ok: false, error: "out-of-grid" };
+  if (inLobby(floor, branch)) return { ok: false, error: "lobby" };
   if (nodeAt(draft, floor, branch)) return { ok: false, error: "invalid" };
   const key = draft.nodes.reduce((max, n) => Math.max(max, n.key), -1) + 1;
   const node: DraftNode = {
@@ -64,6 +76,7 @@ export function placeNode(
     description: "",
     iceActor: null,
     npcActor: null,
+    secret: {},
   };
   return { ok: true, key, draft: { ...draft, nodes: sorted([...draft.nodes, node]) } };
 }
@@ -80,6 +93,9 @@ export function moveNode(
   if (!inGrid(floor, branch)) return { ok: false, error: "out-of-grid" };
   if (node.floor === floor && node.branch === branch) return { ok: true, key, draft };
   const other = nodeAt(draft, floor, branch);
+  if (inLobby(floor, branch) || (other && inLobby(node.floor, node.branch))) {
+    return { ok: false, error: "lobby" };
+  }
   if (locked.has(key) || (other && locked.has(other.key))) return { ok: false, error: "locked" };
   const nodes = draft.nodes.map((n) => {
     if (n.key === key) return { ...n, floor, branch };
@@ -113,7 +129,11 @@ export function patchNode(
   if (patch.dv !== undefined && patch.dv !== null && !DV_CHOICES.includes(patch.dv)) {
     return { ok: false, error: "invalid" };
   }
-  const next: DraftNode = { ...node, ...patch };
+  const merged: DraftNode = { ...node, ...patch };
+  const next: DraftNode = {
+    ...merged,
+    secret: secretFor(merged.content, parseNodeSecret(merged.secret) ?? {}),
+  };
   if (next.content === "blackice") {
     next.npcActor = null;
   } else {
@@ -129,9 +149,52 @@ export type DraftIssue =
   | { code: "no-name" }
   | { code: "no-root" }
   | { code: "unreachable"; key: number }
-  | { code: "ice-type"; key: number };
+  | { code: "ice-type"; key: number }
+  | { code: "lobby"; key: number };
 
-export function reachableKeys(nodes: readonly DraftNode[]): Set<number> {
+export interface ForkChoice {
+  branch: string;
+  parent: string | null;
+  options: string[];
+}
+
+export function forkChoice(draft: ArchDraft, key: number): ForkChoice | null {
+  const node = draft.nodes.find((n) => n.key === key);
+  if (!node || !startsBranch(node, draft.nodes)) return null;
+  const options = forkOptions(node, draft.nodes);
+  if (options.length === 0) return null;
+  return { branch: node.branch, parent: forkParent(node, draft.nodes, draft.forks), options };
+}
+
+export function setFork(
+  draft: ArchDraft,
+  key: number,
+  parent: string,
+  locked: ReadonlySet<number> = new Set(),
+): DraftResult {
+  const choice = forkChoice(draft, key);
+  if (!choice) return { ok: false, error: "missing" };
+  if (!choice.options.includes(parent)) return { ok: false, error: "invalid" };
+  if (locked.has(key)) return { ok: false, error: "locked" };
+  return { ok: true, key, draft: { ...draft, forks: { ...draft.forks, [choice.branch]: parent } } };
+}
+
+export function savedForks(draft: ArchDraft): Record<string, string> {
+  const forks: Record<string, string> = {};
+  for (const node of draft.nodes) {
+    const choice = forkChoice(draft, node.key);
+    const chosen = draft.forks[node.branch];
+    if (choice && chosen !== undefined && choice.options.includes(chosen)) {
+      forks[node.branch] = chosen;
+    }
+  }
+  return forks;
+}
+
+export function reachableKeys(
+  nodes: readonly DraftNode[],
+  forks: Readonly<Record<string, string>> = {},
+): Set<number> {
   const root = nodes.find((n) => n.floor === 1 && n.branch === "a");
   const seen = new Set<number>();
   if (!root) return seen;
@@ -141,7 +204,7 @@ export function reachableKeys(nodes: readonly DraftNode[]): Set<number> {
     const current = queue.shift();
     if (!current) break;
     for (const n of nodes) {
-      if (!seen.has(n.key) && areLinked(current, n, nodes)) {
+      if (!seen.has(n.key) && areLinked(current, n, nodes, forks)) {
         seen.add(n.key);
         queue.push(n);
       }
@@ -155,8 +218,9 @@ export function draftIssues(draft: ArchDraft): DraftIssue[] {
   if (draft.name.trim() === "") issues.push({ code: "no-name" });
   if (draft.nodes.length === 0) return [...issues, { code: "empty" }];
   if (!nodeAt(draft, 1, "a")) issues.push({ code: "no-root" });
-  const reachable = reachableKeys(draft.nodes);
+  const reachable = reachableKeys(draft.nodes, draft.forks);
   for (const n of draft.nodes) {
+    if (inLobby(n.floor, n.branch)) issues.push({ code: "lobby", key: n.key });
     if (reachable.size > 0 && !reachable.has(n.key))
       issues.push({ code: "unreachable", key: n.key });
     if (n.content === "blackice" && n.blackIceKey === null) {
@@ -168,7 +232,7 @@ export function draftIssues(draft: ArchDraft): DraftIssue[] {
 
 export interface EditorRow {
   floor: number;
-  cells: Array<{ floor: number; branch: string; node: DraftNode | null }>;
+  cells: Array<{ floor: number; branch: string; node: DraftNode | null; blocked: boolean }>;
 }
 
 export function editorGrid(draft: ArchDraft): { columns: string[]; rows: EditorRow[] } {
@@ -187,10 +251,20 @@ export function editorGrid(draft: ArchDraft): { columns: string[]; rows: EditorR
         floor,
         branch,
         node: nodeAt(draft, floor, branch) ?? null,
+        blocked: inLobby(floor, branch),
       })),
     });
   }
   return { columns: [...columns], rows };
+}
+
+export function draftSecrets(draft: ArchDraft): Record<number, NodeSecret> {
+  const secrets: Record<number, NodeSecret> = {};
+  for (const node of draft.nodes) {
+    const secret = secretFor(node.content, node.secret);
+    if (Object.keys(secret).length > 0) secrets[node.key] = secret;
+  }
+  return secrets;
 }
 
 export function toFloor(node: DraftNode): NetFloor {
@@ -216,7 +290,7 @@ const isActorRef = (v: unknown): v is string | null => v === null || typeof v ==
 
 export function parseDraft(value: unknown): ArchDraft | null {
   if (typeof value !== "object" || value === null) return null;
-  const { name, nodes } = value as Record<string, unknown>;
+  const { name, nodes, forks } = value as Record<string, unknown>;
   if (typeof name !== "string" || !Array.isArray(nodes)) return null;
   const parsed: DraftNode[] = [];
   for (const raw of nodes) {
@@ -248,7 +322,8 @@ export function parseDraft(value: unknown): ArchDraft | null {
       description,
       iceActor,
       npcActor,
+      secret: secretFor(content as NetFloorContent, parseNodeSecret(n["secret"]) ?? {}),
     });
   }
-  return { name, nodes: sorted(parsed) };
+  return { name, nodes: sorted(parsed), forks: parseForks(forks) };
 }

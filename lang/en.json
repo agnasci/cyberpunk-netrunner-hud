@@ -200,7 +200,9 @@
         "not-lowest": "Virus can only be used on the lowest floor of the architecture.",
         "once-per-run": "This copy was already used this Netrun (Armor, Flak, Shield and Superglue: once per Netrun).",
         "one-copy": "A copy of this program is already on (Armor, Flak and Shield: one at a time).",
-        "program-neutralized": "Program neutralized: derez it first (1 action) and rez it again later."
+        "program-neutralized": "Program neutralized: derez it first (1 action) and rez it again later.",
+        "not-controlled": "Take control of the Control Node before using its options.",
+        "invalid-option": "This option no longer exists on this Control Node."
       },
       "Rolling": "Rolling on the sheet…",
       "NoAuthorityPaused": "No GM connected: actions are paused until a GM joins."
@@ -456,7 +458,9 @@
       "Rez": "Rez",
       "Derez": "Derez",
       "Attack": "Attack",
-      "Attacker": "Attacker",
+      "Attacker": "Attacker ready",
+      "UsedRound": "Used this round",
+      "UsedRun": "Used this Netrun",
       "AttackHint": "Anti-personnel attacker: targets Netrunners, not Black ICE.",
       "Neutralized": "REZ 0 (no effect)",
       "Destroyed": "Destroyed",
@@ -511,7 +515,8 @@
         "npcSync": "NPC link",
         "moveNpc": "NPC move",
         "ambush": "Black ICE encounter",
-        "iceTarget": "choice of program hit"
+        "iceTarget": "choice of program hit",
+        "controlOption": "Control Node option"
       }
     },
     "Turn": {
@@ -561,6 +566,7 @@
       "Mapped": "Node shown on the map only",
       "Ambush": "Black ICE lying in wait at {node}!",
       "IceTarget": "GM chose the program hit: {program}",
+      "ControlOption": "Netrunner triggered on {node}: {option}",
       "PathfinderFound": "({count} node(s) revealed)",
       "IceNeutralized": "Black ICE took {taken} REZ from {program}: neutralized (REZ 0)"
     },
@@ -636,7 +642,8 @@
       "npcZap": "Enemy Netrunner's Zap: Interface + 1d10 vs the player's Defense; a hit deals 1d6 brain damage.",
       "npcProgram": "The enemy Netrunner attacks with this program: ATK + 1d10 vs the player's Defense.",
       "initiative": "Initiative: 1d10 + REF. Highest goes first; ties favor the player.",
-      "recover": "Neutralized (REZ 0): still installed, no effect. Derez (1 NET Action) and rez again (1 NET Action, next round if already activated this one) to come back with full REZ."
+      "recover": "Neutralized (REZ 0): still installed, no effect. Derez (1 NET Action) and rez again (1 NET Action, next round if already activated this one) to come back with full REZ.",
+      "controlOption": "Trigger this Control Node option (1 NET Action)."
     },
     "Editor": {
       "WindowTitle": "Architecture editor",
@@ -675,6 +682,9 @@
       "Unsaved": "Unsaved changes",
       "InUse": "In use by an active session right now: saved nodes keep their place and type and cannot be removed. Everything becomes editable again when the session ends.",
       "Locked": "Node in use by the active session",
+      "Lobby": "Floors 1 and 2 are the Lobby: branch A only (Core).",
+      "Fork": "Branch splits from",
+      "ForkHint": "Which branch on the floor above this branch splits from.",
       "NpcLocked": "During an active session, change the NPC from the session HUD.",
       "Issues": "Warnings",
       "NoIssues": "Ready to use.",
@@ -682,6 +692,7 @@
         "empty": "Drag a node to start.",
         "no-name": "Give the architecture a name.",
         "no-root": "Missing the floor 1, branch A node: that is where the Netrunner enters.",
+        "lobby": "{where}: the Lobby (floors 1 and 2) does not branch; move it to branch A or below floor 2.",
         "unreachable": "{where}: no path to floor 1 (the floor above is missing in this branch or the previous one).",
         "ice-type": "{where}: choose the Black ICE type."
       },
@@ -691,7 +702,19 @@
       "Restored": "Unsaved draft restored ({time}). Save to keep it or discard to go back to the saved version.",
       "Discard": "Discard",
       "DiscardHint": "Goes back to the saved version and deletes the draft kept in this browser.",
-      "LockedConflict": "The architecture is in use by an active session and the draft changed nodes in use ({nodes}). Discard or undo those changes to save."
+      "LockedConflict": "The architecture is in use by an active session and the draft changed nodes in use ({nodes}). Discard or undo those changes to save.",
+      "Password": "Password",
+      "PasswordHint": "Shown to the Netrunner when she beats the Password.",
+      "Image": "Image",
+      "PickImage": "Pick image",
+      "Journal": "Handout (journal)",
+      "JournalNone": "None",
+      "FileHint": "Shown to the Netrunner when she identifies the file (Eye-Dee).",
+      "Options": "Controllable options",
+      "OptionsHint": "One per line (up to 8). Once the node is controlled, the Netrunner triggers one for 1 NET Action.",
+      "NameTitle": "Architecture name",
+      "NameLabel": "Name of the new NET Architecture",
+      "NameRequired": "Name the architecture to save it."
     },
     "Deck": {
       "WindowTitle": "Cyberdeck",
@@ -751,6 +774,12 @@
       "GhostHint": "Taken by an item that was deleted from the sheet (the system still counts it). Fix the deck from the sheet to free it.",
       "PortIdle": "Neural port free · ready to Jack In",
       "PortLive": "Neural port in use · jacked in"
+    },
+    "Released": {
+      "Title": "Released data",
+      "Password": "Password",
+      "Image": "View image",
+      "Journal": "Open file"
     }
   }
 }

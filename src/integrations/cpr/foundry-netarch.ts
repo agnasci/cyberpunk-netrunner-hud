@@ -1,6 +1,7 @@
 import { MODULE_ID } from "../../constants";
-import type { NetArchitecture, NetFloor } from "../../domain/net-architecture";
+import { type NetArchitecture, type NetFloor, parseForks } from "../../domain/net-architecture";
 import { normalizeNetArch, toCprFloors } from "./netarch-adapter";
+import { type NodeSecrets, parseSecretList, secretList } from "../../domain/node-secrets";
 
 export function listWorldNetArchs(): Array<{ uuid: string; name: string }> {
   return game.items.contents
@@ -21,15 +22,41 @@ export function readNetArchitecture(itemUuid: string): NetArchitecture | null {
     system: item.system,
   });
   if (issues.length > 0) console.warn(`${MODULE_ID} | NetArch com problemas`, issues);
-  return architecture;
+  return architecture
+    ? { ...architecture, forks: readForks(item.uuid), secrets: readSecrets(item.uuid) }
+    : null;
 }
 
 type LinkFlag = "ice" | "npcs";
 
+export function readSecrets(itemUuid: string): NodeSecrets {
+  return parseSecretList(netArchItem(itemUuid)?.flags?.[MODULE_ID]?.secrets);
+}
+
+export function readForks(itemUuid: string): Record<string, string> {
+  return parseForks(netArchItem(itemUuid)?.flags?.[MODULE_ID]?.forks);
+}
+
+function forksUpdate(
+  current: Record<string, string>,
+  next: Record<string, string>,
+): Record<string, unknown> {
+  const path = `flags.${MODULE_ID}.forks`;
+  const data: Record<string, unknown> = {};
+  for (const branch of Object.keys(current)) {
+    if (!(branch in next)) data[`${path}.-=${branch}`] = null;
+  }
+  for (const [branch, parent] of Object.entries(next)) data[`${path}.${branch}`] = parent;
+  return data;
+}
+
 interface WritableItem {
   documentName?: string;
   uuid: string;
-  flags?: Record<string, Partial<Record<LinkFlag | "editorId", unknown>> | undefined>;
+  flags?: Record<
+    string,
+    Partial<Record<LinkFlag | "forks" | "secrets" | "editorId", unknown>> | undefined
+  >;
   update(data: Record<string, unknown>): Promise<unknown>;
 }
 
@@ -68,6 +95,8 @@ export interface NetArchWrite {
   floors: NetFloor[];
   ice: Record<number, string>;
   npcs: Record<number, string>;
+  forks: Record<string, string>;
+  secrets: NodeSecrets;
 }
 
 interface CreatableClass {
@@ -84,6 +113,8 @@ export async function saveNetArch(itemUuid: string | null, data: NetArchWrite): 
       "system.floors": floors,
       ...linkUpdate("ice", readLinkFlag(itemUuid, "ice"), data.ice),
       ...linkUpdate("npcs", readLinkFlag(itemUuid, "npcs"), data.npcs),
+      ...forksUpdate(readForks(itemUuid), data.forks),
+      [`flags.${MODULE_ID}.secrets`]: secretList(data.secrets),
     });
     return itemUuid;
   }
@@ -97,7 +128,15 @@ export async function saveNetArch(itemUuid: string | null, data: NetArchWrite): 
     name: data.name,
     type: "netarch",
     system: { floors },
-    flags: { [MODULE_ID]: { editorId, ice: data.ice, npcs: data.npcs } },
+    flags: {
+      [MODULE_ID]: {
+        editorId,
+        ice: data.ice,
+        npcs: data.npcs,
+        forks: data.forks,
+        secrets: secretList(data.secrets),
+      },
+    },
   });
   for (let i = 0; i < 30; i += 1) {
     const created = game.items.contents.find(

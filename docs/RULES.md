@@ -140,5 +140,20 @@ Netrunning Deck, FAQ v1.3). Paráfrase própria.
 | Shield absorve o 1º acerto de programa ofensivo comum | Acerto de programa da NPC: sem dano, Shield neutralizado (Zap não conta) |
 | Antiprograma à espreita só com programa em execução | Encontro não dispara sem programa rezzado com REZ |
 
-Fora do módulo: efeito de Flak (ATK 0 dos atacantes contra ela) e redução do Armor ficam com a
-ficha/o mestre; Black ICE instalado pela própria Netrunner não é tratado pelo HUD.
+Armor e Flak (D45): o CPR v0.92.4 não dá efeito nativo a eles (conferido no mundo de teste: o item
+não tem efeito ativo e `bonuses.brainDamageReduction` fica 0 rezzado). O módulo aplica: Armor ligado
+(rezzado, não neutralizado) soma 4 à redução do dano no cérebro (Black ICE e Netrunner NPC); Flak
+ligado subtrai o ATK do programa atacante inimigo do total do ataque (o card do chat mostra o total
+original). Boosters (See Ya, Worm…) valem nas rolagens nativas pelos efeitos ativos do próprio item.
+Atacantes têm REZ 0 por natureza: o HUD mostra "pronto" ou "usado nesta rodada/Netrun".
+
+Fora do módulo: perda de ação NET do Vrizzbolt e efeitos especiais de outros atacantes ficam com o
+mestre; Black ICE instalado pela própria Netrunner não é tratado pelo HUD.
+
+## Lobby e bifurcações (D45)
+
+Fontes secundárias que citam o Core (pp. 209–211): os andares 1 e 2 são o Lobby e a arquitetura não
+ramifica antes de passar do 2º andar; as arquiteturas são árvores. O editor só aceita a branch A nos
+andares 1 e 2 e avisa nas arquiteturas antigas que fogem disso. O primeiro nó de cada branch escolhe
+de qual branch à esquerda do andar de cima ela sai (flag `forks` do item; padrão: a mais próxima à
+esquerda, como a cena do CPR). Sem atalhos nem reencontros (escolha do usuário).

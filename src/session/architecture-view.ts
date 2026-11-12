@@ -1,5 +1,6 @@
 import {
   areLinked,
+  type ForkMap,
   type NetArchitecture,
   type NodePosition,
   type NetFloorContent,
@@ -65,7 +66,9 @@ export function buildArchitectureView(
   runnerPosition: number | null = null,
   progress: ArchitectureProgress | null = null,
   mapped: readonly MappedFloor[] = [],
+  publicForks: ForkMap = {},
 ): ArchitectureView {
+  const forks = role === "gm" && full ? (full.forks ?? {}) : publicForks;
   const isGm = role === "gm";
   const byKey = new Map(discovered.map((f) => [f.key, f]));
   const mappedKeys = new Set(mapped.map((m) => m.key));
@@ -130,7 +133,7 @@ export function buildArchitectureView(
   }));
   const rows: ArchitectureRow[] = grid.map((row, i) => ({
     ...row,
-    linksAbove: i === 0 ? [] : linksBetween(grid[i - 1]?.cells ?? [], row.cells, nodes),
+    linksAbove: i === 0 ? [] : linksBetween(grid[i - 1]?.cells ?? [], row.cells, nodes, forks),
   }));
 
   return {
@@ -146,11 +149,12 @@ export function linksBetween(
   upper: ReadonlyArray<NodePosition | null>,
   lower: ReadonlyArray<NodePosition | null>,
   known: readonly NodePosition[],
+  forks: ForkMap = {},
 ): LinkCell[] {
   const links = lower.map(() => ({ down: false, forkIn: false, forkOut: false, forkPass: false }));
   lower.forEach((node, col) => {
     if (!node) return;
-    const parentCol = upper.findIndex((up) => up !== null && areLinked(up, node, known));
+    const parentCol = upper.findIndex((up) => up !== null && areLinked(up, node, known, forks));
     const link = links[col];
     if (parentCol < 0 || !link) return;
     if (parentCol === col) {

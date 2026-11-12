@@ -1,4 +1,4 @@
-import { parsePublicFloor, type PublicFloor } from "../domain/net-architecture";
+import { parseForks, parsePublicFloor, type PublicFloor } from "../domain/net-architecture";
 import type { IceDamageResult, IceHitTarget } from "../domain/ice-hit";
 import type { RunState } from "../domain/net-rules";
 import { type LogEntry, parseLog } from "./log-entry";
@@ -14,6 +14,7 @@ export interface PublicNetArch {
   name: string;
   discovered: PublicFloor[];
   mapped: MappedFloor[];
+  forks: Record<string, string>;
 }
 
 export interface MappedFloor {
@@ -126,7 +127,16 @@ export interface PublicRun {
   netrunUsed: string[];
   atBottom: boolean;
   allKnown: boolean;
+  controlChoices: ControlChoice[];
 }
+
+export interface ControlChoice {
+  key: number;
+  index: number;
+  label: string;
+}
+
+export const CONTROL_CHOICES_LIMIT = 32;
 
 export interface UndoEntry {
   label: string;
@@ -243,6 +253,7 @@ function newRun(): PublicRun {
     netrunUsed: [],
     atBottom: false,
     allKnown: false,
+    controlChoices: [],
   };
 }
 
@@ -300,8 +311,22 @@ function parseRun(value: unknown): PublicRun | null {
       : [],
     atBottom: (value as Record<string, unknown>)["atBottom"] === true,
     allKnown: (value as Record<string, unknown>)["allKnown"] === true,
+    controlChoices: parseControlChoices((value as Record<string, unknown>)["controlChoices"]),
     netrunUsed: ids((value as Record<string, unknown>)["netrunUsed"]),
   };
+}
+
+function parseControlChoices(value: unknown): ControlChoice[] {
+  if (!Array.isArray(value)) return [];
+  const choices: ControlChoice[] = [];
+  for (const item of value.slice(-CONTROL_CHOICES_LIMIT)) {
+    if (typeof item !== "object" || item === null) continue;
+    const { key, index, label } = item as Record<string, unknown>;
+    if (!isInt(key) || key < 0 || !isInt(index) || index < 0) continue;
+    if (typeof label !== "string" || label === "" || label.length > 64) continue;
+    choices.push({ key, index, label });
+  }
+  return choices;
 }
 
 function ids(value: unknown): string[] {
@@ -471,7 +496,7 @@ function parseIceLinks(list: unknown[]): IceLink[] {
 
 function parseNetArch(value: unknown): PublicNetArch | undefined {
   if (typeof value !== "object" || value === null) return undefined;
-  const { itemUuid, name, discovered, mapped } = value as Record<string, unknown>;
+  const { itemUuid, name, discovered, mapped, forks } = value as Record<string, unknown>;
   if (typeof itemUuid !== "string" || itemUuid === "") return undefined;
   if (typeof name !== "string") return undefined;
   if (!Array.isArray(discovered)) return undefined;
@@ -487,7 +512,7 @@ function parseNetArch(value: unknown): PublicNetArch | undefined {
       positions.push(m);
     }
   }
-  return { itemUuid, name, discovered: floors, mapped: positions };
+  return { itemUuid, name, discovered: floors, mapped: positions, forks: parseForks(forks) };
 }
 
 function parseMapped(value: unknown): MappedFloor | null {
@@ -513,7 +538,7 @@ export function createSession(
     actorUuid: input.actorUuid,
     controllerUserId: input.controllerUserId,
     startedAt: meta.now,
-    netArch: input.netArch ? { ...input.netArch, discovered: [], mapped: [] } : null,
+    netArch: input.netArch ? { ...input.netArch, discovered: [], mapped: [], forks: {} } : null,
     runnerPosition: null,
     run: { ...newRun(), ice: input.netArch ? [...(input.ice ?? [])] : [] },
     history: [],

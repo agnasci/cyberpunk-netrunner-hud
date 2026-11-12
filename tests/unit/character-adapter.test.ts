@@ -23,6 +23,18 @@ describe("normalizeCharacter", () => {
     expect(snapshot.issues).toEqual([]);
   });
 
+  it("o mesmo programa repetido na lista do deck aparece uma vez só", () => {
+    const snapshot = normalizeCharacter(
+      actor([
+        role("role1", 6),
+        cyberdeck("deck1", "equipped", ["sword", "sword", "other"]),
+        program("sword", { class: "antiprogramattacker" }),
+        program("other", { class: "antiprogramattacker" }),
+      ]),
+    );
+    expect(snapshot.programs.map((p) => p.itemId)).toEqual(["sword", "other"]);
+  });
+
   it("sinaliza ausência de role de Netrunning ativa ou role removida", () => {
     expect(normalizeCharacter(actor([role("role1", 4)], "")).issues).toContainEqual({
       code: "no-net-role",

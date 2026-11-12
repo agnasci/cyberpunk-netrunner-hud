@@ -102,6 +102,21 @@ declare global {
 
   function fromUuidSync(uuid: string): unknown;
 
+  const Journal: {
+    show(doc: unknown, options?: { force?: boolean; users?: string[] }): unknown;
+    showImage(src: string, options?: { users?: string[]; title?: string }): void;
+  };
+
+  class ImagePopout {
+    constructor(src: string, options?: Record<string, unknown>);
+    render(force: boolean): unknown;
+  }
+
+  class FilePicker {
+    constructor(options: Record<string, unknown>);
+    browse(path?: string): unknown;
+  }
+
   const Hooks: {
     once(hook: "init" | "ready", fn: () => void): number;
     on(hook: "getSceneControlButtons", fn: (controls: FoundrySceneControl[]) => void): number;
@@ -130,6 +145,7 @@ declare global {
     users: { get(id: string): FoundryUserDocument | undefined; contents: FoundryUserDocument[] };
     actors: { contents: FoundryActorDocument[] };
     items: { contents: FoundryWorldItemDocument[] };
+    journal: { contents: Array<{ uuid: string; name: string }> };
     messages: { get(id: string): FoundryChatMessageDocument | undefined };
     modules: { get(id: string): { api?: unknown } | undefined };
     socket: {

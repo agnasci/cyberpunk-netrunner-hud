@@ -39,6 +39,7 @@ import {
 import { BUILTIN_ICE } from "./domain/builtin-ice";
 import { runnerResources } from "./domain/net-rules";
 import type { ActionResult, NetAction } from "./session/requests";
+import type { RevealedNotes } from "./session/notes";
 import { createSession, type PublicSession } from "./session/session-state";
 import { canStart, replaceSession } from "./session/session-list";
 import {
@@ -58,6 +59,33 @@ import { SessionHudApp } from "./ui/session-hud-app";
 import { promptStartSession } from "./ui/start-session-dialog";
 
 let prototypeApp: NetrunnerHudPrototype | null = null;
+
+function showJournal(journalUuid: string, userId: string): void {
+  const doc = fromUuidSync(journalUuid) as { sheet?: { render(force: boolean): unknown } } | null;
+  if (!doc) return;
+  if (userId === game.user?.id) doc.sheet?.render(true);
+  else Journal.show(doc, { force: true, users: [userId] });
+}
+
+function showReleasedFiles(previous: PublicSession[], sessions: PublicSession[]): void {
+  if (!game.user?.isGM || authorityGmId() !== game.user.id) return;
+  for (const session of sessions) {
+    const before = previous.find((s) => s.id === session.id);
+    const userId = session.controllerUserId;
+    if (!before || !userId || !session.netArch) continue;
+    const added = session.run.cleared.filter((k) => !before.run.cleared.includes(k));
+    if (added.length === 0) continue;
+    const arch = readNetArchitecture(session.netArch.itemUuid);
+    for (const key of added) {
+      const floor = arch?.floors.find((f) => f.key === key);
+      const secret = arch?.secrets?.[key];
+      if (floor?.content !== "file" || !secret) continue;
+      if (secret.journal) showJournal(secret.journal, userId);
+      if (secret.image)
+        Journal.showImage(secret.image, { users: [userId], title: session.netArch.name });
+    }
+  }
+}
 let sessionHud: SessionHudApp | null = null;
 let activeSessions: PublicSession[] = [];
 
@@ -71,6 +99,7 @@ const channel = new RequestChannel({
   readVitals: readRunnerVitals,
   readRef: readActorRef,
   readNpcLink,
+  showJournal,
   applyEffect: (effect) => {
     switch (effect.type) {
       case "setIceRez":
@@ -91,8 +120,8 @@ const hudHandlers = {
   request: (sessionId: string, action: NetAction): Promise<ActionResult> =>
     channel.send(sessionId, action),
   hasAuthority: (): boolean => authorityGmId() !== null,
-  requestNotes: (sessionId: string): Promise<Record<number, string>> =>
-    channel.queryNotes(sessionId),
+  requestJournal: (sessionId: string, key: number): void => channel.requestJournal(sessionId, key),
+  requestNotes: (sessionId: string): Promise<RevealedNotes> => channel.queryNotes(sessionId),
   startSession: (): void => promptAndStart(),
   resolveNow: (sessionId: string): Promise<void> => resolveNow(sessionId),
   editArchitecture: (itemUuid: string | null): void => openArchEditor(itemUuid),
@@ -248,6 +277,7 @@ async function resolveNow(sessionId: string): Promise<void> {
 function applySessions(sessions: PublicSession[]): void {
   const previous = activeSessions;
   activeSessions = sessions;
+  showReleasedFiles(previous, sessions);
   for (const session of sessions) {
     runAutopilot(previous.find((s) => s.id === session.id) ?? null, session);
   }

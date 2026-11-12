@@ -95,8 +95,8 @@ describe("revealedNotes (D29)", () => {
 
   it("controlador recebe descrições de Password vencida e arquivo identificado", () => {
     expect(revealedNotes(session([0, 2, 3]), full, RUNNER)).toEqual({
-      0: "senha secreta: swordfish",
-      2: "planta do cofre",
+      0: { text: "senha secreta: swordfish" },
+      2: { text: "planta do cofre" },
     });
   });
 
@@ -108,7 +108,9 @@ describe("revealedNotes (D29)", () => {
 
   it("espectador não recebe; GM recebe", () => {
     expect(revealedNotes(session([0]), full, { id: "u-spect", isGM: false })).toBeNull();
-    expect(revealedNotes(session([0]), full, GM)).toEqual({ 0: "senha secreta: swordfish" });
+    expect(revealedNotes(session([0]), full, GM)).toEqual({
+      0: { text: "senha secreta: swordfish" },
+    });
   });
 
   it("sem arquitetura, nada", () => {

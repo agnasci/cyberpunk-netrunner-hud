@@ -200,7 +200,9 @@
         "not-lowest": "Virus só pode ser usado no andar mais fundo da arquitetura.",
         "once-per-run": "Esta cópia já foi usada nesta Netrun (Armor, Flak, Shield e Superglue: uma vez por Netrun).",
         "one-copy": "Já há uma cópia deste programa ligada (Armor, Flak e Shield: uma por vez).",
-        "program-neutralized": "Programa neutralizado: derrezze primeiro (1 ação) e rezze de novo depois."
+        "program-neutralized": "Programa neutralizado: derrezze primeiro (1 ação) e rezze de novo depois.",
+        "not-controlled": "Controle o Control Node antes de usar as opções dele.",
+        "invalid-option": "Esta opção não existe mais neste Control Node."
       },
       "Rolling": "Rolando na ficha…",
       "NoAuthorityPaused": "Nenhum mestre conectado: ações pausadas até um mestre entrar."
@@ -456,7 +458,9 @@
       "Rez": "Rezzar",
       "Derez": "Derrezzar",
       "Attack": "Atacar",
-      "Attacker": "Atacante",
+      "Attacker": "Atacante pronto",
+      "UsedRound": "Usado nesta rodada",
+      "UsedRun": "Usado nesta Netrun",
       "AttackHint": "Atacante antipessoal: mira Netrunners, não Black ICE.",
       "Neutralized": "REZ 0 (sem efeito)",
       "Destroyed": "Destruído",
@@ -511,7 +515,8 @@
         "npcSync": "vínculo de NPC",
         "moveNpc": "movimento da NPC",
         "ambush": "encontro com Black ICE",
-        "iceTarget": "escolha do programa atingido"
+        "iceTarget": "escolha do programa atingido",
+        "controlOption": "opção do Control Node"
       }
     },
     "Turn": {
@@ -561,6 +566,7 @@
       "Mapped": "Nó mostrado só no mapa",
       "Ambush": "Black ICE à espreita em {node}!",
       "IceTarget": "Mestre escolheu o programa atingido: {program}",
+      "ControlOption": "Netrunner acionou em {node}: {option}",
       "PathfinderFound": "({count} nó(s) revelado(s))",
       "IceNeutralized": "Black ICE tirou {taken} de REZ de {program}: neutralizado (REZ 0)"
     },
@@ -636,7 +642,8 @@
       "npcZap": "Zap da Netrunner inimiga: Interface + 1d10 contra a Defense da jogadora; acerto causa 1d6 no cérebro.",
       "npcProgram": "A Netrunner inimiga ataca com este programa: ATK + 1d10 contra a Defense da jogadora.",
       "initiative": "Iniciativa: 1d10 + REF. Quem tirar mais age primeiro; empate a favor da jogadora.",
-      "recover": "Neutralizado (REZ 0): continua instalado, sem efeito. Derrezzar (1 ação NET) e rezzar de novo (1 ação NET, em outra rodada se já foi ativado nesta) volta com o REZ cheio."
+      "recover": "Neutralizado (REZ 0): continua instalado, sem efeito. Derrezzar (1 ação NET) e rezzar de novo (1 ação NET, em outra rodada se já foi ativado nesta) volta com o REZ cheio.",
+      "controlOption": "Acionar esta opção do Control Node (1 ação NET)."
     },
     "Editor": {
       "WindowTitle": "Editor de arquitetura",
@@ -675,6 +682,9 @@
       "Unsaved": "Alterações não salvas",
       "InUse": "Em uso numa sessão ativa agora: os nós gravados não mudam de lugar nem de tipo e não podem sair. Quando a sessão terminar, tudo volta a ser editável.",
       "Locked": "Nó em uso na sessão ativa",
+      "Lobby": "Andares 1 e 2 são o Lobby: só a branch A (Core).",
+      "Fork": "Branch sai de",
+      "ForkHint": "De qual branch do andar de cima esta branch se separa.",
       "NpcLocked": "Em sessão ativa, troque a NPC pelo HUD da sessão.",
       "Issues": "Avisos",
       "NoIssues": "Pronta para usar.",
@@ -682,6 +692,7 @@
         "empty": "Arraste um nó para começar.",
         "no-name": "Dê um nome à arquitetura.",
         "no-root": "Falta o nó do andar 1, branch A: é por onde a Netrunner entra.",
+        "lobby": "{where}: o Lobby (andares 1 e 2) não ramifica; mova para a branch A ou abaixo do andar 2.",
         "unreachable": "{where}: sem caminho até o andar 1 (falta o andar de cima nesta branch ou na anterior).",
         "ice-type": "{where}: escolha o tipo de Black ICE."
       },
@@ -691,7 +702,19 @@
       "Restored": "Rascunho não salvo restaurado ({time}). Salve para gravar ou descarte para voltar ao que está gravado.",
       "Discard": "Descartar",
       "DiscardHint": "Volta ao que está gravado e apaga o rascunho guardado neste navegador.",
-      "LockedConflict": "A arquitetura está em uso numa sessão ativa e o rascunho mudou nós em uso ({nodes}). Descarte ou desfaça essas mudanças para salvar."
+      "LockedConflict": "A arquitetura está em uso numa sessão ativa e o rascunho mudou nós em uso ({nodes}). Descarte ou desfaça essas mudanças para salvar.",
+      "Password": "Senha",
+      "PasswordHint": "Aparece para a Netrunner quando ela vence a Password.",
+      "Image": "Imagem",
+      "PickImage": "Escolher imagem",
+      "Journal": "Handout (diário)",
+      "JournalNone": "Nenhum",
+      "FileHint": "Mostrados à Netrunner quando ela identifica o arquivo (Eye-Dee).",
+      "Options": "Opções controláveis",
+      "OptionsHint": "Uma por linha (até 8). Com o nó controlado, a Netrunner aciona uma por 1 ação NET.",
+      "NameTitle": "Nome da arquitetura",
+      "NameLabel": "Nome da nova arquitetura NET",
+      "NameRequired": "Dê um nome à arquitetura para salvar."
     },
     "Deck": {
       "WindowTitle": "Cyberdeck",
@@ -751,6 +774,12 @@
       "GhostHint": "Ocupado por um item que foi apagado da ficha (o sistema continua contando). Reinstale ou ajuste o deck pela ficha para liberar.",
       "PortIdle": "Porta neural livre · pronta p/ Jack In",
       "PortLive": "Porta neural em uso · conectada"
+    },
+    "Released": {
+      "Title": "Dados liberados",
+      "Password": "Senha",
+      "Image": "Ver imagem",
+      "Journal": "Abrir arquivo"
     }
   }
 }

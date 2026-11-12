@@ -337,6 +337,16 @@
 .cnh-program.is-rezzed .cnh-program-state {
   color: var(--cnh-green);
 }
+.cnh-program.is-ready {
+  border-left-color: var(--cnh-magenta);
+  opacity: 1;
+}
+.cnh-program.is-ready .cnh-program-state {
+  color: var(--cnh-magenta);
+}
+.cnh-program.is-used .cnh-program-state {
+  color: var(--cnh-amber);
+}
 .cnh-program .cnh-bar {
   grid-column: 1 / -1;
 }
@@ -1130,6 +1140,46 @@
 }
 .cnh-node-card.is-evaded .cnh-node-state {
   color: var(--cnh-amber);
+}
+.cnh-released {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--cnh-line);
+  background: rgba(109, 255, 160, 0.04);
+}
+.cnh-released-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+.cnh-released-where {
+  font-weight: 600;
+  color: var(--cnh-green);
+}
+.cnh-released-password code {
+  color: var(--cnh-amber);
+  user-select: all;
+}
+.cnh-released-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cnh-released-options li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.cnh-released-option {
+  font-size: 12px;
+  color: var(--cnh-muted);
 }
 .cnh-run-hints {
   margin: 10px 0 0;
@@ -2190,6 +2240,13 @@
   font-size: 12px;
   color: var(--cnh-amber);
 }
+.cnh-ed-row {
+  display: flex;
+  gap: 4px;
+}
+.cnh-ed-row input {
+  flex: 1;
+}
 .cnh-ed-field {
   display: grid;
   gap: 4px;
@@ -2206,8 +2263,11 @@
   margin: 0;
 }
 .cnh-app .cnh-hud .cnh-ed-field select,
-.cnh-app .cnh-hud .cnh-ed-field textarea {
+.cnh-app .cnh-hud .cnh-ed-field textarea,
+.cnh-app .cnh-hud .cnh-ed-field input[type="text"] {
   width: 100%;
+  height: auto;
+  padding: 4px 6px;
   min-width: 0;
   border: 1px solid var(--cnh-line);
   border-radius: 0;
@@ -2307,6 +2367,9 @@
   bottom: 4px;
   color: var(--cnh-cyan);
   text-shadow: 0 0 6px var(--cnh-cyan);
+}
+.cnh-ed-blocked {
+  min-height: 56px;
 }
 .cnh-app .cnh-hud .cnh-ed-empty {
   display: grid;

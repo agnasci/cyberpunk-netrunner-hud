@@ -4,22 +4,38 @@ Atualizado em: 2026-11-11.
 
 ## Situação
 
-- Módulo funcional e publicado: v0.3.1 no repositório público (D41), com HUD de sessão, várias
+- Módulo funcional e publicado: v0.4.0 no repositório público (D41), com HUD de sessão, várias
   invasões ao mesmo tempo, Netrunner NPC, Black ICE básicos (só na cópia local), editor de
   arquitetura (D42) e janela do cyberdeck (D43). Publicar versões: docs/DEVELOPMENT.md.
 - Alvo: Foundry V12 (12.343) + Cyberpunk RED – CORE v0.92.4 (D09).
-- `pacote-teste/` (fora do git) só é refeita a pedido do usuário.
+- `pacote-teste/` (fora do git) só é refeita a pedido do usuário. Última: 0.3.2 completa, com os
+  Black ICE básicos, sem `manifest`/`download` no `module.json` (atualizar pelo Foundry trocaria
+  pela versão pública sem os básicos), sem o source map, zip com a pasta do módulo e `LEIA-ME.txt`.
 - Histórico de entregas concluídas: `git log` e as decisões em docs/DECISIONS.md. Roadmap e
   registros de tarefas concluídas foram apagados a pedido do usuário (2026-11-11).
 
-## Última entrega: revisão geral do código (2026-11-11, D44)
+## Última entrega: pedido de 9 itens (2026-11-12, D45, D46), publicada como v0.4.0
 
-- Limpezas sem mudança de comportamento: `isId`/`MAX_ID_LENGTH` só em `session-state.ts`; leitores
-  de caminho da ficha reusados de `character-adapter.ts`; `listNpcLinks` via `readLinkFlag`; helper
-  do deck equipado em `foundry-roll.ts`; `MODULE_ID` no lugar do id literal; botão do editor na aba
-  Items sem `innerHTML`.
-- Comentários removidos de TS/JS/CSS (fica só `/// <reference types="vite/client" />`).
-- Validação: `npm run check` exit 0 (350 testes). Sem teste manual no Foundry.
+- Programas: Armor −4 no cérebro, Flak zera ATK de atacantes inimigos, atacantes "pronto"/"usado",
+  programa repetido na lista do deck conta uma vez (`net-rules.ts`, `checks.ts`,
+  `character-adapter.ts`, `session-hud-app.ts`).
+- Editor: Lobby só na branch A; "Branch sai de" no primeiro nó de cada branch (`net-architecture.ts`,
+  `arch-draft.ts`, `foundry-netarch.ts`, `requests.ts` `withBottom`).
+- Dados liberados (`node-secrets.ts`, `notes.ts`, `request-channel.ts` `showJournal`, `main.ts`
+  `showReleasedFiles`, painel "Dados liberados" no HUD, ação `controlOption`).
+- Validação: `npm run check` exit 0 (362 testes). Manual real (2026-11-12, Foundry 12.343, mundo
+  `cyberdeck-hud`, abas GM e Runner Teste): editor recusou 2B com aviso de Lobby; "Branch sai de"
+  trocou 4C de B para A e redesenhou a ligação; gravação e regravação da flag `forks` e `secrets`
+  (senha trocada, opções apagadas e restauradas) conferidas no item; Password liberada mostrou a senha
+  no painel do mestre e da Netrunner (socket); File liberado abriu para a Netrunner o diário sem
+  permissão (`Journal.show` force) e a imagem; "Abrir arquivo"/"Ver imagem" reabriram; Control Node:
+  2 botões, "Abrir a porta" gastou 1 ação, entrou em `controlChoices` e no registro; Sword como
+  "Atacante pronto"; Armor rezzado: Hellhound à espreita venceu (20 × 3), dano 2d6 = 6, HP 35 → 33.
+  Sem erros do módulo no console. Mundo restaurado (sessão de teste encerrada, HP/Armor de volta,
+  arquitetura e diário de teste apagados). Não conferido na tela: Flak (exige combate com NPC; coberto
+  por teste automatizado), FilePicker do editor, layout estreito.
+- Pergunta aberta ao usuário: as duas Swords da ficha do amigo eram itens diferentes? Se sim, o
+  desligamento das duas tem outra causa.
 
 ## Próximas tarefas
 
