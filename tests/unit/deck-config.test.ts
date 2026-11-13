@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   checkInstall,
+  checkRemove,
   checkRez,
   checkUninstall,
   type DeckLoadout,
@@ -83,6 +84,13 @@ describe("rezzar fora da invasão (E7-02, D40)", () => {
     expect(
       checkRez(loadout({ programs: [prog("p1", { mark: "destroyed" })] }), "p1", true),
     ).toEqual({ ok: false, error: "destroyed" });
+  });
+
+  it("remover da ficha só vale para programa destruído", () => {
+    const l = loadout({ programs: [prog("p1", { mark: "destroyed" }), prog("p2")] });
+    expect(checkRemove(l, "p1")).toEqual({ ok: true });
+    expect(checkRemove(l, "p2")).toEqual({ ok: false, error: "not-destroyed" });
+    expect(checkRemove(l, "p9")).toEqual({ ok: false, error: "no-program" });
   });
 
   it("neutralizado: derrezzar desliga e limpa a marca; rezzar direto é recusado", () => {

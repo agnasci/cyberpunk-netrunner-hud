@@ -607,6 +607,9 @@
   padding-top: 10px;
   border-top: 1px solid var(--cnh-line);
 }
+.cnh-app .cnh-hud button > i {
+  margin: 0;
+}
 .cnh-app .cnh-hud .cnh-action {
   display: inline-flex;
   align-items: center;
@@ -1010,9 +1013,6 @@
 }
 .cnh-node-card.is-gm-only .cnh-reveal-state {
   color: var(--cnh-magenta);
-}
-.cnh-note {
-  color: var(--cnh-amber);
 }
 .cnh-unexplored {
   display: grid;
@@ -1522,7 +1522,6 @@
 }
 .cnh-app .cnh-hud .cnh-node-tool i {
   display: block;
-  margin: 0;
   line-height: 1;
 }
 
@@ -2493,9 +2492,6 @@
   font-size: 11px;
   color: var(--cnh-amber);
 }
-.cnh-app .cnh-hud .cnh-ed-open i {
-  margin: 0;
-}
 .cnh-app .cnh-hud .cnh-ed-open:hover {
   border-color: var(--cnh-amber);
 }
@@ -2964,6 +2960,11 @@
   border-color: rgba(255, 46, 136, 0.35);
   color: var(--cnh-magenta);
 }
+.cnh-app .cnh-hud .cnh-dk-btn.is-remove {
+  border-color: rgba(255, 46, 136, 0.35);
+  color: var(--cnh-magenta);
+}
+.cnh-app .cnh-hud .cnh-dk-btn.is-remove:hover:not(:disabled),
 .cnh-app .cnh-hud .cnh-dk-btn.is-eject:hover:not(:disabled) {
   background: rgba(255, 46, 136, 0.18);
 }
@@ -2991,19 +2992,29 @@
   background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.7) 0 3px, transparent 3px 6px);
 }
 .cnh-dk-jack {
-  display: grid;
+  display: block;
   flex: none;
-  place-items: center;
   width: 20px;
   height: 20px;
-  border: 1px solid var(--cnh-line);
   border-radius: 50%;
-  background: #05090c;
-  font-size: 9px;
   color: var(--cnh-muted);
+  --cnh-jack-ring: var(--cnh-line);
+}
+.cnh-dk-jack-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+.cnh-dk-jack-ring {
+  fill: #05090c;
+  stroke: var(--cnh-jack-ring);
+  stroke-width: 1;
+}
+.cnh-dk-jack-plug {
+  fill: currentColor;
 }
 .cnh-dk-jack.is-live {
-  border-color: var(--cnh-magenta);
+  --cnh-jack-ring: var(--cnh-magenta);
   color: var(--cnh-magenta);
   box-shadow: 0 0 8px rgba(255, 46, 136, 0.5);
 }

@@ -24,13 +24,10 @@ export interface MappedFloor {
 }
 
 export const DV_CHECKS = ["backdoor", "control", "eyedee"] as const;
-export type DvCheck = (typeof DV_CHECKS)[number];
 
 export const CONTEST_CHECKS = ["zap", "slide"] as const;
-export type ContestCheck = (typeof CONTEST_CHECKS)[number];
 
 export const FREE_CHECKS = ["pathfinder", "cloak", "virus"] as const;
-export type FreeCheck = (typeof FREE_CHECKS)[number];
 
 export const ABILITY_CHECKS = [...DV_CHECKS, ...CONTEST_CHECKS, ...FREE_CHECKS] as const;
 export type AbilityCheck = (typeof ABILITY_CHECKS)[number];

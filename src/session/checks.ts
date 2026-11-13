@@ -433,7 +433,13 @@ function pathfinderFrom(
   const arch = session.netArch;
   const floors = ctx.architecture?.floors ?? [];
   if (!arch) return withRun(session, { pending: null });
-  const keys = pathfinderReveal(floors, pending.key, pending.total, ctx.architecture?.forks);
+  const keys = pathfinderReveal(
+    floors,
+    pending.key,
+    pending.total,
+    ctx.architecture?.forks,
+    ctx.pathfinderGate,
+  );
   const known = new Set(arch.discovered.map((f) => f.key));
   const added = floors.filter((f) => keys.includes(f.key) && !known.has(f.key)).map(toPublicFloor);
   const revealed = new Set(added.map((f) => f.key));

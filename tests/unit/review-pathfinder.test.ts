@@ -3,7 +3,17 @@ import type { NetFloor } from "../../src/domain/net-architecture";
 import { pathfinderReveal } from "../../src/domain/pathfinder";
 import { buildArchitectureView } from "../../src/session/architecture-view";
 import type { PublicSession } from "../../src/session/session-state";
-import { base, GM, type Harness, request, reveal, runWith } from "../fixtures/requests-harness";
+import {
+  arch,
+  base,
+  GM,
+  type Harness,
+  request,
+  reveal,
+  RUNNER,
+  runWith,
+  withRun,
+} from "../fixtures/requests-harness";
 
 const node = (
   key: number,
@@ -33,8 +43,60 @@ describe("Pathfinder em todas as branches (revisão do usuário)", () => {
     expect(pathfinderReveal(FLOORS, 1, 10)).toEqual([3, 6]);
   });
 
+  it("com a opção qualquer DV, File ou Control Node de DV maior também barra", () => {
+    const without = FLOORS.filter((f) => f.key !== 2);
+    expect(
+      pathfinderReveal([...without, node(2, 2, "b", "controlnode", 12)], 1, 10, {}, "anyDv"),
+    ).toEqual([3, 6]);
+    expect(pathfinderReveal([...without, node(2, 2, "b", "file", 12)], 1, 12, {}, "anyDv")).toEqual(
+      [3, 4, 5, 6, 7],
+    );
+  });
+
+  it("Black ICE sem DV não barra", () => {
+    const without = FLOORS.filter((f) => f.key !== 2);
+    expect(
+      pathfinderReveal([...without, node(2, 2, "b", "blackice", null)], 1, 6, {}, "anyDv"),
+    ).toEqual([3, 4, 5, 6, 7]);
+  });
+
   it("Password já percorrida (acima dela) não barra", () => {
     expect(pathfinderReveal(FLOORS, 4, 10)).toEqual([6, 7]);
+  });
+});
+
+describe("opção do mestre: o que barra o Pathfinder", () => {
+  const floors = [node(0, 1, "a", "password", 6), node(1, 2, "a", "file", 14), node(2, 3, "a")];
+
+  it("só Password (padrão) ou qualquer DV", () => {
+    expect(pathfinderReveal(floors, 0, 9)).toEqual([1, 2]);
+    expect(pathfinderReveal(floors, 0, 9, {}, "anyDv")).toEqual([1]);
+    expect(pathfinderReveal(floors, 0, 9, {}, "password")).toEqual([1, 2]);
+    const pw = [node(0, 1, "a"), node(1, 2, "a", "password", 14), node(2, 3, "a")];
+    expect(pathfinderReveal(pw, 0, 9, {}, "password")).toEqual([1]);
+  });
+
+  it("a autoridade aplica a opção recebida no contexto", () => {
+    const resolved = (pathfinderGate?: "anyDv" | "password") => {
+      const h: Harness = {
+        rolls: { "m-path": { authorId: RUNNER.id, actorUuid: "Actor.abc", total: 9 } },
+        ices: {},
+        architecture: { ...arch(), floors },
+        ...(pathfinderGate ? { pathfinderGate } : {}),
+      };
+      const run = runWith(h);
+      let s: PublicSession = {
+        ...withRun(reveal(base(), [0]), { cleared: [0] }),
+        runnerPosition: 0,
+      };
+      s =
+        run(s, request(s, { type: "check", ability: "pathfinder", messageId: "m-path" }, "p1"))
+          .session ?? s;
+      s = run(s, request(s, { type: "resolveCheck", outcome: "success" }, "p2"), GM).session ?? s;
+      return s.netArch?.discovered.map((f) => f.key);
+    };
+    expect(resolved()).toEqual([0, 1, 2]);
+    expect(resolved("anyDv")).toEqual([0, 1]);
   });
 });
 

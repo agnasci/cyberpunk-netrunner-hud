@@ -19,6 +19,7 @@ interface NativeActor {
   readonly type: string;
   readonly items: Iterable<NativeItem>;
   updateEmbeddedDocuments(type: "Item", updates: Record<string, unknown>[]): Promise<unknown>;
+  deleteEmbeddedDocuments(type: "Item", ids: string[]): Promise<unknown>;
   testUserPermission(user: DeckUser, level: "OWNER" | "OBSERVER"): boolean;
 }
 
@@ -74,6 +75,17 @@ export async function uninstallProgram(
   const { deck, program } = pair(actorUuid, deckId, programId);
   if (typeof deck.uninstallItems !== "function") throw new Error("uninstallItems ausente");
   await deck.uninstallItems([program]);
+}
+
+export async function removeProgram(
+  actorUuid: string,
+  deckId: string | null,
+  programId: string,
+): Promise<void> {
+  const actor = actorOf(actorUuid);
+  if (!actor) throw new Error(`Ator não encontrado: ${actorUuid}`);
+  if (deckId) await uninstallProgram(actorUuid, deckId, programId);
+  await actor.deleteEmbeddedDocuments("Item", [programId]);
 }
 
 export async function setDeckProgramState(

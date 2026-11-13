@@ -1,19 +1,28 @@
 import { areLinked, type ForkMap, type NetFloor } from "./net-architecture";
 
+export const PATHFINDER_GATES = ["password", "anyDv"] as const;
+export type PathfinderGate = (typeof PATHFINDER_GATES)[number];
+
+export function isPathfinderGate(value: unknown): value is PathfinderGate {
+  return (PATHFINDER_GATES as readonly unknown[]).includes(value);
+}
+
 export function pathfinderReveal(
   floors: readonly NetFloor[],
   fromKey: number,
   total: number,
   forks: ForkMap = {},
+  mode: PathfinderGate = "password",
 ): number[] {
   const from = floors.find((f) => f.key === fromKey);
   if (!from || !Number.isFinite(total) || total < 1) return [];
   const limit = from.floor + Math.floor(total);
   const deeper = floors.filter((f) => f.floor > from.floor && f.floor <= limit);
   const hidden = new Set<number>();
-  for (const pw of floors) {
-    if (pw.content !== "password" || pw.key === from.key || (pw.dv ?? 0) <= total) continue;
-    const below = descendants(floors, pw, forks);
+  for (const gate of floors) {
+    if (gate.dv === null || gate.key === from.key || gate.dv <= total) continue;
+    if (mode === "password" && gate.content !== "password") continue;
+    const below = descendants(floors, gate, forks);
     if (below.includes(from.key)) continue;
     for (const key of below) hidden.add(key);
   }

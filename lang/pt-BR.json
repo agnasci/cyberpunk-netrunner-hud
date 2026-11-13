@@ -440,6 +440,12 @@
         "Name": "Modo sem confirmação do mestre",
         "Hint": "Aplica sozinho o resultado quando a regra sugere (DV, disputa, dano) e rola sem diálogo a DEF/PER do Black ICE e o dano do acerto. Sem sugestão, o mestre confirma. O ataque do Black ICE continua com o mestre. Precisa de um mestre conectado."
       },
+      "Pathfinder": {
+        "Name": "Pathfinder para em",
+        "Hint": "Até onde o Pathfinder revela numa branch. Qualquer DV: Password, File ou Control Node de DV maior que o total aparece e esconde o que está abaixo dele. Só Password: apenas Passwords barram.",
+        "anyDv": "Qualquer nó com DV maior que o total",
+        "password": "Só Password com DV maior que o total"
+      },
       "SeedIce": {
         "Name": "Criar os Black ICE básicos no mundo",
         "Hint": "O mestre cria sozinho, na pasta \"Black ICE (CNH)\", as fichas dos 12 Black ICE básicos (ator e programa) que ainda não existem. Fichas com o mesmo nome são reaproveitadas."
@@ -628,7 +634,7 @@
       "eyedee": "Eye-Dee: identifica o arquivo deste nó (Interface + 1d10 contra o DV). A descrição aparece para a Netrunner. 1 ação NET.",
       "zap": "Zap: ataque básico (Interface + 1d10 contra a DEF do Black ICE ou a Defense da Netrunner inimiga). Acerto: 1d6 de dano. 1 ação NET.",
       "slide": "Slide: escapa do Black ICE (Interface + 1d10 contra a PER dele). Funcionou: deixa de estar presa e pode se mover. 1 ação NET.",
-      "pathfinder": "Pathfinder: mapeia a arquitetura (Interface + 1d10). Revela os andares abaixo até o total, parando numa Password de DV maior. 1 ação NET.",
+      "pathfinder": "Pathfinder: mapeia a arquitetura (Interface + 1d10). Revela os andares abaixo até o total, parando num nó de DV maior (ou só numa Password, conforme a configuração do mundo). 1 ação NET.",
       "cloak": "Cloak: esconde os rastros (e o vírus) da Netrunner. O total vira o DV de quem procurar depois. 1 ação NET.",
       "virus": "Virus: só no andar mais fundo. Deixa um vírus que muda a arquitetura mesmo depois do Jack Out; o mestre define o DV e o efeito. 1 ação NET.",
       "jackIn": "Jack In: conecta na arquitetura pelo primeiro nó. 1 ação NET.",
@@ -732,6 +738,9 @@
       "Equip": "Equipar",
       "Install": "Instalar",
       "Uninstall": "Desinstalar",
+      "Remove": "Remover programa",
+      "RemoveTitle": "Remover programa destruído",
+      "RemoveConfirm": "{name} foi destruído. Remover da ficha e do cyberdeck? Isso apaga o item da ficha e não pode ser desfeito.",
       "Upgrade": "Upgrade",
       "FreeSlot": "Slot livre",
       "Size": "{size} slot(s)",
@@ -751,7 +760,8 @@
         "uninstall": "Tira do deck e desliga; o programa continua na ficha.",
         "rez": "Liga o programa antes do Jack In, com o REZ cheio. Sem custo fora da invasão.",
         "derez": "Desliga o programa (um neutralizado volta a poder ser rezzado).",
-        "equip": "Equipa este deck; os outros ficam guardados e os programas deles desligam."
+        "equip": "Equipa este deck; os outros ficam guardados e os programas deles desligam.",
+        "remove": "Programa destruído: apaga da ficha e libera o slot do deck."
       },
       "Error": {
         "no-deck": "deck não encontrado",
@@ -762,6 +772,7 @@
         "not-installed": "não está instalado",
         "not-rezzable": "só Reforço e Defesa se rezzam",
         "destroyed": "programa destruído: não volta",
+        "not-destroyed": "só programas destruídos são removidos",
         "deck-not-equipped": "equipe o deck primeiro",
         "state": "o programa já está nesse estado",
         "one-copy": "já há uma cópia ligada (Armor, Flak e Shield: uma por vez)",

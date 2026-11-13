@@ -1,6 +1,6 @@
 # Estado e passagem de contexto
 
-Atualizado em: 2026-11-11.
+Atualizado em: 2026-11-12.
 
 ## Situação
 
@@ -14,40 +14,52 @@ Atualizado em: 2026-11-11.
 - Histórico de entregas concluídas: `git log` e as decisões em docs/DECISIONS.md. Roadmap e
   registros de tarefas concluídas foram apagados a pedido do usuário (2026-11-11).
 
-## Última entrega: UI dos programas (2026-11-12), publicada como v0.4.1
+## Última entrega: pedido de 3 itens (2026-11-12, D47), v0.5.0
+
+- Varredura antes da v0.5.0: nenhum comentário; removidos tipos sem uso (`DvCheck`, `ContestCheck`,
+  `FreeCheck`) e o estilo `.cnh-note`.
+- Ícones centralizados: o Foundry põe `margin-right: 3px` em todo `button > i`; zerado para todos os
+  botões do módulo (`styles/netrunner-hud.css`), inclusive o de desinstalar do deck. Os botões com
+  texto já usam `gap`.
+- Pathfinder pode parar em qualquer nó com DV maior que o total, não só Password (`pathfinder.ts`). Opção de
+  mundo do mestre "Pathfinder para em" (`pathfinderGate`: só Password, padrão, ou qualquer DV),
+  registrada no `main.ts` e passada pela autoridade no `ProcessContext` (`request-channel.ts`).
+- Conector do rodapé do deck: anel e plugue desenhados num único SVG (`deck.hbs`, CSS
+  `.cnh-dk-jack*`). Causa: com a janela em meia coordenada (Foundry centraliza), o círculo em CSS
+  acompanha o meio pixel e o glifo da fonte (ou um SVG à parte) é encaixado no pixel inteiro, ~1px
+  à esquerda. Conferido em captura 1:1 (viewport 800px), janela em x inteiro e x + 0,5: concêntricos.
+- Programa destruído: "Remover programa" (lixeira, com confirmação) no lugar de Rezzar/Instalar/
+  Desinstalar; desinstala do deck e apaga o item da ficha (`checkRemove` em `deck-config.ts`,
+  `removeProgram` em `foundry-deck.ts`, `deck-app.ts`, `deck.hbs`, textos pt-BR/en). Bloqueado
+  durante a invasão, como o resto do deck.
+- Causa de "destruído não desinstala" não confirmada: o código não recusava a desinstalação; a
+  hipótese é a trava do deck enquanto conectada. Conferir com o usuário.
+- Validação: `npm run check` exit 0 (365 testes, antes da opção). Manual real (2026-11-12, Foundry 12.343, mundo
+  `cyberdeck-hud`, só aba GM): ícones dos botões só de ícone medidos no centro (deslocamento 0 px,
+  `margin-right` 0), desinstalar do deck conferido na tela; programa temporário destruído e instalado
+  mostrou só "Remover programa", confirmação, item apagado da ficha, id fora de `installedItems.list`
+  e slots 4/7 → 3/7; sessão nova com NetArch temporária, Pathfinder total 10 do andar 1 revelou File e
+  Control Node de DV 14 no andar 3 e escondeu os nós abaixo deles, revelando o 4C. Sem erros do módulo.
+  Restaurado: sessão de teste encerrada, NetArch e programa temporários apagados; a sessão
+  "Batatinha" já aberta não foi tocada. Não conferido: remoção feita pelo jogador dono (só GM).
+- Opção e conector, manual real (mesmo dia e mundo, GM): opção aparece nas configurações do mundo
+  (padrão trocado depois para só Password, a pedido do usuário); com "só Password", Pathfinder total 9 revelou o 4A sob File de DV 14 e
+  escondeu o 4B sob Password de DV 14. Conector: tinta do glifo a 6px/5px da borda interna (antes
+  5,63px). Restaurado: sessão e NetArch temporárias apagadas, opção de volta ao padrão.
+  `npm run check` exit 0 (367 testes).
+
+## Entrega anterior: UI dos programas (2026-11-12), publicada como v0.4.1
 
 - Cartões de programa com LED e borda por estado (ligado, desligado, atacante pronto, usado,
   neutralizado, destruído), nenhum apagado por opacidade; espectadores recebem a classe do programa
   (sem atributos); ações com ícone na mesma linha. Ícone de editar arquitetura centralizado (margem
   do Foundry no `<i>`); Descartar com lixeira. Varredura de comentários: nenhum restante.
+- Publicado como v0.4.1 (2026-11-12, pedido do usuário): commit 23cfd41 no `main`; instantâneo
+  eb3ec2f em `origin/main`; release v0.4.1 (não pre-release). Build limpo de `public`: 359 testes,
+  sem dados dos básicos. Conferido: manifesto e zip respondem 200, versão 0.4.1, 16 entradas.
+- v0.4.1 enviada à página do Foundry pela API de release (2026-11-12, pedido do usuário): dry-run
+  e envio com 200; a página pública mostra 0.4.1 com o manifesto da release. Token fora do projeto.
 
-## Entrega anterior: pedido de 9 itens (2026-11-12, D45, D46), publicada como v0.4.0
-
-- Publicado como v0.4.0 (2026-11-12, pedido do usuário): commit abb886b no `main`; instantâneo
-  4ec4337 (autor noreply) em `origin/main`; release v0.4.0 (não pre-release). Build limpo no
-  worktree de `public`: 359 testes, sem dados dos básicos. Conferido: manifesto `releases/latest` e
-  zip respondem 200, versão 0.4.0, `download` certo, 16 entradas no zip.
-
-- Programas: Armor −4 no cérebro, Flak zera ATK de atacantes inimigos, atacantes "pronto"/"usado",
-  programa repetido na lista do deck conta uma vez (`net-rules.ts`, `checks.ts`,
-  `character-adapter.ts`, `session-hud-app.ts`).
-- Editor: Lobby só na branch A; "Branch sai de" no primeiro nó de cada branch (`net-architecture.ts`,
-  `arch-draft.ts`, `foundry-netarch.ts`, `requests.ts` `withBottom`).
-- Dados liberados (`node-secrets.ts`, `notes.ts`, `request-channel.ts` `showJournal`, `main.ts`
-  `showReleasedFiles`, painel "Dados liberados" no HUD, ação `controlOption`).
-- Validação: `npm run check` exit 0 (362 testes). Manual real (2026-11-12, Foundry 12.343, mundo
-  `cyberdeck-hud`, abas GM e Runner Teste): editor recusou 2B com aviso de Lobby; "Branch sai de"
-  trocou 4C de B para A e redesenhou a ligação; gravação e regravação da flag `forks` e `secrets`
-  (senha trocada, opções apagadas e restauradas) conferidas no item; Password liberada mostrou a senha
-  no painel do mestre e da Netrunner (socket); File liberado abriu para a Netrunner o diário sem
-  permissão (`Journal.show` force) e a imagem; "Abrir arquivo"/"Ver imagem" reabriram; Control Node:
-  2 botões, "Abrir a porta" gastou 1 ação, entrou em `controlChoices` e no registro; Sword como
-  "Atacante pronto"; Armor rezzado: Hellhound à espreita venceu (20 × 3), dano 2d6 = 6, HP 35 → 33.
-  Sem erros do módulo no console. Mundo restaurado (sessão de teste encerrada, HP/Armor de volta,
-  arquitetura e diário de teste apagados). Não conferido na tela: Flak (exige combate com NPC; coberto
-  por teste automatizado), FilePicker do editor, layout estreito.
-- Pergunta aberta ao usuário: as duas Swords da ficha do amigo eram itens diferentes? Se sim, o
-  desligamento das duas tem outra causa.
 
 ## Próximas tarefas
 

@@ -8,6 +8,7 @@ export const SOUND_SETTING = "sound";
 
 export const AUTO_SETTING = "autoResolve";
 export const SEED_ICE_SETTING = "seedIce";
+export const PATHFINDER_SETTING = "pathfinderGate";
 
 export const LOG_WORLD_SETTING = "logEnabled";
 

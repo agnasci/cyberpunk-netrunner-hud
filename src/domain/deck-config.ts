@@ -44,6 +44,7 @@ export type DeckError =
   | "not-installed"
   | "not-rezzable"
   | "destroyed"
+  | "not-destroyed"
   | "deck-not-equipped"
   | "state"
   | "one-copy"
@@ -93,6 +94,12 @@ export function checkUninstall(loadout: DeckLoadout, deckId: string, programId: 
   if (!loadout.programs.some((p) => p.itemId === programId)) return fail("no-program");
   if (!deck.installed.includes(programId)) return fail("not-installed");
   return ok;
+}
+
+export function checkRemove(loadout: DeckLoadout, programId: string): DeckCheck {
+  const program = loadout.programs.find((p) => p.itemId === programId);
+  if (!program) return fail("no-program");
+  return program.mark === "destroyed" ? ok : fail("not-destroyed");
 }
 
 export function checkRez(loadout: DeckLoadout, programId: string, rez: boolean): DeckCheck {

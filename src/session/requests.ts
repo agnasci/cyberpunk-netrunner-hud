@@ -18,6 +18,7 @@ import {
   type RunnerResources,
 } from "../domain/net-rules";
 import type { IceClass, RunnerVitals } from "../domain/ice-hit";
+import type { PathfinderGate } from "../domain/pathfinder";
 import {
   applyAmbush,
   applyCheck,
@@ -166,6 +167,7 @@ export interface ProcessContext {
   readResources(actorUuid: string): RunnerResources;
   readRef(actorUuid: string): number | null;
   npcLinkAt(key: number): string | null;
+  pathfinderGate?: PathfinderGate;
 }
 
 export interface IceStats {

@@ -2,6 +2,7 @@ import type { NetArchitecture } from "../../src/domain/net-architecture";
 import { toPublicFloor } from "../../src/domain/net-architecture";
 import type { RunnerVitals } from "../../src/domain/ice-hit";
 import type { RunnerResources } from "../../src/domain/net-rules";
+import type { PathfinderGate } from "../../src/domain/pathfinder";
 import { normalizeNetArch } from "../../src/integrations/cpr/netarch-adapter";
 import {
   type ActionResult,
@@ -58,6 +59,7 @@ export interface Harness {
   refs?: Record<string, number>;
   npcLinks?: Record<number, string>;
   architecture?: NetArchitecture;
+  pathfinderGate?: PathfinderGate;
 }
 
 export function runWith(harness: Harness) {
@@ -77,6 +79,7 @@ export function runWith(harness: Harness) {
         harness.resources?.[uuid] ?? { interfaceRank: 0, hasCyberdeck: false },
       readRef: (uuid) => harness.refs?.[uuid] ?? null,
       npcLinkAt: (key) => harness.npcLinks?.[key] ?? null,
+      ...(harness.pathfinderGate ? { pathfinderGate: harness.pathfinderGate } : {}),
     });
     if (outcome.processedKey) processed.set(outcome.processedKey, outcome.result);
     return outcome;

@@ -128,6 +128,8 @@ em execução em 2026-11-11 (usuário jogador dono do ator):
 - `deck.installItems([program])` confere tipo e slots (`canInstallItems`), acrescenta o id em
   `installedItems.list` e soma `usedSlots`; `deck.uninstallItems([program])` tira da lista,
   recalcula `usedSlots` e derrezza o programa (`uninstallPrograms`).
+- Remover programa destruído (D47): `deck.uninstallItems([program])` e depois
+  `actor.deleteEmbeddedDocuments("Item", [id])` (API padrão do Foundry; não testado em execução).
 - Slots totais = `deck.availableInstallSlots()` + `installedItems.usedSlots` (inclui upgrades).
 - Equipar: `updateEmbeddedDocuments("Item", [{_id, "system.equipped"}])`; `getEquippedCyberdeck`
   passa a devolver o deck novo.

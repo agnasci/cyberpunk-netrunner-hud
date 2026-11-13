@@ -5,6 +5,7 @@ import {
   LOG_WORLD_SETTING,
   MODULE_ID,
   MOTION_SETTING,
+  PATHFINDER_SETTING,
   SEED_ICE_SETTING,
   SOUND_SETTING,
 } from "./constants";
@@ -38,6 +39,7 @@ import {
 } from "./integrations/cpr/foundry-npc";
 import { BUILTIN_ICE } from "./domain/builtin-ice";
 import { runnerResources } from "./domain/net-rules";
+import { isPathfinderGate } from "./domain/pathfinder";
 import type { ActionResult, NetAction } from "./session/requests";
 import type { RevealedNotes } from "./session/notes";
 import { createSession, type PublicSession } from "./session/session-state";
@@ -100,6 +102,10 @@ const channel = new RequestChannel({
   readRef: readActorRef,
   readNpcLink,
   showJournal,
+  pathfinderGate: () => {
+    const value = game.settings.get(MODULE_ID, PATHFINDER_SETTING);
+    return isPathfinderGate(value) ? value : "password";
+  },
   applyEffect: (effect) => {
     switch (effect.type) {
       case "setIceRez":
@@ -434,6 +440,18 @@ Hooks.once("init", () => {
     onChange: () => {
       if (sessionHud?.rendered) void sessionHud.render();
     },
+  });
+  game.settings.register(MODULE_ID, PATHFINDER_SETTING, {
+    name: "CNH.Settings.Pathfinder.Name",
+    hint: "CNH.Settings.Pathfinder.Hint",
+    scope: "world",
+    config: true,
+    type: String,
+    choices: {
+      password: "CNH.Settings.Pathfinder.password",
+      anyDv: "CNH.Settings.Pathfinder.anyDv",
+    },
+    default: "password",
   });
   game.settings.register(MODULE_ID, SEED_ICE_SETTING, {
     name: "CNH.Settings.SeedIce.Name",

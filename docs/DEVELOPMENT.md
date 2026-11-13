@@ -72,3 +72,8 @@ O repositório público (`agnasci/cyberpunk-netrunner-hud`) recebe **instantâne
    como `module.zip`.
 4. `gh release create vX.Y.Z module.zip dist/module.json --title "vX.Y.Z (beta)"` (release normal,
    não "pre-release": o link `releases/latest` do manifesto ignora pre-releases).
+5. Página do Foundry: `POST https://foundryvtt.com/_api/packages/release_version/` com o
+   header `Authorization` = token de release do pacote (pedir ao usuário; nunca gravar em arquivo,
+   commit, log ou repositório) e o corpo `{id, release: {version, manifest, notes, compatibility}}`,
+   com o `manifest` da release específica (`.../download/vX.Y.Z/module.json`), não o `latest`.
+   Rodar antes com `"dry-run": true`. Duas releases do mesmo pacote em menos de 60 s dão 429.

@@ -1,6 +1,7 @@
 import { MODULE_ID } from "../constants";
 import {
   checkInstall,
+  checkRemove,
   checkRez,
   checkUninstall,
   type DeckCheck,
@@ -22,6 +23,7 @@ import {
   installProgram,
   listDeckActors,
   readDeckLoadout,
+  removeProgram,
   setDeckProgramState,
   uninstallProgram,
 } from "../integrations/cpr/foundry-deck";
@@ -60,6 +62,7 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
       equipDeck: DeckApp.#onEquip,
       install: DeckApp.#onInstall,
       uninstall: DeckApp.#onUninstall,
+      remove: DeckApp.#onRemove,
       rez: DeckApp.#onRez,
       openSheet: DeckApp.#onOpenSheet,
     },
@@ -166,6 +169,7 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
               : t(p.rezzed ? "CNH.Hud.Rezzed" : "CNH.Hud.Derezzed");
       const installCheck = deck ? checkInstall(loadout, deck.itemId, p.itemId) : null;
       const uninstallCheck = deck ? checkUninstall(loadout, deck.itemId, p.itemId) : null;
+      const destroyed = p.mark === "destroyed";
       return {
         itemId: p.itemId,
         name: p.name,
@@ -190,8 +194,13 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
         rezLabel: p.rez.max > 0 ? `${p.rez.value}/${p.rez.max}` : "",
         percent: p.rez.max > 0 ? Math.round((p.rez.value / p.rez.max) * 100) : 0,
         statLabel: attacker ? `ATK ${p.atk}` : p.def > 0 ? `DEF ${p.def}` : "",
-        draggable: !disabled,
+        draggable: !disabled && !destroyed,
+        removeAction: destroyed && {
+          disabled,
+          tip: withReason("CNH.Deck.Help.remove", { ok: true }),
+        },
         rezAction: inDeck &&
+          !destroyed &&
           rezCheck !== null && {
             rez: !running,
             label: t(running ? "CNH.Program.Derez" : "CNH.Program.Rez"),
@@ -199,11 +208,13 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
             tip: withReason(running ? "CNH.Deck.Help.derez" : "CNH.Deck.Help.rez", rezCheck),
           },
         installAction: !inDeck &&
+          !destroyed &&
           installCheck !== null && {
             disabled: disabled || !installCheck.ok,
             tip: withReason("CNH.Deck.Help.install", installCheck),
           },
         uninstallAction: inDeck &&
+          !destroyed &&
           uninstallCheck !== null && {
             disabled: disabled || !uninstallCheck.ok,
             tip: withReason("CNH.Deck.Help.uninstall", uninstallCheck),
@@ -422,6 +433,21 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
     );
   }
 
+  async #remove(programId: string): Promise<void> {
+    const loadout = this.#loadout();
+    const program = loadout?.programs.find((p) => p.itemId === programId);
+    if (!loadout || !program || !this.#actorUuid || this.#busy) return;
+    const confirmed = await foundry.applications.api.DialogV2.confirm({
+      window: { title: "CNH.Deck.RemoveTitle" },
+      content: `<p>${t("CNH.Deck.RemoveConfirm", { name: program.name }).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)}</p>`,
+      rejectClose: false,
+    });
+    if (confirmed !== true) return;
+    const uuid = this.#actorUuid;
+    const deckId = deckOf(loadout, programId)?.itemId ?? null;
+    await this.#run(checkRemove(loadout, programId), () => removeProgram(uuid, deckId, programId));
+  }
+
   #justDragged(): boolean {
     return Date.now() - this.#dragEndedAt < 250;
   }
@@ -450,6 +476,10 @@ export class DeckApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static async #onUninstall(this: DeckApp, _event: Event, target: HTMLElement): Promise<void> {
     if (this.#justDragged()) return;
     await this.#uninstall(target.dataset["programId"] ?? "");
+  }
+
+  static async #onRemove(this: DeckApp, _event: Event, target: HTMLElement): Promise<void> {
+    await this.#remove(target.dataset["programId"] ?? "");
   }
 
   static async #onRez(this: DeckApp, _event: Event, target: HTMLElement): Promise<void> {

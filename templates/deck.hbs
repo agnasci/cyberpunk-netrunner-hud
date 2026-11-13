@@ -14,6 +14,7 @@
     {{/if}}
   </span>
   <span class="cnh-dk-chip-actions">
+    {{#if removeAction}}<button type="button" class="cnh-dk-btn is-remove" data-action="remove" data-program-id="{{itemId}}" data-tooltip="{{removeAction.tip}}" aria-label="{{localize "CNH.Deck.Remove"}} {{name}}" {{#if removeAction.disabled}}disabled{{/if}}><i class="fa-solid fa-trash" aria-hidden="true"></i><span>{{localize "CNH.Deck.Remove"}}</span></button>{{/if}}
     {{#if rezAction}}<button type="button" class="cnh-dk-btn {{#if rezAction.rez}}is-rez{{else}}is-derez{{/if}}" data-action="rez" data-program-id="{{itemId}}" data-rez="{{rezAction.rez}}" data-tooltip="{{rezAction.tip}}" aria-label="{{rezAction.label}} {{name}}" {{#if rezAction.disabled}}disabled{{/if}}><i class="fa-solid fa-power-off" aria-hidden="true"></i><span>{{rezAction.label}}</span></button>{{/if}}
     {{#if installAction}}<button type="button" class="cnh-dk-btn is-install" data-action="install" data-program-id="{{itemId}}" data-tooltip="{{installAction.tip}}" aria-label="{{localize "CNH.Deck.Install"}} {{name}}" {{#if installAction.disabled}}disabled{{/if}}><i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>{{localize "CNH.Deck.Install"}}</span></button>{{/if}}
     {{#if uninstallAction}}<button type="button" class="cnh-dk-btn is-eject" data-action="uninstall" data-program-id="{{itemId}}" data-tooltip="{{uninstallAction.tip}}" aria-label="{{localize "CNH.Deck.Uninstall"}} {{name}}" {{#if uninstallAction.disabled}}disabled{{/if}}><i class="fa-solid fa-eject" aria-hidden="true"></i></button>{{/if}}
@@ -98,7 +99,7 @@
         </ol>
         <div class="cnh-dk-port">
           <span class="cnh-dk-vents" aria-hidden="true"></span>
-          <span class="cnh-dk-jack {{#if locked}}is-live{{/if}}" aria-hidden="true"><i class="fa-solid fa-plug"></i></span>
+          <span class="cnh-dk-jack {{#if locked}}is-live{{/if}}" aria-hidden="true"><svg class="cnh-dk-jack-icon" viewBox="0 0 20 20" focusable="false"><circle class="cnh-dk-jack-ring" cx="10" cy="10" r="9.5"/><g class="cnh-dk-jack-plug" transform="translate(6.5 5.5) scale(0.5)"><rect x="3" y="0" width="2" height="5" rx="1"/><rect x="9" y="0" width="2" height="5" rx="1"/><path d="M1 5h12v3a6 6 0 0 1-12 0z"/><rect x="6" y="13" width="2" height="5"/></g></svg></span>
           <span class="cnh-dk-port-label">{{#if locked}}{{localize "CNH.Deck.PortLive"}}{{else}}{{localize "CNH.Deck.PortIdle"}}{{/if}}</span>
         </div>
       </div>

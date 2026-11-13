@@ -2,6 +2,7 @@ import { MODULE_ID } from "../constants";
 import type { RunnerVitals } from "../domain/ice-hit";
 import type { NetArchitecture } from "../domain/net-architecture";
 import type { RunnerResources } from "../domain/net-rules";
+import type { PathfinderGate } from "../domain/pathfinder";
 import { commitOutcome } from "../session/commit";
 import { type RevealedNotes, revealedNotes, sanitizeNotes } from "../session/notes";
 import {
@@ -40,6 +41,7 @@ export interface RequestChannelDeps {
   readRef(actorUuid: string): number | null;
   readNpcLink(itemUuid: string, key: number): string | null;
   showJournal(journalUuid: string, userId: string): void;
+  pathfinderGate(): PathfinderGate;
 }
 
 export function authorityGmId(): string | null {
@@ -218,6 +220,7 @@ export class RequestChannel {
         readRef: (uuid) => this.#deps.readRef(uuid),
         npcLinkAt: (key) =>
           session?.netArch ? this.#deps.readNpcLink(session.netArch.itemUuid, key) : null,
+        pathfinderGate: this.#deps.pathfinderGate(),
       });
       const committed = await commitOutcome(outcome, {
         applyEffect: (effect) => this.#deps.applyEffect(effect),

@@ -440,6 +440,12 @@
         "Name": "Mode without GM confirmation",
         "Hint": "Applies the result when the rules suggest one (DV, contest, damage) and rolls the Black ICE DEF/PER and hit damage without a dialog. Without a suggestion, the GM confirms. The Black ICE attack is still started by the GM. Requires a connected GM."
       },
+      "Pathfinder": {
+        "Name": "Pathfinder stops at",
+        "Hint": "How far Pathfinder reveals along a branch. Any DV: a Password, File or Control Node with DV above the total shows up and hides what lies below it. Password only: only Passwords block.",
+        "anyDv": "Any node with DV above the total",
+        "password": "Only a Password with DV above the total"
+      },
       "SeedIce": {
         "Name": "Create the basic Black ICE in the world",
         "Hint": "The GM creates, in the \"Black ICE (CNH)\" folder, the sheets of the 12 basic Black ICE (actor and program) that do not exist yet. Sheets with the same name are reused."
@@ -628,7 +634,7 @@
       "eyedee": "Eye-Dee: identifies this node's file (Interface + 1d10 vs DV). The description is shown to the Netrunner. 1 NET Action.",
       "zap": "Zap: basic attack (Interface + 1d10 vs the Black ICE's DEF or the enemy Netrunner's Defense). Hit: 1d6 damage. 1 NET Action.",
       "slide": "Slide: escapes the Black ICE (Interface + 1d10 vs its PER). On success you are no longer stuck and can move. 1 NET Action.",
-      "pathfinder": "Pathfinder: maps the architecture (Interface + 1d10). Reveals floors below up to the total, stopping at a Password with a higher DV. 1 NET Action.",
+      "pathfinder": "Pathfinder: maps the architecture (Interface + 1d10). Reveals floors below up to the total, stopping at a node with a higher DV (or only at a Password, per the world setting). 1 NET Action.",
       "cloak": "Cloak: hides the Netrunner's traces (and virus). The total becomes the DV for anyone searching later. 1 NET Action.",
       "virus": "Virus: lowest floor only. Leaves a virus that changes the architecture even after Jack Out; the GM sets the DV and effect. 1 NET Action.",
       "jackIn": "Jack In: connects to the architecture at the first node. 1 NET Action.",
@@ -732,6 +738,9 @@
       "Equip": "Equip",
       "Install": "Install",
       "Uninstall": "Uninstall",
+      "Remove": "Remove program",
+      "RemoveTitle": "Remove destroyed program",
+      "RemoveConfirm": "{name} was destroyed. Remove it from the sheet and the cyberdeck? This deletes the item from the sheet and cannot be undone.",
       "Upgrade": "Upgrade",
       "FreeSlot": "Free slot",
       "Size": "{size} slot(s)",
@@ -751,7 +760,8 @@
         "uninstall": "Removes from the deck and switches it off; the program stays on the sheet.",
         "rez": "Switches the program on before Jack In, at full REZ. Free outside a run.",
         "derez": "Switches the program off (a neutralized one can be rezzed again).",
-        "equip": "Equips this deck; the others are stowed and their programs switch off."
+        "equip": "Equips this deck; the others are stowed and their programs switch off.",
+        "remove": "Destroyed program: deletes it from the sheet and frees the deck slot."
       },
       "Error": {
         "no-deck": "deck not found",
@@ -762,6 +772,7 @@
         "not-installed": "not installed",
         "not-rezzable": "only Boosters and Defenders rez",
         "destroyed": "program destroyed: it does not come back",
+        "not-destroyed": "only destroyed programs can be removed",
         "deck-not-equipped": "equip the deck first",
         "state": "the program is already in that state",
         "one-copy": "a copy is already on (Armor, Flak and Shield: one at a time)",
